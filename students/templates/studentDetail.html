@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Student Details{% endblock page_title %}
+{% block studentSetActive %}active{% endblock studentSetActive %}
+{% block content %}
+<style>
+    span {
+        color: #164e63;
+        opacity: .6;
+    }
+</style>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Column: Profile Information -->
+            <div class="col-lg-4 col-md-5">
+                <div class="card card-user">
+                    <div class="image">
+                        <img src="{{ student.profile_picture.url }}" alt="Background Image" />
+                    </div>
+                    <div class="content">
+                        <div class="author">
+                            <img class="avatar border-white"
+                                src="{{ student.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}"
+                                alt="Profile Image" />
+                            <h4 class="title">{{ student.first_name }} {{ student.last_name }}<br />
+                                <a href="#"><small class="text-primary">{{ student.registration_id }}</small></a>
+                            </h4>
+                        </div>
+                        <p class="description text-center">
+                            "{{ student.bio | default:'No bio available' }}"
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <div class="row">
+                            <div class="col-md-3 col-md-offset-1">
+                                <h5>{{ student.files_count | default:0 }}<br /><small>Grade</small></h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="text-primary fw-bolder">{{ student.current_status | default:'0' }}<br />
+                                    <small>Status</small>
+                                </h5>
+                            </div>
+                            <div class="col-md-3">
+                                <h5>{{ student.year_of_entry | default:'0' }}<br /><small>YOE</small></h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caretakers Section -->
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title">Care Takers</h4>
+                    </div>
+                    <div class="content">
+                        {% if caretakers %}
+                        <ul class="list-unstyled team-members">
+                            {% for caretaker in caretakers %}
+                            <li>
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <div class="avatar">
+                                            <img src="{{ caretaker.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}" alt="Caretaker Image" class="img-circle img-no-padding img-responsive">
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        {{ caretaker.name }}<br />
+                                        <span class="text-muted"><small>{{ caretaker.relationship }}</small></span>
+                                    </div>
+                                    <div class="col-xs-3 text-right">
+                                        <a href="tel:{{ caretaker.contact_number }}" class="btn btn-sm btn-success btn-icon"><i class="fa fa-phone"></i></a>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-danger">No caretakers available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Student General Information -->
+            <div class="col-lg-8 col-md-7">
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title">Student General Information</h4>
+                    </div>
+                    <div class="content">
+                        <table class="table">
+                            <tr>
+                                <td><strong>Registration ID:</strong></td>
+                                <td>{{ student.registration_id | default:'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>{{ student.current_status | default:'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>First Name:</strong></td>
+                                <td>{{ student.first_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Name:</strong></td>
+                                <td>{{ student.last_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date Of Birth:</strong></td>
+                                <td>{{ student.date_of_birth | date:"Y-m-d" | default:'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Guardian Name:</strong></td>
+                                <td>{{ student.guardian_name | default:'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Guardian Phone:</strong></td>
+                                <td>{{ student.guardian_phone | default:'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>About Me:</strong></td>
+                                <td>{{ student.bio | default:'No bio available' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Address Details -->
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title">Student Address Information</h4>
+                    </div>
+                    <div class="content">
+                        {% if student_address %}
+                        <table class="table">
+                            <tr>
+                                <td><strong>Address:</strong></td>
+                                <td>{{ student_address.address | default:'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>City:</strong></td>
+                                <td>{{ student_address.city | default:'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>State:</strong></td>
+                                <td>{{ student_address.state | default:'Not Available' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Zip Code:</strong></td>
+                                <td>{{ student_address.zip_code | default:'Not Available' }}</td>
+                            </tr>
+                        </table>
+                        {% else %}
+                        <p class="text-danger">No address available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

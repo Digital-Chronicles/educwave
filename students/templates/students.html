@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Students{% endblock page_title %}
+{% block studentSetActive %}active{% endblock studentSetActive %}
+{% block content %}
+<div class="my-2">
+    <a href="/students/register/student-detail/" class="btn btn-default">Register New Student</a>
+</div>
+{% include 'features/studentlist.html' %}
+{% endblock content %}

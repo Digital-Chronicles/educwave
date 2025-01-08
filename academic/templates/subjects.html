@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Grades{% endblock page_title %}
+{% block academicsSetActive %}active{% endblock academicsSetActive %}
+{% block content %}
+<div class="my-2">
+    <a href="{% url 'register_subject' %}" class="btn btn-default">Add New Subject</a>
+</div>
+
+<div class="card">
+    <div class="header">
+        <h4 class="title">Subject List</h4>
+        <p class="category">General Subject List</p>
+    </div>
+    <div class="content table-responsive table-full-width">
+        {% if subject_list %}
+            <table class="table table-striped">
+                <thead>
+                    <th class="text-primary fw-semo">Name</th>
+                    <th class="text-primary fw-bold">Description</th>
+                    <th class="text-primary fw-bold">Curriculum</th>
+
+                    <th class="text-primary fw-bold">Actions</th>
+                </thead>
+                <tbody>
+                    {% for subject in subject_list %}
+                    <tr>
+                        <td>{{subject.name}}</td>
+                        <td>{{subject.description}}</td>
+                        <td>{{subject.curriculum}}</td>
+                        
+                        <td><a href="/students/student-details/{{student.id}}" class="btn btn-danger btn-sm">MANAGE</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="container">
+                <p class="text-primary fw-bold">No Grades found.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}

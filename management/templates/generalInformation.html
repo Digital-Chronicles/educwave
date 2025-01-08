@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mt-4">
+    <div class="card">
+        <div class="m-5 p-5">
+            <div class="card-header">
+                <h4>General Information</h4>
+            </div>
+            <div class="content table-responsive table-full-width">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Name</th>
+                            <td>{{ existing_instance.school_name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Registered By</th>
+                            <td>{{ existing_instance.registered_by.username }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Established Year</th>
+                            <td>{{ existing_instance.established_year }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Contact</th>
+                            <td>{{ existing_instance.contact_number }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email</th>
+                            <td>{{ existing_instance.email }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Website</th>
+                            <td>{{ existing_instance.website }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Created At</th>
+                            <td>{{ existing_instance.created }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Updated At</th>
+                            <td>{{ existing_instance.updated }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-end">
+                <a href="#" class="btn btn-primary">Edit Information</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

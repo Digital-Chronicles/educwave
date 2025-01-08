@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Exam Details{% endblock page_title %}
+{% block academicsSetActive %}active{% endblock academicsSetActive %}
+{% block content %}
+<div class="card">
+    <div class="p-2">
+        <h2 class="mb-4">{{ exam.subject }}</h2>
+        <div class="content table-responsive table-full-width">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th scope="row">Date</th>
+                        <td>{{ exam.date }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Duration</th>
+                        <td>{{ exam.duration_minutes }} minutes</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Grade</th>
+                        <td>{{ exam.grade }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Created By</th>
+                        <td>{{ exam.created_by }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Description</th>
+                        <td>{{ exam.description }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Exam File</th>
+                        <td>
+                            <a href="{{ exam.file.url }}" class="btn btn-secondary">Download Exam File</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock content %}

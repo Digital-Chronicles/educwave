@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Academics{% endblock page_title %}
+{% block academicsSetActive %}active{% endblock academicsSetActive %}
+{% block content %}
+{% include 'features/academicCards.html' %}
+
+<div class="card">
+  <div class="p-2">
+    <h4 class="ml-3">Past Papers</h4>
+    <div class="content table-responsive table-full-width">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="text-primary fw-semo">Subject</th>
+                    <th class="text-primary fw-semo">Date</th>
+                    <th class="text-primary fw-semo">Grade</th>
+                    <th class="text-primary fw-semo">Description</th>
+                    <th class="text-primary fw-semo">Created</th>
+                    <th class="text-primary fw-semo">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr>
+                    <td>{{ exam.subject }}</td>
+                    <td>{{ exam.date }}</td>
+                    <td>{{ exam.grade }}</td>
+                    <td>{{ exam.description}}</td>
+                    <td>{{ exam.created}}</td>
+                    <td>
+                        <a href="{% url 'exam_detail' exam.pk %}" class="btn btn-info btn-sm">View</a>
+                        {% if exam.file %}
+                        <a href="{{ exam.file.url }}" target="_blank" class="btn btn-success btn-sm">Download PDF</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,85 @@
+{% extends 'authbase.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-4 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+                        <!-- Logo -->
+                        <div class="d-flex justify-content-center py-4">
+                            <a href="/" class="logo d-flex align-items-center w-auto">
+                                <img class="mb-2" src="{% static 'assets/logo-128.png' %}" alt="">
+                                <h5 class="text-primary-emphasis text-center pb-0 fs-4">EduWave Uganda</h5>
+                            </a>
+                        </div><!-- End Logo -->
+
+                        <!-- Login Card -->
+                        <div class="card mb-3">
+                            <div class="card-body">
+
+                                <!-- Card Header -->
+                                <div class="pt-4 pb-2">
+                                    <h6 class="text-center pb-0 fs-4">Login</h6>
+                                    <p class="text-center small">Enter your email & password to login</p>
+                                </div>
+
+                                <!-- Login Form -->
+                                <form method="post" class="row g-3 needs-validation" novalidate>
+                                    {% csrf_token %}
+
+                                    <!-- Email Input -->
+                                    <div class="col-12">
+                                        <label for="yourEmail" class="form-label">Email Address</label>
+                                        <div class="input-group has-validation">
+                                            <span class="input-group-text" id="inputGroupPrepend">@</span>
+                                            <input type="email" name="username" class="form-control" id="yourEmail"
+                                                   value="{{ request.POST.username }}" required>
+                                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Password Input -->
+                                    <div class="col-12">
+                                        <label for="yourPassword" class="form-label">Password</label>
+                                        <input type="password" name="password" class="form-control" id="yourPassword"
+                                               required>
+                                        <div class="invalid-feedback">Please enter your password!</div>
+                                    </div>
+
+                                    <!-- Login Button -->
+                                    <div class="col-12">
+                                        <button class="btn btn-dark w-100" type="submit">Login</button>
+                                    </div>
+
+                                    <!-- Display Error Message -->
+                                    {% if form.errors %}
+                                    <div class="alert alert-danger mt-3">
+                                        {% for field in form %}
+                                        {% for error in field.errors %}
+                                        <p>{{ error }}</p>
+                                        {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                </form>
+
+                                <!-- Link to Reset Password -->
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'password_reset' %}" class="small text-primary-emphasis">Forgot your
+                                        password?</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main><!-- End #main -->
+{% endblock content %}
