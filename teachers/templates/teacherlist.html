@@ -1,0 +1,36 @@
+<div class="card">
+    <div class="header">
+        <h4 class="title">Teacher List</h4>
+        <!-- <p class="category">General Teacher List</p> -->
+    </div>
+    <div class="content table-responsive table-full-width">
+    {% if teachers %}    
+        <table class="table table-striped">
+            <thead>
+                <th class="text-primary fw-semo">Reg Id</th>
+                <th class="text-primary fw-bold">First Name</th>
+                <th class="text-primary fw-bold">Last Name</th>
+                <th class="text-primary fw-bold">Gender</th>
+                <th class="text-primary fw-bold">Registered_by</th>
+            </thead>
+            <tbody>
+   
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher.registration_id }}</td>
+                    <td>{{ teacher.first_name}}</td>
+                    <td>{{ teacher.last_name}}</td>
+                    <td>{{ teacher.gender}}</td>
+                    <td>{{ teacher.registered_by}}</td>
+                </tr>
+                {% endfor %}
+    {% else %}
+              <center>
+                <p>No teachers found</p>
+              </center> 
+
+    {% endif %}            
+            </tbody>
+        </table>
+    </div>
+</div>
