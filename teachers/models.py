@@ -1,9 +1,12 @@
 from django.db import models
 from accounts.models import CustomUser
 from .districts import Districts
+from django.conf import settings
+from django.core.validators import RegexValidator
 
 # Create your models here.
 class Teacher(models.Model):
+
     GENDER = (
         ("male", "male"),
         ("female", "female"),
@@ -12,14 +15,44 @@ class Teacher(models.Model):
     registration_id = models.CharField(max_length=100, unique=True)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    gender = models.CharField(max_length=50, )
+    gender = models.CharField(max_length=50, choices= GENDER, default= 'male')
+    year_of_entry = models.CharField(
+        max_length=4,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{4}$',
+                message="Year must be in YYYY format.",
+            )
+        ],
+        verbose_name="Year of Entry"
+    )
     profile_picture = models.URLField(null=True, blank=True)
-
+    school = models.ForeignKey('management.GeneralInformation', on_delete=models.CASCADE, related_name="teachers")
+    registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="registered_teachers")
     class Meta:
         db_table = "teachers"
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+    def save(self, *args, **kwargs):
+        if not self.registration_id:
+            if self.year_of_entry and self.school:
+                # Get the abbreviation of the school
+                school_abbr = self.school.get_abbr()
+
+                # Count existing students for the same year and school
+                count = Teacher.objects.filter(
+                    year_of_entry=self.year_of_entry,
+                    school=self.school
+                ).count() + 1
+
+                # Generate the registration ID
+                self.registration_id = f"{school_abbr}/{count:03d}"
+            else:
+                raise ValueError("Year of entry and school are required to generate a registration ID.")
+
+        super().save(*args, **kwargs)
     
 # Payroll Information Table
 class PayrollInformation(models.Model):

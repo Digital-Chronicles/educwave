@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div class="m-2 p-5 my-2">
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: 25%; background-color: #991b1b;"
+                 aria-valuenow="100"
+                 aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div>
+            <h5 class="">Teacher details</h5>
+        </div>
+        <div>
+            <form  method="POST" action="">
+                {% csrf_token %}
+                {{form.as_p}}
+                <div class="row">
+                    <div class="col-md-2 col-sm-3 m-1">
+                        <button class="btn btn-danger">Cancel</button>
+                    </div>
+                    <div class="col-md-2 col-sm-3 m-1">
+                        <button type="submit" class="btn btn-primary">Continue</button>
+                            
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
