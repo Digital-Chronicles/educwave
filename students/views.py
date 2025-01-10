@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import generic
-from .models import Student, StudentAddress, CareTaker, StudentGrade, FeeTransaction
-from .forms import StudentForm, StudentAddressForm, CareTakerForm, StudentGradeForm, FeeTransactionForm
+from .models import Student, StudentAddress, CareTaker, StudentGrade
+from .forms import StudentForm, StudentAddressForm, CareTakerForm, StudentGradeForm
 from django.urls import reverse_lazy
 from django.shortcuts import render, get_object_or_404
 from .models import Student
@@ -75,25 +75,6 @@ class StudentGradeListView(generic.ListView, LoginRequiredMixin):
     template_name = 'student_grade_list.html'
     context_object_name = 'student_grades'
 
-# Create view for recording a fee transaction
-class FeeTransactionCreateView(generic.CreateView, LoginRequiredMixin):
-    model = FeeTransaction
-    form_class = FeeTransactionForm
-    template_name = 'registerStudentFeeTransaction.html'
-    success_url = reverse_lazy('fee_transaction_list')  # Redirect to the fee transaction list page
-
-# Update view for editing a fee transaction
-class FeeTransactionUpdateView(generic.UpdateView, LoginRequiredMixin):
-    model = FeeTransaction
-    form_class = FeeTransactionForm
-    template_name = 'fee_transaction_form.html'
-    success_url = reverse_lazy('fee_transaction_list')  # Redirect to the fee transaction list page
-
-# List view to show all fee transactions
-class FeeTransactionListView(generic.ListView, LoginRequiredMixin):
-    model = FeeTransaction
-    template_name = 'fee_transaction_list.html'
-    context_object_name = 'fee_transactions'
 
 # Student Detail View
 @login_required(login_url='login')

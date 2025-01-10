@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import CareTakerCreateView, CareTakerUpdateView, CareTakerListView, StudentGradeCreateView, StudentGradeUpdateView, StudentGradeListView, FeeTransactionCreateView, FeeTransactionUpdateView, FeeTransactionListView
+from .views import CareTakerCreateView, CareTakerUpdateView, CareTakerListView, StudentGradeCreateView, StudentGradeUpdateView, StudentGradeListView
 
 urlpatterns = [
     path("", views.StudentList.as_view(), name="students"),
@@ -16,11 +16,6 @@ urlpatterns = [
     path('student-grade/add/', StudentGradeCreateView.as_view(), name='student_grade_create'),
     path('student-grade/edit/<int:pk>/', StudentGradeUpdateView.as_view(), name='student_grade_edit'),
     path('student-grades/', StudentGradeListView.as_view(), name='student_grade_list'),
-
-    # Fee Transaction URLs
-    path('fee-transaction/add/', FeeTransactionCreateView.as_view(), name='fee_transaction_create'),
-    path('fee-transaction/edit/<int:pk>/', FeeTransactionUpdateView.as_view(), name='fee_transaction_edit'),
-    path('fee-transactions/', FeeTransactionListView.as_view(), name='fee_transaction_list'),
 
     # Student Detail
     path("student-details/<int:id>/", views.studentDetail, name="StudentDetail"),

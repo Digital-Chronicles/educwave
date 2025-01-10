@@ -34,7 +34,7 @@ def create_general_information(request):
             general_info.registered_by = request.user
             try:
                 general_info.save()
-                return redirect('general_information_list')
+                return redirect('/')
             except ValidationError as e:
                 form.add_error(None, e.message)  # Add the error to the form for user feedback
     else:

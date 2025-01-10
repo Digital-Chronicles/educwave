@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, StudentAddress, CareTaker, StudentGrade, FeeTransaction
+from .models import Student, StudentAddress, CareTaker, StudentGrade
 
 # Customizing the display of the Student model
 class StudentAdmin(admin.ModelAdmin):
@@ -30,16 +30,8 @@ class StudentGradeAdmin(admin.ModelAdmin):
     list_filter = ('assigned_date', 'created')
     readonly_fields = ('created', 'updated')
 
-# Customizing the display of the FeeTransaction model
-class FeeTransactionAdmin(admin.ModelAdmin):
-    list_display = ('student', 'amount_due', 'amount_paid', 'payment_method', 'status', 'due_date', 'last_payment_date', 'receipt_url', 'created', 'updated')
-    search_fields = ('student__first_name', 'student__last_name', 'payment_method', 'status')
-    list_filter = ('status', 'payment_method', 'due_date', 'created')
-    readonly_fields = ('created', 'updated')
-
 # Register the models and their customized admin views
 admin.site.register(Student, StudentAdmin)
 admin.site.register(StudentAddress, StudentAddressAdmin)
 admin.site.register(CareTaker, CareTakerAdmin)
 admin.site.register(StudentGrade, StudentGradeAdmin)
-admin.site.register(FeeTransaction, FeeTransactionAdmin)

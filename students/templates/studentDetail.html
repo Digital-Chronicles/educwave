@@ -17,7 +17,7 @@
             <div class="col-lg-4 col-md-5">
                 <div class="card card-user">
                     <div class="image">
-                        <img src="{{ student.profile_picture.url }}" alt="Background Image" />
+                        <img src="{{ student.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}" alt="Background Image" />
                     </div>
                     <div class="content">
                         <div class="author">

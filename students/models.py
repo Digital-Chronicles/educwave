@@ -32,6 +32,7 @@ class Student(models.Model):
     )
     guardian_name = models.CharField(max_length=150, blank=True, null=True)
     guardian_phone = models.CharField(max_length=150, blank=True, null=True)
+    current_grade = models.ForeignKey(Grade, on_delete=models.CASCADE, blank=True, null=True)
     father_name = models.CharField(max_length=150, blank=True, null=True)
     father_phone = models.CharField(max_length=150, blank=True, null=True)
     mother_name = models.CharField(max_length=150, blank=True, null=True)
@@ -122,28 +123,4 @@ class StudentGrade(models.Model):
     def __str__(self):
         return self.student.first_name + " " + self.student.last_name
     
-# Fees Transactions Table
-class FeeTransaction(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    amount_due = models.DecimalField(max_digits=10, decimal_places=2)
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=20, choices=(
-        ('cash', 'Cash'),
-        ('card', 'Card'),
-        ('online transfer', 'Online Transfer'),
-    ))
-    due_date = models.DateField()
-    status = models.CharField(max_length=20, choices=(
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('overdue', 'Overdue'),
-    ))
-    last_payment_date = models.DateField(null=True, blank=True)
-    receipt_url = models.URLField(null=True, blank=True)
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
 
-    class Meta:
-        db_table = "fee_transaction"
-        db_table_comment = "This includes Students fees transaction data"
-        order_with_respect_to = "student"

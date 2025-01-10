@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, StudentAddress, CareTaker, StudentGrade, FeeTransaction
+from .models import Student, StudentAddress, CareTaker, StudentGrade
 
 class StudentForm(forms.ModelForm):
     class Meta:
@@ -34,7 +34,7 @@ class StudentForm(forms.ModelForm):
             'father_phone': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'mother_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'mother_phone': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'profile_picture': forms.URLInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter profile picture URL'}),
+            'profile_picture': forms.FileInput(attrs={'class': 'form-control border-input'}),
         }
 
 
@@ -74,20 +74,4 @@ class StudentGradeForm(forms.ModelForm):
             'student': forms.Select(attrs={'class': 'form-control border-input'}),
             'class_assigned': forms.Select(attrs={'class': 'form-control border-input'}),
             'assigned_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
-        }
-
-class FeeTransactionForm(forms.ModelForm):
-    class Meta:
-        model = FeeTransaction
-        fields = ['student', 'amount_due', 'amount_paid', 'payment_method', 'due_date', 'status', 'last_payment_date', 'receipt_url']
-
-        widgets = {
-            'student': forms.Select(attrs={'class': 'form-control border-input'}),
-            'amount_due': forms.NumberInput(attrs={'class': 'form-control border-input', 'placeholder': 'Amount Due'}),
-            'amount_paid': forms.NumberInput(attrs={'class': 'form-control border-input', 'placeholder': 'Amount Paid'}),
-            'payment_method': forms.Select(attrs={'class': 'form-control border-input'}),
-            'due_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
-            'status': forms.Select(attrs={'class': 'form-control border-input'}),
-            'last_payment_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date', 'placeholder': 'Last Payment Date'}),
-            'receipt_url': forms.URLInput(attrs={'class': 'form-control border-input', 'placeholder': 'Receipt URL'}),
         }

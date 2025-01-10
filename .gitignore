@@ -1,5 +1,9 @@
 # Ignore Python virtual environment
 venv/
+env/
 
 # Ignore Django migration files
 */migrations/
+
+# Ignore SQLite database file
+db.sqlite3
