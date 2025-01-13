@@ -1,0 +1,22 @@
+<table class="table">
+    <tr>
+        <td><strong>Registration ID:</strong></td>
+        <td>{{ teacher.registration_id | default:'Not Provided' }}</td>
+    </tr>
+    <tr>
+        <td><strong>First Name:</strong></td>
+        <td>{{ teacher.first_name }}</td>
+    </tr>
+    <tr>
+        <td><strong>Last Name:</strong></td>
+        <td>{{ teacher.last_name }}</td>
+    </tr>
+    <tr>
+        <td><strong>Gender:</strong></td>
+        <td>{{ teacher.gender }}</td>
+    </tr>
+    <tr>
+        <td><strong>Year of Entry:</strong></td>
+        <td>{{ teacher.year_of_entry }}</td>
+    </tr>
+</table>

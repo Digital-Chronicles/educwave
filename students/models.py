@@ -20,6 +20,7 @@ class Student(models.Model):
     last_name = models.CharField(max_length=150)
     date_of_birth = models.DateField()
     current_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    gender = models.CharField(max_length=50, choices=GENDER_CHOICES, blank=True, null = True)
     year_of_entry = models.CharField(
         max_length=4,
         validators=[

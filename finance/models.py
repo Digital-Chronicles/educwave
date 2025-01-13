@@ -90,21 +90,27 @@ class StudentTuitionDescription(models.Model):
         base_fee = self.tuition.tuitionfee
         if self.hostel:
             base_fee += self.tuition.hotelfee
-        if self.lunch:
-            base_fee += self.tuition.lunchfee
-        if self.breakfast:
-            base_fee += self.tuition.breakfastfee
+        else:
+            if self.lunch:
+                base_fee += self.tuition.lunchfee
+            if self.breakfast:
+                base_fee += self.tuition.breakfastfee
         return base_fee
 
     def save(self, *args, **kwargs):
-        # Recalculate the total fee before saving
+        """
+        Enforce the rule that if 'hostel' is selected, disable 'lunch' and 'breakfast',
+        and recalculate the total fee.
+        """
+        if self.hostel:
+            self.lunch = False
+            self.breakfast = False
+        # Recalculate the total fee
         self.total_fee = self.calculate_total_fee()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.student.first_name} {self.student.last_name} - {self.tuition.grade.grade_name}"
-
-
 
 class FeeTransaction(models.Model):
     PAYMENT_METHOD_CHOICES = (
@@ -120,12 +126,12 @@ class FeeTransaction(models.Model):
     )
 
     student = models.ForeignKey(StudentTuitionDescription, on_delete=models.CASCADE, related_name="fee_transactions")
-    amount_due = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_due = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
-    due_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True, editable=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    last_payment_date = models.DateField(null=True, blank=True)
+    last_payment_date = models.DateField(null=True, blank=True, editable=False)
     payment_reference = models.CharField(max_length=50, null=True, blank=True, unique=True)
     receipt_url = models.URLField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True, help_text="Any additional notes about the payment")
@@ -140,16 +146,26 @@ class FeeTransaction(models.Model):
     def __str__(self):
         return f"{self.student.student.first_name} {self.student.student.last_name} - {self.status.capitalize()}"
 
-    def clean(self):
-        """Ensure valid transaction data."""
-        if self.amount_paid > self.amount_due:
-            raise ValidationError("Amount paid cannot exceed the amount due.")
-        if self.due_date < now().date():
-            if self.status != 'paid' and self.amount_due > self.amount_paid:
-                self.status = 'overdue'
+    def calculate_due_amount(self):
+        """
+        Calculate the due amount for the student by subtracting the total amount paid so far 
+        from the student's total fee.
+        """
+        total_paid = self.student.fee_transactions.aggregate(models.Sum('amount_paid'))['amount_paid__sum'] or 0
+        return self.student.total_fee - total_paid
 
     def save(self, *args, **kwargs):
-        """Update status and ensure validations before saving."""
+        """
+        Automatically set due_date, amount_due, and other fields before saving.
+        """
+        # Set the due amount automatically
+        self.amount_due = self.calculate_due_amount()
+
+        # Set the due date automatically (e.g., 30 days from creation)
+        if not self.due_date:
+            self.due_date = now().date() + timedelta(days=30)
+
+        # Update status and last payment date
         if self.amount_paid >= self.amount_due:
             self.status = 'paid'
             self.last_payment_date = now().date()
@@ -157,4 +173,5 @@ class FeeTransaction(models.Model):
             self.status = 'overdue'
         else:
             self.status = 'pending'
+
         super().save(*args, **kwargs)

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Teacher Details{% endblock page_title %}
+{% block teacherSetActive %}active{% endblock teacherSetActive %}
+{% block content %}
+<style>
+    span {
+        color: #164e63;
+        opacity: .6;
+    }
+</style>
+
+<div class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Column: Profile Information -->
+            <div class="col-lg-4 col-md-5">
+                <div class="card card-user">
+                    <div class="image">
+                        <img src="{{ teacher.profile_picture | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}" alt="Background Image" />
+                    </div>
+                    <div class="content">
+                        <div class="author">
+                            <img class="avatar border-white"
+                                src="{{ teacher.profile_picture | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}"
+                                alt="Profile Image" />
+                            <h4 class="title">{{ teacher.first_name }} {{ teacher.last_name }}<br />
+                                <a href="#"><small class="text-primary">{{ teacher.registration_id }}</small></a>
+                            </h4>
+                        </div>
+                        <p class="description text-center">
+                            "{{ teacher.bio | default:'No bio available' }}"
+                        </p>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h5>{{ teacher.year_of_entry | default:'N/A' }}<br /><small>Year of Entry</small></h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5 class="text-primary fw-bolder">{{ teacher.gender | default:'N/A' }}<br />
+                                    <small>Gender</small>
+                                </h5>
+                            </div>
+                            <div class="col-md-4">
+                                <h5>{{ teacher.school.name | default:'N/A' }}<br /><small>School</small></h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Teacher General Information -->
+            <div class="col-lg-8 col-md-7">
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title">Teacher Information</h4>
+                    </div>
+                    <div class="content">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#teacher-details" role="tab">Teacher Details</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#payroll-info" role="tab">Payroll Information</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#education-background" role="tab">Education Background</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#employment-history" role="tab">Employment History</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#next-of-kin" role="tab">Next of Kin</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#current-employment" role="tab">Current Employment</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <!-- Teacher Details Tab -->
+                            <div class="tab-pane active" id="teacher-details" role="tabpanel">
+                               {% include 'features/teacher_general_details.html' %}
+                            </div>
+
+                            <!-- Payroll Information Tab -->
+                            <div class="tab-pane" id="payroll-info" role="tabpanel">
+                                {% include 'features/payroll_information.html' %}
+                            </div>
+
+                            <!-- Education Background Tab -->
+                            <div class="tab-pane" id="education-background" role="tabpanel">
+                                <p>Education background details will be displayed here.</p>
+                            </div>
+
+                            <!-- Employment History Tab -->
+                            <div class="tab-pane" id="employment-history" role="tabpanel">
+                                <p>Employment history will be displayed here.</p>
+                            </div>
+
+                            <!-- Next of Kin Tab -->
+                            <div class="tab-pane" id="next-of-kin" role="tabpanel">
+                                <p>Next of kin details will be displayed here.</p>
+                            </div>
+
+                            <!-- Current Employment Tab -->
+                            <div class="tab-pane" id="current-employment" role="tabpanel">
+                                <p>Current employment details will be displayed here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

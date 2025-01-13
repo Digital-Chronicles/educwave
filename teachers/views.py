@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import *
 from django.views import generic 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,6 +12,29 @@ def teachers(request):
 
     return render(request, 'teachers.html', {'teachers':teachers})
 
+# Teacher Detail
+def teacher_details(request, id):
+    # Fetch teacher object
+    teacher = get_object_or_404(Teacher, id=id)
+
+    # Attempt to get PayrollInformation, return None if not found
+    teacher_payroll = PayrollInformation.objects.filter(teacher=teacher).first()
+    education_background = EducationBackground.objects.filter(teacher=teacher)
+    employment_history = EmploymentHistory.objects.filter(teacher=teacher)
+    next_of_kin = NextOfKin.objects.filter(teacher=teacher).first()
+    current_employment = CurrentEmployment.objects.filter(teacher=teacher).first()
+
+    # Prepare context for template rendering
+    context = {
+        "teacher": teacher,
+        "teacher_payroll": teacher_payroll,
+        "education_background": education_background,
+        "employment_history": employment_history,
+        "next_of_kin": next_of_kin,
+        "current_employment": current_employment,
+    }
+
+    return render(request, "teachersDetails.html", context)
 
 
 class RegisterTeacherDetails(LoginRequiredMixin, generic.CreateView):
@@ -21,6 +44,7 @@ class RegisterTeacherDetails(LoginRequiredMixin, generic.CreateView):
 
     def get_success_url(self):
         return reverse_lazy('teacher_payroll') + f'?teacher_id={self.object.id}'
+    
 class Teacher_Payroll(LoginRequiredMixin, generic.CreateView):
     model = PayrollInformation
     template_name = 'payroll.html'
