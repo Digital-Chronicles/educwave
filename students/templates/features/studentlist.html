@@ -1,38 +1,126 @@
 <div class="card">
-    <div class="header">
-        <h4 class="title">Student List</h4>
-        <p class="category">General Student List</p>
-    </div>
-    <div class="content table-responsive table-full-width">
-        {% if studentlist %}
-            <table class="table table-striped">
-                <thead>
-                    <th class="text-primary fw-semo">Reg Id</th>
-                    <th class="text-primary fw-bold">First Name</th>
-                    <th class="text-primary fw-bold">Last Name</th>
-                    <th class="text-primary fw-bold">Current Grade</th>
-                    <th class="text-primary fw-bold">DOB</th>
-                    <th class="text-primary fw-bold">Current Status</th>
-                    <th class="text-primary fw-bold">Actions</th>
-                </thead>
-                <tbody>
-                    {% for student in studentlist %}
-                    <tr>
-                        <td>{{student.registration_id}}</td>
-                        <td>{{student.first_name}}</td>
-                        <td>{{student.last_name}}</td>
-                        <td>{{student.current_grade}}</td>
-                        <td>{{student.date_of_birth}}</td>
-                        <td>{{student.current_status}}</td>
-                        <td><a href="/students/student-details/{{student.id}}" class="btn btn-danger btn-sm">MANAGE</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="container">
-                <p class="text-primary fw-bold">No students found.</p>
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="header">
+                <h4 class="title">Student List</h4>
+                <p class="category">General Student List</p>
             </div>
-        {% endif %}
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="/students/register/student-detail/" class="btn btn-primary btn-sm mt-3 mr-5 p-3">Register New Student</a>
+        </div>
+    </div>
+
+    <div class="py-3 px-3">
+        <form id="searchForm">
+            <input type="text" id="searchInput" class="form-control border-input" placeholder="Search For Student" />
+        </form>
+    </div>
+
+
+    <div class="content table-responsive table-full-width">
+        <table class="table table-striped">
+            <thead>
+                <th class="text-primary fw-semo">Reg Id</th>
+                <th class="text-primary fw-bold">First Name</th>
+                <th class="text-primary fw-bold">Last Name</th>
+                <th class="text-primary fw-bold">Current Grade</th>
+                <th class="text-primary fw-bold">DOB</th>
+                <th class="text-primary fw-bold">Current Status</th>
+                <th class="text-primary fw-bold">Actions</th>
+            </thead>
+            <tbody id="studentsBody">
+                <!-- Dynamic content will be inserted here -->
+            </tbody>
+        </table>
+        <div id="paginationControls" class="text-center mt-3">
+            <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
+            <span id="currentPage">1</span>
+            <button id="nextPage" class="btn btn-secondary" disabled>Next</button>
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const studentsBody = document.getElementById("studentsBody");
+        const searchInput = document.getElementById("searchInput");
+        const prevPage = document.getElementById("prevPage");
+        const nextPage = document.getElementById("nextPage");
+        const currentPage = document.getElementById("currentPage");
+
+        // Define default query parameters
+        let currentParams = {
+            page: 1,
+            search: "",
+        };
+
+        const loadStudents = () => {
+            const params = new URLSearchParams(currentParams).toString();
+
+            // Fetch data from the server
+            fetch(`?${params}`, {
+                headers: {
+                    "x-requested-with": "XMLHttpRequest",
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    // Render the table rows
+                    if (data.students.length === 0) {
+                        studentsBody.innerHTML = `<tr><td colspan="7" class="text-center text-primary fw-bold">No students found.</td></tr>`;
+                    } else {
+                        studentsBody.innerHTML = data.students
+                            .map(
+                                (student) => `
+                                <tr>
+                                    <td>${student.registration_id}</td>
+                                    <td>${student.first_name}</td>
+                                    <td>${student.last_name}</td>
+                                    <td>${student.current_grade || "-"}</td>
+                                    <td>${student.date_of_birth}</td>
+                                    <td>${student.current_status}</td>
+                                    <td><a href="/students/student-details/${student.id}" class="btn btn-danger btn-sm">MANAGE</a></td>
+                                </tr>`
+                            )
+                            .join("");
+                    }
+                    // Update pagination buttons
+                    prevPage.disabled = !data.has_previous;
+                    nextPage.disabled = !data.has_next;
+                    currentPage.textContent = data.current_page;
+                })
+                .catch((error) => {
+                    console.error("Error loading students:", error);
+                });
+        };
+
+        // Pagination controls
+        prevPage.addEventListener("click", () => {
+            if (currentParams.page > 1) {
+                currentParams.page--;
+                loadStudents();
+            }
+        });
+
+        nextPage.addEventListener("click", () => {
+            currentParams.page++;
+            loadStudents();
+        });
+
+        // Search functionality
+        searchInput.addEventListener("input", (e) => {
+            currentParams.search = e.target.value.trim();
+            currentParams.page = 1; // Reset to first page on search
+            loadStudents();
+        });
+
+        // Initial load
+        loadStudents();
+    });
+</script>

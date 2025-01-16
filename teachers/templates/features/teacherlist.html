@@ -1,0 +1,135 @@
+<div class="container mt-5">
+    <div class="card">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="header">
+                    <h4 class="title">Teacher List</h4>
+                    <p class="category">General Teacher List</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-right">
+                <a href="teachers/register/teacher/details/" class="btn btn-primary btn-sm mt-3 mr-5 p-3">Register New Teacher</a>
+            </div>
+        </div>
+        <!-- Search Form -->
+        <div class="py-3 px-3">
+            <form id="searchForm" onsubmit="return false;">
+                <input type="text" id="searchInput" class="form-control border-input"
+                    placeholder="Search for Teachers" />
+            </form>
+        </div>
+
+        <!-- Table to Display Teachers -->
+        <div class="content table-responsive table-full-width">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-primary fw-bold">Reg Id</th>
+                        <th class="text-primary fw-bold">First Name</th>
+                        <th class="text-primary fw-bold">Last Name</th>
+                        <th class="text-primary fw-bold">Gender</th>
+                        <th class="text-primary fw-bold">Registered By</th>
+                        <th class="text-primary fw-bold">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="teachersBody">
+                    <!-- Data will be dynamically inserted here -->
+                </tbody>
+            </table>
+
+            <!-- Pagination Controls -->
+            <div id="paginationControls" class="text-center mt-3">
+                <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
+                <span id="currentPage">1</span>
+                <button id="nextPage" class="btn btn-secondary" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for AJAX and Dynamic Content -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const teachersBody = document.getElementById("teachersBody");
+        const searchInput = document.getElementById("searchInput");
+        const prevPage = document.getElementById("prevPage");
+        const nextPage = document.getElementById("nextPage");
+        const currentPage = document.getElementById("currentPage");
+
+        // Default query parameters
+        let currentParams = {
+            page: 1,
+            search: "",
+        };
+
+        // Function to load teachers dynamically
+        const loadTeachers = () => {
+            const params = new URLSearchParams(currentParams).toString();
+
+            fetch(`?${params}`, {
+                headers: {
+                    "x-requested-with": "XMLHttpRequest",
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    // Populate the table with teacher data
+                    if (data.students.length === 0) {
+                        teachersBody.innerHTML = `<tr><td colspan="6" class="text-center text-primary fw-bold">No teachers found.</td></tr>`;
+                    } else {
+                        teachersBody.innerHTML = data.students
+                            .map(
+                                (teacher) => `
+                                    <tr>
+                                        <td>${teacher.registration_id}</td>
+                                        <td>${teacher.first_name}</td>
+                                        <td>${teacher.last_name}</td>
+                                        <td>${teacher.gender || "-"}</td>
+                                        <td>${teacher.registered_by || "-"}</td>
+                                        <td>
+                                            <a href="/teachers/details/${teacher.id}/" class="btn btn-sm btn-primary">Manage</a>
+                                        </td>
+                                    </tr>`
+                            )
+                            .join("");
+                    }
+
+                    // Update pagination controls
+                    prevPage.disabled = !data.has_previous;
+                    nextPage.disabled = !data.has_next;
+                    currentPage.textContent = data.current_page;
+                })
+                .catch((error) => {
+                    console.error("Error loading teachers:", error);
+                });
+        };
+
+        // Pagination controls
+        prevPage.addEventListener("click", () => {
+            if (currentParams.page > 1) {
+                currentParams.page--;
+                loadTeachers();
+            }
+        });
+
+        nextPage.addEventListener("click", () => {
+            currentParams.page++;
+            loadTeachers();
+        });
+
+        // Search functionality
+        searchInput.addEventListener("input", (e) => {
+            currentParams.search = e.target.value.trim();
+            currentParams.page = 1; // Reset to the first page on search
+            loadTeachers();
+        });
+
+        // Initial load
+        loadTeachers();
+    });
+</script>

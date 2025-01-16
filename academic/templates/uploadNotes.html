@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    form .fa{
+        display: none;
+    }
+</style>
+<div class="card">
+    <div class="m-2 p-5 my-2">import { Newspaper, Star } from "lucide-react-native";
+        import { Text, View } from "../Themed";
+        
+        export default function NoteList() {
+          return (
+            <View className="p-4">
+              <View className="flex-row items-center space-x-2">
+                {/* Newspaper Icon */}
+                <View className="w-1/5">
+                  <Newspaper size={24} color="#0e7490" />
+                </View>
+        
+                {/* Text Section */}
+                <View className="w-3/5">
+                  <Text className="text-lg font-semibold">Geometry Grade 1</Text>
+                  <Text className="text-sm text-gray-500">Math</Text>
+                </View>
+        
+                {/* Star Icon */}
+                <View className="w-1/5 items-center">
+                  <Star size={24} color="#f59e0b" />
+                </View>
+              </View>
+            </View>
+          );
+        }
+        
+        <div>
+            <h3 class="">Notes</h3>
+        </div>
+        <div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form.media}} 
+                {{form.as_p}}
+                <div class="row">
+                    <div class="col-md-2 col-sm-3 m-1">
+                        <button class="btn btn-danger">Cancel</button>
+                    </div>
+                    <div class="col-md-2 col-sm-3 m-1">
+                        <button type="submit" class="btn btn-primary">Continue</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

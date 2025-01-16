@@ -9,58 +9,47 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import io
 import base64
-
+import numpy as np
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+
 def dashboard(request):
+    # Fetching the counts from the database
     students_count = Student.objects.all().count()
     teachers_count = Teacher.objects.all().count()
     active_student_count = Student.objects.filter(current_status="active").count()
     graduated_student_count = Student.objects.filter(current_status="graduated").count()
     dropped_out_student_count = Student.objects.filter(current_status="dropped out").count()
+    inactive_student_count = graduated_student_count + dropped_out_student_count
     male_count = Student.objects.filter(gender="Male").count()
     female_count = Student.objects.filter(gender="Female").count()
 
 
-    # Graph Data
-    student_status_data = {'Active Students': active_student_count, 'Graduated Students': graduated_student_count, 'Dropped Out Students': dropped_out_student_count}
-    student_gender_data = {'Male': male_count, 'Female': female_count}
-
-    # Student Status Graph (Barplot)
-    plt.figure() 
-    sns.barplot(x=list(student_status_data.keys()), y=list(student_status_data.values()))
-    plt.xlabel('Category')
-    plt.ylabel('Value')
-    plt.title('Student Status Visualization')
+    student_status_data = {
+        'Active Students': active_student_count,
+        'Graduated Students': graduated_student_count,
+        'Dropped Out Students': dropped_out_student_count
+    }
     
-    # Convert the student status bar graph to a base64 encoded image
-    studentStatusBuf = io.BytesIO()
-    plt.savefig(studentStatusBuf, format='png')
-    studentStatusBuf.seek(0)
-    student_status_image_base64 = base64.b64encode(studentStatusBuf.read()).decode('utf-8')
-    plt.close() 
+    student_gender_data = {
+        'Male': male_count,
+        'Female': female_count
+    }
 
-    # Create the pie chart for student gender
-    plt.figure()
-    plt.pie(list(student_gender_data.values()), labels=list(student_gender_data.keys()), autopct='%1.1f%%', startangle=90)
-    plt.title('Student Gender Visualization')
-    
-    # Convert the gender pie chart to a base64 encoded image
-    studentGenderBuf = io.BytesIO()
-    plt.savefig(studentGenderBuf, format='png')
-    studentGenderBuf.seek(0)
-    gender_piechart_image_base64 = base64.b64encode(studentGenderBuf.read()).decode('utf-8')
-    plt.close()
 
-    # Pass the graph images and data to the template context
     context = {
         "students_count": students_count,
         "teachers_count": teachers_count,
-        "student_status_image_base64": student_status_image_base64,
-        "gender_piechart_image_base64": gender_piechart_image_base64,
+        "active_student_count":active_student_count,
+        "graduated_student_count":graduated_student_count,
+        "inactive_student_count":inactive_student_count,
+        "student_status_data":student_status_data,
+        "student_gender_data":student_gender_data,
     }
     return render(request, "dashboard.html", context)
 
+@login_required 
 def create_general_information(request):
     # Check if an instance of GeneralInformation already exists
     if GeneralInformation.objects.exists():

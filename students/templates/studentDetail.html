@@ -16,8 +16,11 @@
             <!-- Left Column: Profile Information -->
             <div class="col-lg-4 col-md-5">
                 <div class="card card-user">
+
+                    {% if student.profile_picture %}
                     <div class="image">
-                        <img src="{{ student.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}" alt="Background Image" />
+                        <img src="{{ student.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}"
+                            alt="Background Image" />
                     </div>
                     <div class="content">
                         <div class="author">
@@ -32,6 +35,27 @@
                             "{{ student.bio | default:'No bio available' }}"
                         </p>
                     </div>
+                    {% else %}
+                    <div class="image">
+                        <img src="https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg"
+                            alt="Background Image" />
+                    </div>
+                    <div class="content">
+                        <div class="author">
+                            <img class="avatar border-white"
+                                src="https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg"
+                                alt="Profile Image" />
+                            <h4 class="title">{{ student.first_name }} {{ student.last_name }}<br />
+                                <a href="#"><small class="text-primary">{{ student.registration_id }}</small></a>
+                            </h4>
+                        </div>
+                        <p class="description text-center">
+                            "{{ student.bio | default:'No bio available' }}"
+                        </p>
+                    </div>
+                    {% endif %}
+
+
                     <hr>
                     <div class="text-center">
                         <div class="row">
@@ -39,7 +63,7 @@
                                 <h5>{{ student.files_count | default:0 }}<br /><small>Grade</small></h5>
                             </div>
                             <div class="col-md-4">
-                                <h5 class="text-primary fw-bolder">{{ student.current_status | default:'0' }}<br />
+                                <h5 class="text-primary fw-bolder">{{ student.current_status | default:'0'}}<br />
                                     <small>Status</small>
                                 </h5>
                             </div>
@@ -63,15 +87,18 @@
                                 <div class="row">
                                     <div class="col-xs-3">
                                         <div class="avatar">
-                                            <img src="{{ caretaker.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}" alt="Caretaker Image" class="img-circle img-no-padding img-responsive">
+                                            <img src="{{ caretaker.profile_picture.url | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}"
+                                                alt="Caretaker Image" class="img-circle img-no-padding img-responsive">
                                         </div>
                                     </div>
                                     <div class="col-xs-6">
                                         {{ caretaker.name }}<br />
-                                        <span class="text-muted"><small>{{ caretaker.relationship }}</small></span>
+                                        <span class="text-muted"><small>{{ caretaker.relationship
+                                                }}</small></span>
                                     </div>
                                     <div class="col-xs-3 text-right">
-                                        <a href="tel:{{ caretaker.contact_number }}" class="btn btn-sm btn-success btn-icon"><i class="fa fa-phone"></i></a>
+                                        <a href="tel:{{ caretaker.contact_number }}"
+                                            class="btn btn-sm btn-success btn-icon"><i class="fa fa-phone"></i></a>
                                     </div>
                                 </div>
                             </li>

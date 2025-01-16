@@ -49,6 +49,21 @@
                         </div>
                     </div>
                 </div>
+                <div class="card">
+                    <div class="content">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <a class="btn btn-primary  btn-sm my-1" style="font-weight: bolder;" href="/academics/upload/notes/">Upload Notes</a>
+                            </div>
+                            <div class="col-md-4">
+                                <a class="btn btn-primary btn-sm my-1" style="font-weight: bolder;" href="/academics/upload/exam/">Upload Exams</a>
+                            </div>
+                            <div class="col-md-4">
+                                <a class="btn btn-primary btn-sm my-1" style="font-weight: bolder;" href="#">Upload Marks</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Column: Teacher General Information -->
@@ -91,22 +106,60 @@
 
                             <!-- Education Background Tab -->
                             <div class="tab-pane" id="education-background" role="tabpanel">
-                                <p>Education background details will be displayed here.</p>
+                                {% include 'features/eduction_background.html' %}
                             </div>
 
                             <!-- Employment History Tab -->
                             <div class="tab-pane" id="employment-history" role="tabpanel">
-                                <p>Employment history will be displayed here.</p>
+                                {% include 'features/employment_background.html' %}
                             </div>
 
                             <!-- Next of Kin Tab -->
                             <div class="tab-pane" id="next-of-kin" role="tabpanel">
-                                <p>Next of kin details will be displayed here.</p>
+                                {% include 'features/next_of_kin_information.html' %}
                             </div>
 
                             <!-- Current Employment Tab -->
                             <div class="tab-pane" id="current-employment" role="tabpanel">
-                                <p>Current employment details will be displayed here.</p>
+                                {% include 'features/current_employment.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- Right Column: Teacher General Information -->
+             <div class="col-lg-8 col-md-7">
+                <div class="card">
+                    <div class="header">
+                        <h4 class="title">Teacher Uploads</h4>
+                    </div>
+                    <div class="content">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-toggle="tab" href="#student-marks" role="tab">Uploaded Student Marks</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#notes" role="tab">Uploaded Notes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#exams" role="tab">Uploaded Exams</a>
+                            </li>
+                           
+                        </ul>
+                        <div class="tab-content">
+                            <!-- Student Grades -->
+                            <div class="tab-pane active" id="student-marks" role="tabpanel">
+                               {% include 'features/teacher_general_details.html' %}
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="tab-pane" id="notes" role="tabpanel">
+                                {% include 'features/uploaded_notes.html' %}
+                            </div>
+
+                            <!-- Exams Tab -->
+                            <div class="tab-pane" id="exams" role="tabpanel">
+                                {% include 'features/uploaded_exams.html' %}
                             </div>
                         </div>
                     </div>

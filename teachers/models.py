@@ -6,7 +6,6 @@ from django.core.validators import RegexValidator
 
 # Create your models here.
 class Teacher(models.Model):
-
     GENDER = (
         ("male", "male"),
         ("female", "female"),
@@ -26,7 +25,7 @@ class Teacher(models.Model):
         ],
         verbose_name="Year of Entry"
     )
-    profile_picture = models.URLField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to="teacher_profile_pictures", null=True, blank=True)
     school = models.ForeignKey('management.GeneralInformation', on_delete=models.CASCADE, related_name="teachers")
     registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="registered_teachers")
     class Meta:

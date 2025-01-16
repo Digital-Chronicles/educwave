@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
-from .models import Grade, Subject, Curriculum, Topic, Exam
-from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm
+from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
+from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm
 
 # Create your views here.
 def academics(requests):
@@ -93,8 +93,18 @@ class RegisterTopic(generic.CreateView):
     form_class = TopicForm
     success_url = '/'
 
-class RegisterExam(generic.CreateView):
+class UploadExamView(generic.CreateView):
     model = Exam
-    template_name = "registerExam.html"
+    template_name = "uploadExam.html"
     form_class = ExamForm
     success_url = '/'
+
+class UploadNotesView(generic.CreateView):
+    model = Notes
+    form_class = NotesForm
+    template_name = 'uploadNotes.html'
+    success_url = "/"
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user 
+        return super().form_valid(form)

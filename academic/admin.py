@@ -52,3 +52,19 @@ class ExamAdmin(admin.ModelAdmin):
     ordering = ['date', 'subject']
     readonly_fields = ('created', 'updated')
     date_hierarchy = 'date'  # Enables hierarchical navigation by date
+
+# Notes Model
+@admin.register(Notes)
+class NotesAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'created_by', 'grade', 'created', 'updated')  # Fields to display in the list view
+    list_filter = ('subject', 'grade', 'created_by')  # Filter options on the right
+    search_fields = ('subject__name', 'created_by__name', 'notes_content')  # Search fields
+    ordering = ('-created',)  # Default ordering by creation date descending
+    fields = ('subject', 'topics', 'notes_file', 'notes_content', 'description', 'grade', 'created_by')  # Form fields to display in the admin form
+    filter_horizontal = ('topics',)  # Make 'topics' many-to-many field more user-friendly
+    readonly_fields = ('created', 'updated')  # Make 'created' and 'updated' fields read-only
+
+    class Media:
+        css = {
+            'all': ('notes_admin.css',)  # Optional: Custom CSS for styling the admin if needed
+        }
