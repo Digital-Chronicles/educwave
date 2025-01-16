@@ -1,0 +1,41 @@
+<div class="card">
+    <div class="header">
+        <h4 class="title">Student Tuition Description</h4>
+        <!-- <p class="category">General Teacher List</p> -->
+    </div>
+    <div class="content table-responsive table-full-width">
+    {% if tuition %}    
+        <table class="table table-striped">
+            <thead>
+                
+                <th class="text-primary fw-semo">Student</th>
+                <th class="text-primary fw-bold">Tuition Fee</th>
+                <th class="text-primary fw-bold">Hotel Fee</th>
+                <th class="text-primary fw-bold">Breakfast Fee</th>
+                <th class="text-primary fw-bold">Lunch Fee</th>
+                <th class="text-primary fw-bold">Total Fee</th>
+            </thead>
+            <tbody>
+   
+                {% for fees in tuition %}
+
+                <tr>
+                   
+                    <td>{{ fees.student }}</td>
+                    <td>{{ fees.tuition}}</td>
+                    <td>{{ fees.hostel}}</td>
+                    <td>{{ fees.lunch}}</td>
+                    <td>{{ fees.breakfast}}</td>
+                    <td>{{ fees.total_fee}}</td>
+                </tr>
+                {% endfor %}
+    {% else %}
+              <center>
+                <p>No Records found</p>
+              </center> 
+
+    {% endif %}            
+            </tbody>
+        </table>
+    </div>
+</div>

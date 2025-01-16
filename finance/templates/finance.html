@@ -1,7 +1,30 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Academics{% endblock page_title %}
+{% block page_title %}Finance{% endblock page_title %}
 {% block financeSetActive %}active{% endblock financeSetActive %}
 {% block content %}
+
+<div>
+    {% include 'features/financeCards.html' %}
+    <!-- <a href="/finance/schoolfees/">
+        <button type="button" class="btn btn primary"> School fees Structure </button>
+    </a>
+    <a href="/finance/otherpayment/">
+        <button type="button" class="btn btn primary"> Other School Payments </button>
+    </a>
+    <a href="/finance/register/transport/">
+        <button type="button" class="btn btn primary"> Transport Fees</button>
+    </a>
+ 
+    <a href="/finance/tuition/description/">
+        <button type="button" class="btn btn primary">Student Tuition Payment</button>
+    </a>
+    <a href="/finance/fee/transaction/">
+        <button type="button" class="btn btn primary">Fees Transaction</button>
+    </a> -->
+
+
+</div>
+
 
 {% endblock content %}
