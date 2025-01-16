@@ -2,12 +2,36 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
+from django.views.generic.list import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
 from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm
+from django.http import JsonResponse
+from django.core.paginator import Paginator
 
-# Create your views here.
-def academics(requests):
+
+def academics(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Process AJAX request
+        exams = list(Exam.objects.all().order_by('subject').values(
+            'subject__name', 'date', 'duration_minutes', 'description', 'id', 'grade', 'created'
+        ))
+        data = {
+            'grades_count': Grade.objects.all().count(),
+            'subjects_count': Subject.objects.all().count(),
+            'exams_count': Exam.objects.all().count(),
+            'curriculum_count': Curriculum.objects.all().count(),
+            'topics_count': Topic.objects.all().count(),
+            'exams': exams,
+        }
+        return JsonResponse(data)
+
+    # For non-AJAX requests, render the template with pagination
     exams = Exam.objects.all().order_by('subject')
+    paginator = Paginator(exams, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     grades_count = Grade.objects.all().count()
     subjects_count = Subject.objects.all().count()
     exams_count = Exam.objects.all().count()
@@ -15,16 +39,21 @@ def academics(requests):
     topics_count = Topic.objects.all().count()
 
     context = {
-        'exams': exams,
-        'grades_count':grades_count,
-        'subjects_count':subjects_count,
-        'exams_count':exams_count,
-        'curriculum_count':curriculum_count,
-        'topics_count':topics_count,
-        }
-    return render(requests, "academics.html", context)
+        'page_obj': page_obj,
+        'grades_count': grades_count,
+        'subjects_count': subjects_count,
+        'exams_count': exams_count,
+        'curriculum_count': curriculum_count,
+        'topics_count': topics_count,
+    }
+    return render(request, "academics.html", context)
 
 # Exams
+class ExamList(ListView, LoginRequiredMixin):
+    model = Exam
+    template_name = "exams.html"
+
+    
 # View details of a specific exam
 def exam_detail(request, pk):
     exam = get_object_or_404(Exam, pk=pk)

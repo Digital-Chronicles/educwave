@@ -6,6 +6,7 @@ urlpatterns = [
 
     # Grades
     path('grades/', views.grades, name="grades"),
+    path('exams/', views.ExamList.as_view(), name = "exams"),
     path('exams/<int:pk>/', views.exam_detail, name='exam_detail'),
     path('exams/create/', views.exam_create, name='exam_create'),
     path('exams/<int:pk>/edit/', views.exam_update, name='exam_update'),
