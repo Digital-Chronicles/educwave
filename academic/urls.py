@@ -6,6 +6,7 @@ urlpatterns = [
 
     # Grades
     path('grades/', views.grades, name="grades"),
+    path('exams/', views.ExamList.as_view(), name = "exams"),
     path('exams/<int:pk>/', views.exam_detail, name='exam_detail'),
     path('exams/create/', views.exam_create, name='exam_create'),
     path('exams/<int:pk>/edit/', views.exam_update, name='exam_update'),
@@ -15,5 +16,7 @@ urlpatterns = [
     path('register/subject/', views.RegisterSubject.as_view(), name='register_subject'),
     path('register/curriculum/', views.RegisterCurriculum.as_view(), name='register_curriculum'),
     path('register/topic/', views.RegisterTopic.as_view(), name='register_topic'),
-    path('register/exam/', views.RegisterExam.as_view(), name='register_exam'),
+    path('upload/exam/', views.UploadExamView.as_view(), name='upload_exam'),
+    path('upload/notes/', views.UploadNotesView.as_view(), name='upload_notes'),
+
 ]

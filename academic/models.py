@@ -1,5 +1,8 @@
 from django.db import models
 from teachers.models import *
+from ckeditor.fields import RichTextField
+from django.core.validators import FileExtensionValidator
+
 
 # Subjects Table
 class Subject(models.Model):
@@ -52,13 +55,17 @@ class Topic(models.Model):
 
 # Exams Table
 class Exam(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="exam")
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="exams")
     date = models.DateField()
     duration_minutes = models.PositiveIntegerField()
-    file = models.FileField(upload_to='exam_uploads/')
+    file = models.FileField(
+        upload_to='exam_uploads/', 
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'pptx'])]  # Add file type validation
+    )
     description = models.TextField(null=True, blank=True)
-    grade = models.ForeignKey('Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exam")
-    created_by = models.ForeignKey(Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exam")
+    grade = models.ForeignKey('Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exams")
+    created_by = models.ForeignKey(Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exams")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
@@ -73,7 +80,7 @@ class Exam(models.Model):
 # Classes Table
 class Grade(models.Model):
     grade_name = models.CharField(max_length=50)
-    class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name="grade")
+    class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name="grades")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
@@ -84,3 +91,28 @@ class Grade(models.Model):
 
     def __str__(self):
         return self.grade_name
+    
+# Notes
+class Notes(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="notes")
+    topics = models.ManyToManyField(Topic, related_name="notes")
+    notes_file = models.FileField(
+        upload_to='notes_uploads/', 
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'pptx'])]
+    )
+    notes_content = RichTextField()
+    description = models.TextField(null=True, blank=True)
+    grade = models.ForeignKey('Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exam")
+    created_by = models.ForeignKey(Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exam")
+    created = models.DateField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Notes"
+        db_table = "notes"
+        db_table_comment = "This includes notes data"
+        order_with_respect_to = "subject"
+
+    def __str__(self):
+        return f"{self.subject}"

@@ -1,0 +1,32 @@
+<!-- Payroll Information Table -->
+{% if teacher_payroll %}
+    <h3>Payroll Information</h3>
+    <table class="table">
+        <tr>
+            <td><strong>Salary:</strong></td>
+            <td>{{ teacher_payroll.salary | default:'Not Provided' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Bank Name:</strong></td>
+            <td>{{ teacher_payroll.bank_name | default:'Not Provided' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Account Number:</strong></td>
+            <td>{{ teacher_payroll.account_number | default:'Not Provided' }}</td>
+        </tr>
+        <tr>
+            <td><strong>TIN:</strong></td>
+            <td>{{ teacher_payroll.tax_identification_number | default:'Not Provided' }}</td>
+        </tr>
+        <tr>
+            <td><strong>NSSF Number:</strong></td>
+            <td>{{ teacher_payroll.nssf_number | default:'Not Provided' }}</td>
+        </tr>
+        <tr>
+            <td><strong>Payment Frequency:</strong></td>
+            <td>{{ teacher_payroll.payment_frequency | default:'Not Provided' }}</td>
+        </tr>
+    </table>
+{% else %}
+    <p class="text-center m-5">No payroll information available.</p>
+{% endif %}

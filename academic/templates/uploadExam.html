@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+    <div class="m-2 p-5 my-2">
+        <div>
+            <h5 class="">Exams</h5>
+        </div>
+        <div>
+            <form  method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form.as_p}}
+                <div class="row">
+                    <div class="col-md-2 col-sm-3 m-1">
+                        <button class="btn btn-danger">Cancel</button>
+                    </div>
+                    <div class="col-md-2 col-sm-3 m-1">
+                        <button type="submit" class="btn btn-primary">Continue</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

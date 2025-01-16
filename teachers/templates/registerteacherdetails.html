@@ -11,7 +11,7 @@
             <h5 class="">Teacher details</h5>
         </div>
         <div>
-            <form  method="POST" action="">
+            <form  method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{form.as_p}}
                 <div class="row">

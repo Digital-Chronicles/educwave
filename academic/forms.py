@@ -1,5 +1,7 @@
 from django import forms
-from .models import Grade, Subject, Curriculum, Topic, Exam
+from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
+from ckeditor.widgets import CKEditorWidget
+from django.core.exceptions import ValidationError
 
 # Form for Grade model
 class GradeForm(forms.ModelForm):
@@ -30,7 +32,7 @@ class SubjectForm(forms.ModelForm):
         }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter subject name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide a brief description'}),
+            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide a brief description', 'rows': 4}),
             'curriculum': forms.Select(attrs={'class': 'form-control border-input'}),
         }
 
@@ -46,8 +48,8 @@ class CurriculumForm(forms.ModelForm):
         }
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter curriculum name'}),
-            'objectives': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'List curriculum objectives'}),
-            'learning_outcomes': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Outline learning outcomes'}),
+            'objectives': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'List curriculum objectives', 'rows': 4}),
+            'learning_outcomes': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Outline learning outcomes', 'rows': 4}),
         }
 
 # Form for Topic model
@@ -64,7 +66,7 @@ class TopicForm(forms.ModelForm):
         widgets = {
             'subject': forms.Select(attrs={'class': 'form-control border-input'}),
             'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter topic name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide topic details'}),
+            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide topic details', 'rows': 4}),
             'order': forms.NumberInput(attrs={'class': 'form-control border-input'}),
         }
 
@@ -77,7 +79,7 @@ class ExamForm(forms.ModelForm):
             'subject': 'Subject',
             'date': 'Exam Date',
             'duration_minutes': 'Duration (Minutes)',
-            'file': 'Upload File',
+            'file': 'Upload Exam File',
             'description': 'Description',
             'grade': 'Grade',
             'created_by': 'Created By'
@@ -87,7 +89,65 @@ class ExamForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
             'duration_minutes': forms.NumberInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter duration in minutes'}),
             'file': forms.ClearableFileInput(attrs={'class': 'form-control border-input'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide additional details'}),
+            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide additional details', 'rows': 4}),
             'grade': forms.Select(attrs={'class': 'form-control border-input'}),
             'created_by': forms.Select(attrs={'class': 'form-control border-input'}),
         }
+        help_texts = {
+            'file': 'You can upload PDF, DOCX, or PPTX files.'
+        }
+        error_messages = {
+            'duration_minutes': {'required': 'Please specify the duration of the exam in minutes.'}
+        }
+
+# Form for Notes model
+class NotesForm(forms.ModelForm):
+    # Use CKEditorWidget for notes_content
+    notes_content = forms.CharField(
+        widget=CKEditorWidget(attrs={'class': 'form-control border-input'}),
+        label='Notes Content',
+    )
+
+    # Use ModelMultipleChoiceField for the 'topics' field
+    topics = forms.ModelMultipleChoiceField(
+        queryset=Topic.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        required=True,
+        label='Topics'
+    )
+
+    class Meta:
+        model = Notes
+        fields = ['subject', 'topics', 'notes_file', 'notes_content', 'description', 'grade']
+
+        labels = {
+            'subject': 'Subject',
+            'topics': 'Topics',
+            'notes_file': 'Upload Notes File',
+            'description': 'Description',
+            'grade': 'Grade',
+        }
+
+        widgets = {
+            'subject': forms.Select(attrs={'class': 'form-control border-input'}),
+            'topics': forms.SelectMultiple(attrs={'class': 'form-control border-input'}),
+            'notes_file': forms.ClearableFileInput(attrs={'class': 'form-control border-input'}),
+            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide notes details', 'rows': 4}),
+            'grade': forms.Select(attrs={'class': 'form-control border-input'}),
+            'created_by': forms.Select(attrs={'class': 'form-control border-input'}),
+        }
+
+        help_texts = {
+            'notes_file': 'You can upload PDF, DOCX, or PPTX files for the notes.',
+            'description': 'Provide any additional details or context for the notes.',
+        }
+
+    # Custom validation for notes file extension
+    def clean_notes_file(self):
+        notes_file = self.cleaned_data.get('notes_file')
+        if notes_file:
+            file_extension = notes_file.name.split('.')[-1].lower()
+            allowed_extensions = ['pdf', 'docx', 'pptx']
+            if file_extension not in allowed_extensions:
+                raise ValidationError('Only PDF, DOCX, or PPTX files are allowed.')
+        return notes_file

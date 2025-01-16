@@ -11,7 +11,7 @@
             <h5 class="">Student Details</h5>
         </div>
         <div>
-            <form method="POST" action="">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <div class="row">
@@ -26,15 +26,19 @@
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-4 col-sm-12 mb-3">
+                    <div class="col-md-3 col-sm-12 mb-3">
                         <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
                         {{ form.date_of_birth }}
                     </div>
-                    <div class="col-md-4 col-sm-12 mb-3">
+                    <div class="col-md-3 col-sm-12 mb-3">
+                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Gender</label>
+                        {{ form.gender }}
+                    </div>
+                    <div class="col-md-3 col-sm-12 mb-3">
                         <label for="{{ form.current_status.id_for_label }}" class="form-label">Current Status</label>
                         {{ form.current_status }}
                     </div>
-                    <div class="col-md-4 col-sm-12 mb-3">
+                    <div class="col-md-3 col-sm-12 mb-3">
                         <label for="{{ form.year_of_entry.id_for_label }}" class="form-label">Year of Entry</label>
                         {{ form.year_of_entry }}
                     </div>

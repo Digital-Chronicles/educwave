@@ -7,7 +7,8 @@ class StudentForm(forms.ModelForm):
         fields = [
             'first_name', 
             'last_name', 
-            'date_of_birth', 
+            'date_of_birth',
+            'gender', 
             'current_status', 
             'year_of_entry',
             'guardian_name', 
@@ -25,6 +26,7 @@ class StudentForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
+            'gender': forms.Select(attrs={'class': 'form-control border-input'}),
             'current_status': forms.Select(attrs={'class': 'form-control border-input'}),
             'year_of_entry': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'school': forms.Select(attrs={'class': 'form-control border-input'}),
@@ -54,10 +56,9 @@ class StudentAddressForm(forms.ModelForm):
 class CareTakerForm(forms.ModelForm):
     class Meta:
         model = CareTaker
-        fields = ['student', 'name', 'relationship', 'contact_number', 'email']
+        fields = ['name', 'relationship', 'contact_number', 'email']
 
         widgets = {
-            'student': forms.Select(attrs={'class': 'form-control border-input'}),
             'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter caretaker name'}),
             'relationship': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter relationship'}),
             'contact_number': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter contact number'}),
@@ -68,10 +69,9 @@ class CareTakerForm(forms.ModelForm):
 class StudentGradeForm(forms.ModelForm):
     class Meta:
         model = StudentGrade
-        fields = ['student', 'class_assigned', 'assigned_date']
+        fields = ['class_assigned', 'assigned_date']
 
         widgets = {
-            'student': forms.Select(attrs={'class': 'form-control border-input'}),
             'class_assigned': forms.Select(attrs={'class': 'form-control border-input'}),
             'assigned_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
         }

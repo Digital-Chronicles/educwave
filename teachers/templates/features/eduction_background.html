@@ -1,0 +1,29 @@
+
+<!-- Education Background Table -->
+{% if education_background %}
+    <h3>Education Background</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Education Award</th>
+                <th>Institution</th>
+                <th>Graduation Year</th>
+                <th>Result Obtained</th>
+                <th>Additional Certifications</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for education in education_background %}
+            <tr>
+                <td>{{ education.education_award | default:'Not Provided' }}</td>
+                <td>{{ education.institution | default:'Not Provided' }}</td>
+                <td>{{ education.graduation_year | default:'Not Provided' }}</td>
+                <td>{{ education.result_obtained | default:'Not Provided' }}</td>
+                <td>{{ education.additional_certifications | default:'Not Provided' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="text-center m-5">No education background available.</p>
+{% endif %}

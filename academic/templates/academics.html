@@ -2,44 +2,234 @@
 
 {% block page_title %}Academics{% endblock page_title %}
 {% block academicsSetActive %}active{% endblock academicsSetActive %}
-{% block content %}
-{% include 'features/academicCards.html' %}
 
-<div class="card">
-  <div class="p-2">
-    <h4 class="ml-3">Past Papers</h4>
-    <div class="content table-responsive table-full-width">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th class="text-primary fw-semo">Subject</th>
-                    <th class="text-primary fw-semo">Date</th>
-                    <th class="text-primary fw-semo">Grade</th>
-                    <th class="text-primary fw-semo">Description</th>
-                    <th class="text-primary fw-semo">Created</th>
-                    <th class="text-primary fw-semo">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for exam in exams %}
-                <tr>
-                    <td>{{ exam.subject }}</td>
-                    <td>{{ exam.date }}</td>
-                    <td>{{ exam.grade }}</td>
-                    <td>{{ exam.description}}</td>
-                    <td>{{ exam.created}}</td>
-                    <td>
-                        <a href="{% url 'exam_detail' exam.pk %}" class="btn btn-info btn-sm">View</a>
-                        {% if exam.file %}
-                        <a href="{{ exam.file.url }}" target="_blank" class="btn btn-success btn-sm">Download PDF</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% block content %}
+<div class="row">
+    <!-- Grades Card -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="content">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="icon-big icon-warning text-center">
+                            <i class="ti-server"></i>
+                        </div>
+                    </div>
+                    <div class="col-xs-7">
+                        <div class="numbers">
+                            <p>Grades</p>
+                            <span id="gradesCount">{{ grades_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <hr />
+                    <a href="/academics/grades/" class="stats">
+                        <i class="ti-pencil-alt"></i> Manage
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Subjects Card -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="content">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="icon-big icon-success text-center">
+                            <i class="ti-ruler"></i>
+                        </div>
+                    </div>
+                    <div class="col-xs-7">
+                        <div class="numbers">
+                            <p>Subjects</p>
+                            <span id="subjectsCount">{{ subjects_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <hr />
+                    <a href="/academics/subjects/" class="stats">
+                        <i class="ti-pencil-alt"></i> Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exams Card -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="content">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="icon-big icon-danger text-center">
+                            <i class="ti-book"></i>
+                        </div>
+                    </div>
+                    <div class="col-xs-7">
+                        <div class="numbers">
+                            <p>Exams</p>
+                            <span id="examsCount">{{ exams_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <hr />
+                    <a href="/academics/exams/" class="stats">
+                        <i class="ti-pencil-alt"></i> Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topics Card -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="content">
+                <div class="row">
+                    <div class="col-xs-5">
+                        <div class="icon-big icon-info text-center">
+                            <i class="ti-menu"></i>
+                        </div>
+                    </div>
+                    <div class="col-xs-7">
+                        <div class="numbers">
+                            <p>Topics</p>
+                            <span id="topicsCount">{{ topics_count }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <hr />
+                    <a href="/academics/topics/" class="stats">
+                        <i class="ti-pencil-alt"></i> Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<div class="card">
+    <div class="p-2">
+        <div class="row align-items-center mr-3">
+            <div class="col-md-8">
+                <div class="header">
+                    <h4 class="title">Past Papers</h4>
+                    <p class="category">General Past Papers</p>
+                </div>
+            </div>
+            <div class="col-md-4 text-right p-3">
+                <button id="refreshExams" class="btn btn-primary mb-3" class="btn btn-primary btn-sm ">Refresh Exam List</button>
+            </div>
+        </div>
+        <div class="content table-responsive table-full-width">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-primary fw-semo">Subject</th>
+                        <th class="text-primary fw-semo">Date</th>
+                        <th class="text-primary fw-semo">Grade</th>
+                        <th class="text-primary fw-semo">Description</th>
+                        <th class="text-primary fw-semo">Created</th>
+                        <th class="text-primary fw-semo">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="examList">
+                    <!-- Dynamic content will be inserted here -->
+                </tbody>
+            </table>
+            <div id="paginationControls" class="text-center mt-3">
+                <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
+                <span id="currentPage">1</span>
+                <button id="nextPage" class="btn btn-secondary" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const examList = document.getElementById("examList");
+        const prevPage = document.getElementById("prevPage");
+        const nextPage = document.getElementById("nextPage");
+        const currentPage = document.getElementById("currentPage");
+
+        // Define default query parameters
+        let currentParams = {
+            page: 1,
+            search: "", // Add this if you want to integrate a search feature later
+        };
+
+        const loadExams = () => {
+            const params = new URLSearchParams(currentParams).toString();
+
+            // Fetch data from the server
+            fetch(`?${params}`, {
+                headers: {
+                    "x-requested-with": "XMLHttpRequest",
+                },
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch data");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    // Render the table rows
+                    if (data.exams.length === 0) {
+                        examList.innerHTML = `<tr><td colspan="6" class="text-center text-primary fw-bold">No exams found.</td></tr>`;
+                    } else {
+                        examList.innerHTML = data.exams
+                            .map(
+                                (exam) => `
+                                <tr>
+                                    <td>${exam.subject__name}</td>
+                                    <td>${exam.date}</td>
+                                    <td>${exam.grade || "-"}</td>
+                                    <td>${exam.description || ""}</td>
+                                    <td>${exam.created}</td>
+                                    <td>
+                                        <a href="/academics/exams/${exam.id}/" class="btn btn-info btn-sm">View</a>
+                                        ${exam.file
+                                        ? `<a href="${exam.file}" target="_blank" class="btn btn-success btn-sm">Download PDF</a>`
+                                        : ""
+                                    }
+                                    </td>
+                                </tr>`
+                            )
+                            .join("");
+                    }
+                    // Update pagination buttons
+                    prevPage.disabled = !data.has_previous;
+                    nextPage.disabled = !data.has_next;
+                    currentPage.textContent = data.current_page;
+                })
+                .catch((error) => {
+                    console.error("Error loading exams:", error);
+                });
+        };
+
+        // Pagination controls
+        prevPage.addEventListener("click", () => {
+            if (currentParams.page > 1) {
+                currentParams.page--;
+                loadExams();
+            }
+        });
+
+        nextPage.addEventListener("click", () => {
+            currentParams.page++;
+            loadExams();
+        });
+
+        // Initial load
+        loadExams();
+    });
+</script>
 {% endblock content %}

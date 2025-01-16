@@ -1,0 +1,32 @@
+<div class="card">
+    <div class="content table-responsive table-full-width">
+        {% if exams %}
+        <table class="table table-striped">
+            <thead>
+                <th class="text-primary fw-semo">Subject</th>
+                <th class="text-primary fw-bold">Exam Date</th>
+                <th class="text-primary fw-bold">Duration (Minutes)</th>
+                <th class="text-primary fw-bold">Description</th>
+                <th class="text-primary fw-bold">Grade</th>
+                <th class="text-primary fw-bold">Action</th>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr>
+                    <td>{{ exam.subject.name }}</td>
+                    <td>{{ exam.date }}</td>
+                    <td>{{ exam.duration_minutes }}</td>
+                    <td>{{ exam.description }}</td>
+                    <td>{{ exam.grade.grade_name }}</td>
+                    <td><a href="/exams/details/{{ exam.id }}/" class="btn btn-sm btn-primary">Manage</a></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <center>
+                    <p>No exams found</p>
+                </center>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>

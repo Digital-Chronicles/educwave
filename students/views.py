@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views import generic
 from .models import Student, StudentAddress, CareTaker, StudentGrade
 from .forms import StudentForm, StudentAddressForm, CareTakerForm, StudentGradeForm
@@ -7,73 +7,142 @@ from django.shortcuts import render, get_object_or_404
 from .models import Student
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.views.generic.list import ListView
 
-
-# Student List View with Pagination, Search, and Sorting
-class StudentList(generic.ListView, LoginRequiredMixin):
+class StudentList(LoginRequiredMixin, ListView):
     template_name = "students.html"
-    context_object_name = "studentlist"
-    paginate_by = 10 
-
+    paginate_by = 10
 
     def get_queryset(self):
         queryset = Student.objects.all()
-        print(queryset)
+        search_query = self.request.GET.get('search', None)
+        if search_query:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search_query) |
+                Q(last_name__icontains=search_query) |
+                Q(registration_id__icontains=search_query)
+            )
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        paginator = Paginator(queryset, self.paginate_by)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            data = {
+                "students": list(
+                    page_obj.object_list.values(
+                        "id", "registration_id", "first_name", "last_name",
+                        "current_grade", "date_of_birth", "current_status"
+                    )
+                ),
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+            }
+            return JsonResponse(data)
+        return super().get(request, *args, **kwargs)
+
+
+
 
 class RegisterStudentDetails(generic.CreateView, LoginRequiredMixin):
     model = Student
     template_name = "registerStudentDetails.html"
     form_class = StudentForm
-    success_url = '/register/student-detail/registerStudentAdress' 
+
+    def form_valid(self, form):
+        # Save the student record
+        student = form.save()
+        return redirect(f'/students/register/student-address/{student.pk}')
+
+    def get_success_url(self):
+        return redirect(f'/students/register/student-address/{self.object.pk}')
+
 
 
 class RegisterStudentAddress(generic.CreateView, LoginRequiredMixin):
     model = StudentAddress
     template_name = "registerStudentAddress.html"
     form_class = StudentAddressForm
-    success_url = '/' 
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get student using `pk` from URL
+        student_id = self.kwargs['pk']
+        student = get_object_or_404(Student, pk=student_id)
+        context['student'] = student
+        return context
+
+    def form_valid(self, form):
+        student_id = self.kwargs['pk']
+        student = get_object_or_404(Student, pk=student_id)
+
+        # Associate the address with the student
+        form.instance.student = student
+        
+        # Save the address and redirect to the next step (caretaker registration)
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return f'/students/register/student-caretaker/{self.object.student.pk}/'
 
 
-# Create view for adding a CareTaker
+
 class CareTakerCreateView(generic.CreateView, LoginRequiredMixin):
     model = CareTaker
     form_class = CareTakerForm
     template_name = 'registerStudentCaretaker.html'
-    success_url = reverse_lazy('caretaker_list')  # Redirect to the caretaker list page
 
-# Update view for editing a CareTaker
-class CareTakerUpdateView(generic.UpdateView, LoginRequiredMixin):
-    model = CareTaker
-    form_class = CareTakerForm
-    template_name = 'caretaker_form.html'
-    success_url = reverse_lazy('caretaker_list')  # Redirect to the caretaker list page
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student_id = self.kwargs.get('student_pk') 
+        context['student_id'] = student_id 
+        return context
 
-# List view to show all CareTakers
-class CareTakerListView(generic.ListView, LoginRequiredMixin):
-    model = CareTaker
-    template_name = 'caretaker_list.html'
-    context_object_name = 'caretakers'
+    def form_valid(self, form):
+        student_id = self.kwargs.get('student_pk')
+        student = get_object_or_404(Student, pk=student_id) 
 
-# Create view for assigning class to a student
+        # Associate the caretaker with the student
+        form.instance.student = student
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the student grade registration page using the student ID
+        return (f'/students/register/student-grade/{self.object.student.pk}/')
+
+
 class StudentGradeCreateView(generic.CreateView, LoginRequiredMixin):
     model = StudentGrade
     form_class = StudentGradeForm
     template_name = 'registerStudentGrade.html'
-    success_url = reverse_lazy('student_grade_list')  # Redirect to the student grade list page
 
-# Update view for editing a student's class assignment
-class StudentGradeUpdateView(generic.UpdateView, LoginRequiredMixin):
-    model = StudentGrade
-    form_class = StudentGradeForm
-    template_name = 'student_grade_form.html'
-    success_url = reverse_lazy('student_grade_list')  # Redirect to the student grade list page
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student_id = self.kwargs.get('student_pk')  
+        context['student_id'] = student_id  
+        return context
 
-# List view to show all student class assignments
-class StudentGradeListView(generic.ListView, LoginRequiredMixin):
-    model = StudentGrade
-    template_name = 'student_grade_list.html'
-    context_object_name = 'student_grades'
+    def form_valid(self, form):
+        student_id = self.kwargs.get('student_pk')
+        student = get_object_or_404(Student, pk=student_id) 
+
+        # Associate the grade with the student
+        form.instance.student = student
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the student grade list page (or another page) after successful creation
+        return "/students/"
 
 
 # Student Detail View
