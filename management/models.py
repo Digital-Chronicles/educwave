@@ -45,6 +45,7 @@ class GeneralInformation(models.Model):
 
 
 # Application Settings Table
+
 class ApplicationSetting(models.Model):
     setting_name = models.CharField(max_length=100)
     value = models.TextField()

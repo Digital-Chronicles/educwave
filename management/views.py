@@ -13,7 +13,7 @@ import numpy as np
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-
+@login_required
 def dashboard(request):
     # Fetching the counts from the database
     students_count = Student.objects.all().count()
@@ -74,7 +74,7 @@ def create_general_information(request):
     return render(request, 'create_general_information.html', {'form': form})
 
 
-
+@login_required
 def create_application_setting(request):
     if request.method == 'POST':
         form = ApplicationSettingForm(request.POST)
@@ -107,7 +107,7 @@ def create_scheduling_setting(request):
         form = SchedulingSettingForm()
     return render(request, 'create_scheduling_setting.html', {'form': form})
 
-
+@login_required
 def create_certificate_award(request):
     if request.method == 'POST':
         form = CertificateAwardForm(request.POST)

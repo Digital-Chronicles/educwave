@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import *       
 from django.urls import reverse_lazy
 from django.db.models import Q
-from academic.models import Exam
+from academic.models import Exam, StudentMark, Notes
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required 
@@ -36,7 +36,7 @@ class TeacherList(LoginRequiredMixin, ListView):
             data = {
                 "students":list(
                     page_obj.object_list.values(
-                        "registration_id", "first_name", "last_name", "gender", "year_of_entry"
+                        "id","registration_id", "first_name", "last_name", "gender", "year_of_entry"
                     )
                 ),
                 "has_next":page_obj.has_next(),
@@ -47,25 +47,20 @@ class TeacherList(LoginRequiredMixin, ListView):
             return JsonResponse(data)
         return super().get(request, *args, **kwargs)
 
-# def teachers(request):
-#     teachers = Teacher.objects.all()
-
-#     return render(request, 'teachers.html', {'teachers':teachers})
 
 # Teacher Detail
+@login_required
 def teacher_details(request, id):
-    # Fetch teacher object
     teacher = get_object_or_404(Teacher, id=id)
-
-    # Attempt to get PayrollInformation, return None if not found
     teacher_payroll = PayrollInformation.objects.filter(teacher=teacher).first()
     education_background = EducationBackground.objects.filter(teacher=teacher)
     employment_history = EmploymentHistory.objects.filter(teacher=teacher)
     next_of_kin = NextOfKin.objects.filter(teacher=teacher).first()
     current_employment = CurrentEmployment.objects.filter(teacher=teacher).first()
-    uploaded_exams = Exam.objects.filter(created_by = teacher)
+    exams = Exam.objects.filter(created_by = teacher)[:5]
+    uploaded_marks = StudentMark.objects.filter(teacher = teacher)[:5]
+    notes = Notes.objects.all().filter(created_by = teacher)[:5][:5]
 
-    # Prepare context for template rendering
     context = {
         "teacher": teacher,
         "teacher_payroll": teacher_payroll,
@@ -73,7 +68,9 @@ def teacher_details(request, id):
         "employment_history": employment_history,
         "next_of_kin": next_of_kin,
         "current_employment": current_employment,
-        "uploaded_exams":uploaded_exams,
+        "exams":exams,
+        "notes":notes,
+        "uploaded_marks":uploaded_marks,
     }
 
     return render(request, "teachersDetails.html", context)

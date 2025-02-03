@@ -11,9 +11,9 @@ class StudentAdmin(admin.ModelAdmin):
 
 # Customizing the display of the StudentAddress model
 class StudentAddressAdmin(admin.ModelAdmin):
-    list_display = ('student', 'address', 'city', 'state', 'zip_code', 'created', 'updated')
-    search_fields = ('student__first_name', 'student__last_name', 'city', 'state')
-    list_filter = ('state', 'created')
+    list_display = ('student', 'address', 'country', 'district', 'created', 'updated')
+    search_fields = ('student__first_name', 'student__last_name', 'country', 'district')
+    list_filter = ('district', 'created')
     readonly_fields = ('created', 'updated')
 
 # Customizing the display of the CareTaker model

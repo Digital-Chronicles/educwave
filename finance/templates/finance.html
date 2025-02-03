@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Academics{% endblock page_title %}
+{% block page_title %}Finance{% endblock page_title %}
 {% block financeSetActive %}active{% endblock financeSetActive %}
 {% block content %}
+
+<div>
     {% include 'features/financeCards.html' %}
-    {% include 'features/feeTransactions.html' %}
+</div>
+{% include 'features/feeTransactions.html' %}
+
 {% endblock content %}

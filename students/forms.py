@@ -44,13 +44,12 @@ class StudentForm(forms.ModelForm):
 class StudentAddressForm(forms.ModelForm):
     class Meta:
         model = StudentAddress
-        fields = ['address', 'city', 'state', 'zip_code']
+        fields = ['address', 'country', 'district']
         
         widgets = {
             'address': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your address', 'rows': 4}),
             'city': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your city'}),
             'state': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your state'}),
-            'zip_code': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your zip code'}),
         }
 
 class CareTakerForm(forms.ModelForm):

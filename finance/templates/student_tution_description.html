@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block financeSetActive %}active{% endblock financeSetActive %}
+{% block content %}
+<div class="m-2 mb-3">
+    <a href="/finance/register/tuition/description/">
+        <button type="button" class="btn btn primary"> Record Tuition Description</button>
+    </a>
+    <br>
+</div>
+
+{% include 'features/tuition_descriptionlist.html' %}
+
+{% endblock content %}

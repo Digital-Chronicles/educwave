@@ -51,20 +51,38 @@ class ExamAdmin(admin.ModelAdmin):
     list_filter = ('date', 'subject', 'grade', 'created_by')
     ordering = ['date', 'subject']
     readonly_fields = ('created', 'updated')
-    date_hierarchy = 'date'  # Enables hierarchical navigation by date
+    date_hierarchy = 'date' 
 
 # Notes Model
 @admin.register(Notes)
 class NotesAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'created_by', 'grade', 'created', 'updated')  # Fields to display in the list view
-    list_filter = ('subject', 'grade', 'created_by')  # Filter options on the right
-    search_fields = ('subject__name', 'created_by__name', 'notes_content')  # Search fields
-    ordering = ('-created',)  # Default ordering by creation date descending
-    fields = ('subject', 'topics', 'notes_file', 'notes_content', 'description', 'grade', 'created_by')  # Form fields to display in the admin form
-    filter_horizontal = ('topics',)  # Make 'topics' many-to-many field more user-friendly
-    readonly_fields = ('created', 'updated')  # Make 'created' and 'updated' fields read-only
+    list_display = ('subject', 'created_by', 'grade', 'created', 'updated')
+    list_filter = ('subject', 'grade', 'created_by')  
+    search_fields = ('subject__name', 'created_by__name', 'notes_content') 
+    ordering = ('-created',)
+    fields = ('subject', 'topics', 'notes_file', 'notes_content', 'description', 'grade', 'created_by') 
+    filter_horizontal = ('topics',)  
+    readonly_fields = ('created', 'updated') 
 
     class Media:
         css = {
-            'all': ('notes_admin.css',)  # Optional: Custom CSS for styling the admin if needed
+            'all': ('notes_admin.css',) 
         }
+
+
+@admin.register(StudentMark)
+class StudentMarksAdmin(admin.ModelAdmin):
+    list_display = ('student', 'subject', 'teacher', 'marks', 'created', 'updated')
+    list_filter = ('subject', 'teacher', 'created')
+    search_fields = ('student__name', 'subject__name', 'teacher__name')
+    date_hierarchy = 'created'
+    ordering = ('-created',)
+
+
+@admin.register(TermExamSession)
+class TermsAdmin(admin.ModelAdmin):
+    list_display = ('term_name', 'start_date', 'end_date', 'created_by', 'created', 'updated')
+    list_filter = ('start_date', 'end_date', 'created_by')
+    search_fields = ('term_name', 'created_by__name')
+    date_hierarchy = 'start_date'
+    ordering = ['term_name']

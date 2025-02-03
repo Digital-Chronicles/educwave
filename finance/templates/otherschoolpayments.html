@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block financeSetActive %}active{% endblock financeSetActive %}
+{% block content %}
+<div class="m-2">
+    <a href="/finance/register/otherschool/payments/">
+        <button type="button" class="btn btn primary">Register School Payments</button></a>
+    <a href="/finance/register/transport/">
+            <button type="button" class="btn btn primary">Transport Fee</button></a>   
+</div>
+
+
+{% include  'features/schoolpaymentlist.html' %}
+
+{% endblock content %}

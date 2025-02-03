@@ -1,7 +1,11 @@
 from django.db import models
 from teachers.models import *
-from ckeditor.fields import RichTextField
+from django_ckeditor_5.fields import CKEditor5Field
 from django.core.validators import FileExtensionValidator
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
 
 
 # Subjects Table
@@ -18,7 +22,7 @@ class Subject(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return self.name
+        return f'{self.name} - {self.curriculum.name}'
 
 # Curriculum Table
 class Curriculum(models.Model):
@@ -101,7 +105,7 @@ class Notes(models.Model):
         blank=True,
         validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'pptx'])]
     )
-    notes_content = RichTextField()
+    notes_content = CKEditor5Field('Text', config_name='extends')
     description = models.TextField(null=True, blank=True)
     grade = models.ForeignKey('Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exam")
     created_by = models.ForeignKey(Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exam")
@@ -116,3 +120,50 @@ class Notes(models.Model):
 
     def __str__(self):
         return f"{self.subject}"
+    
+
+class TermExamSession(models.Model):
+    term_name = models.CharField(max_length=100)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_by = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, related_name="terms")
+    created = models.DateField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
+
+    class Meta:
+        db_table = "term"
+        db_table_comment = "This includes terms data"
+        ordering = ["term_name"]
+
+    def __str__(self):
+        return self.term_name
+    
+
+class StudentMark(models.Model):
+    student = models.ForeignKey("students.Student", on_delete=models.CASCADE, related_name="marks", db_index=True)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="marks", db_index=True)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="marks", db_index=True)
+    term = models.ForeignKey(TermExamSession, on_delete=models.CASCADE, related_name="marks", db_index=True )
+    marks = models.PositiveIntegerField( validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Marks must be between 0 and 100.")
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "student_marks"
+        db_table_comment = "This includes student marks data"
+        order_with_respect_to = "term"
+        constraints = [
+            models.UniqueConstraint(fields=["student", "subject", "term"], name="unique_student_subject_term")
+        ]
+        indexes = [
+            models.Index(fields=["student", "subject", "term"]),
+            models.Index(fields=["term", "subject"]),
+        ]
+
+    def __str__(self):
+        return f"{self.student.first_name} {self.student.last_name} - {self.subject.name} - {self.term.term_name}: {self.marks} Marks"
+
+    def clean(self):
+        """Ensure marks are within an acceptable range (0-100)."""
+        if not (0 <= self.marks <= 100):
+            raise ValidationError("Marks should be between 0 and 100.")

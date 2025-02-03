@@ -47,7 +47,8 @@ class FeeTransactionAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Payment Details", {
             "fields": (
-                'student', 'amount_paid', 'payment_method', 'payment_reference', 'receipt_url', 'remarks',
+                'student', 'amount_paid', 'payment_method', 'payment_reference', 'receipt_url',
+                'remarks',
             ),
         }),
         ("Status & Dates", {

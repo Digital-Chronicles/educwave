@@ -1,0 +1,30 @@
+<div class="card">
+    <div class="content table-responsive table-full-width">
+        {% if uploaded_marks %}
+        <table class="table table-striped">
+            <thead>
+                <th class="text-primary fw-semo">Student</th>
+                <th class="text-primary fw-bold">Subject</th>
+                <th class="text-primary fw-bold">Term</th>
+                <th class="text-primary fw-bold">Marks</th>
+                <th class="text-primary fw-bold">Created</th>
+            </thead>
+            <tbody>
+                {% for mark in uploaded_marks %}
+                <tr>
+                    <td>{{ mark.student.first_name }} {{ mark.student.last_name }}</td>
+                    <td>{{ mark.subject.name }}</td>
+                    <td>{{ mark.term.term_name }}</td>
+                    <td>{{ mark.marks }}</td>
+                    <td>{{ mark.created }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <center>
+                    <p>No marks found</p>
+                </center>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
