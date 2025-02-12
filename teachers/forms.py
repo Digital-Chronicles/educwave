@@ -8,12 +8,12 @@ class TeacherForm(forms.ModelForm):
             'user','year_of_entry','first_name','last_name','gender','profile_picture','school'
         ]
         widgets={
-            'user': forms.Select(attrs={'class':'form-select border-input'}),
+            'user': forms.Select(attrs={'class':'form-control border-input'}),
             'year_of_entry': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'gender': forms.Select(attrs={'class': 'form-select border-input'}),
-            'school': forms.Select(attrs={'class':'form-select border-input'}),
+            'gender': forms.Select(attrs={'class': 'form-control border-input'}),
+            'school': forms.Select(attrs={'class':'form-control border-input'}),
             'profile_picture': forms.URLInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter profile picture URL'}),
             
     }
@@ -25,12 +25,12 @@ class PayrollInformationForm(forms.ModelForm):
         fields = ['salary', 'bank_name', 'account_number', 'tax_identification_number', 'nssf_number', 'payment_frequency']
         
         widgets = {
-            'salary': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter Salary'}),
-            'bank_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Bank Name'}),
-            'account_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Account Number'}),
-            'tax_identification_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter TIN'}),
-            'nssf_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter NSSF Number'}),
-            'payment_frequency': forms.Select(attrs={'class': 'form-select'}),
+            'salary': forms.NumberInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter Salary'}),
+            'bank_name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter Bank Name'}),
+            'account_number': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter Account Number'}),
+            'tax_identification_number': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter TIN'}),
+            'nssf_number': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter NSSF Number'}),
+            'payment_frequency': forms.Select(attrs={'class': 'form-control border-input'}),
         }
 
 class EducationBackgroundForm(forms.ModelForm):

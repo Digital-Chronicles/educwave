@@ -11,6 +11,8 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView
+
 
 class StudentList(LoginRequiredMixin, ListView):
     template_name = "students.html"
@@ -50,31 +52,23 @@ class StudentList(LoginRequiredMixin, ListView):
         return super().get(request, *args, **kwargs)
 
 
-
-
-class RegisterStudentDetails(generic.CreateView, LoginRequiredMixin):
+class RegisterStudentDetails(LoginRequiredMixin, CreateView):
     model = Student
     template_name = "registerStudentDetails.html"
     form_class = StudentForm
 
     def form_valid(self, form):
-        # Save the student record
         student = form.save()
-        return redirect(f'/students/register/student-address/{student.pk}')
-
-    def get_success_url(self):
-        return redirect(f'/students/register/student-address/{self.object.pk}')
+        return redirect(f'/students/register/student-address/{student.pk}/')
 
 
-
-class RegisterStudentAddress(generic.CreateView, LoginRequiredMixin):
+class RegisterStudentAddress(LoginRequiredMixin, CreateView):
     model = StudentAddress
     template_name = "registerStudentAddress.html"
     form_class = StudentAddressForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Get student using `pk` from URL
         student_id = self.kwargs['pk']
         student = get_object_or_404(Student, pk=student_id)
         context['student'] = student
@@ -83,67 +77,53 @@ class RegisterStudentAddress(generic.CreateView, LoginRequiredMixin):
     def form_valid(self, form):
         student_id = self.kwargs['pk']
         student = get_object_or_404(Student, pk=student_id)
-
-        # Associate the address with the student
         form.instance.student = student
-        
-        # Save the address and redirect to the next step (caretaker registration)
         return super().form_valid(form)
-    
+
     def get_success_url(self):
         return f'/students/register/student-caretaker/{self.object.student.pk}/'
 
 
-
-class CareTakerCreateView(generic.CreateView, LoginRequiredMixin):
+class CareTakerCreateView(LoginRequiredMixin, CreateView):
     model = CareTaker
     form_class = CareTakerForm
     template_name = 'registerStudentCaretaker.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        student_id = self.kwargs.get('student_pk') 
-        context['student_id'] = student_id 
+        student_id = self.kwargs.get('student_pk')
+        context['student_id'] = student_id
         return context
 
     def form_valid(self, form):
         student_id = self.kwargs.get('student_pk')
-        student = get_object_or_404(Student, pk=student_id) 
-
-        # Associate the caretaker with the student
+        student = get_object_or_404(Student, pk=student_id)
         form.instance.student = student
-
         return super().form_valid(form)
 
     def get_success_url(self):
-        # Redirect to the student grade registration page using the student ID
-        return (f'/students/register/student-grade/{self.object.student.pk}/')
+        return f'/students/register/student-grade/{self.object.student.pk}/'
 
 
-class StudentGradeCreateView(generic.CreateView, LoginRequiredMixin):
+class StudentGradeCreateView(LoginRequiredMixin, CreateView):
     model = StudentGrade
     form_class = StudentGradeForm
     template_name = 'registerStudentGrade.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        student_id = self.kwargs.get('student_pk')  
-        context['student_id'] = student_id  
+        student_id = self.kwargs.get('student_pk')
+        context['student_id'] = student_id
         return context
 
     def form_valid(self, form):
         student_id = self.kwargs.get('student_pk')
-        student = get_object_or_404(Student, pk=student_id) 
-
-        # Associate the grade with the student
+        student = get_object_or_404(Student, pk=student_id)
         form.instance.student = student
-
         return super().form_valid(form)
 
     def get_success_url(self):
-        # Redirect to the student grade list page (or another page) after successful creation
         return "/students/"
-
 
 # Student Detail View
 @login_required(login_url='login')

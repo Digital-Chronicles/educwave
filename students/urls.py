@@ -8,7 +8,6 @@ urlpatterns = [
     path("register/student-address/<int:pk>/", RegisterStudentAddress.as_view(), name="register_student_address"),
     path("register/student-caretaker/<int:student_pk>/", CareTakerCreateView.as_view(), name="register_student_caretaker"),
     path("register/student-grade/<int:student_pk>/", StudentGradeCreateView.as_view(), name="register_student_grade"),
-
     # Student Caretakers
     path('caretaker/add/', CareTakerCreateView.as_view(), name='caretaker_create'),
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import *
 from django.views import generic 
 from django.views.generic.list import ListView
@@ -84,35 +84,113 @@ class RegisterTeacherDetails(LoginRequiredMixin, generic.CreateView):
     template_name = 'registerteacherdetails.html'
     form_class = TeacherForm
 
-    def get_success_url(self):
-        return reverse_lazy('teacher_payroll') + f'?teacher_id={self.object.id}'
+    def form_valid(self, form):
+        teacher = form.save()
+        return redirect(f'/teachers/details/{teacher.pk}/') 
     
 class Teacher_Payroll(LoginRequiredMixin, generic.CreateView):
     model = PayrollInformation
     template_name = 'payroll.html'
     form_class = PayrollInformationForm
-    success_url = reverse_lazy('teacher_educationbackground')  # Redirect to education background next
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        teacher_id = self.kwargs['pk']
+        teacher = get_object_or_404(Teacher, pk=teacher_id)
+        context['teacher'] = teacher
+        return context
+
+    def form_valid(self, form):
+        # Associate the payroll information with the correct teacher
+        teacher_id = self.request.GET.get('teacher_id')
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        form.instance.teacher = teacher
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the education background registration page with the teacher_id
+        return redirect(f'/teachers/register/educatio_nbackground/{self.object.teacher.id}')
 
 class Teacher_EducationBackground(LoginRequiredMixin, generic.CreateView):
     model = EducationBackground
     template_name = 'educationback.html'
     form_class = EducationBackgroundForm
-    success_url = reverse_lazy('teacher_employmenthistory')  # Redirect to employment history next
+
+    def get_initial(self):
+        # Retrieve teacher_id from query parameters
+        teacher_id = self.request.GET.get('teacher_id')
+        return {'teacher': teacher_id}
+
+    def form_valid(self, form):
+        # Associate the education background with the correct teacher
+        teacher_id = self.request.GET.get('teacher_id')
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        form.instance.teacher = teacher
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the employment history registration page with the teacher_id
+        return reverse_lazy('teacher_employmenthistory') + f'?teacher_id={self.object.teacher.id}'
 
 class Teacher_EmploymentHistory(LoginRequiredMixin, generic.CreateView):
     model = EmploymentHistory
     template_name = 'employmenthistory.html'
     form_class = EmploymentHistoryForm
-    success_url = reverse_lazy('teacher_nextofkin')  # Redirect to next of kin next
+
+    def get_initial(self):
+        # Retrieve teacher_id from query parameters
+        teacher_id = self.request.GET.get('teacher_id')
+        return {'teacher': teacher_id}
+
+    def form_valid(self, form):
+        # Associate the employment history with the correct teacher
+        teacher_id = self.request.GET.get('teacher_id')
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        form.instance.teacher = teacher
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the next of kin registration page with the teacher_id
+        return reverse_lazy('teacher_nextofkin') + f'?teacher_id={self.object.teacher.id}'
 
 class Teacher_Next_of_Kin(LoginRequiredMixin, generic.CreateView):
     model = NextOfKin
     template_name = 'nextofkin.html'
     form_class = NextOfKinForm
-    success_url = reverse_lazy('teacher_currentemployment')  # Redirect to current employment next
+
+    def get_initial(self):
+        # Retrieve teacher_id from query parameters
+        teacher_id = self.request.GET.get('teacher_id')
+        return {'teacher': teacher_id}
+
+    def form_valid(self, form):
+        # Associate the next of kin with the correct teacher
+        teacher_id = self.request.GET.get('teacher_id')
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        form.instance.teacher = teacher
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the current employment registration page with the teacher_id
+        return reverse_lazy('teacher_currentemployment') + f'?teacher_id={self.object.teacher.id}'
 
 class Teacher_Current_Employment(LoginRequiredMixin, generic.CreateView):
     model = CurrentEmployment
     template_name = 'currentemployment.html'
     form_class = CurrentEmploymentForm
-    success_url = reverse_lazy('teachers')  # Redirect back to teachers overview or home after the last step
+
+    def get_initial(self):
+        # Retrieve teacher_id from query parameters
+        teacher_id = self.request.GET.get('teacher_id')
+        return {'teacher': teacher_id}
+
+    def form_valid(self, form):
+        # Associate the current employment with the correct teacher
+        teacher_id = self.request.GET.get('teacher_id')
+        teacher = get_object_or_404(Teacher, id=teacher_id)
+        form.instance.teacher = teacher
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # Redirect to the teachers list page after completing the registration
+        return reverse_lazy('teachers')

@@ -1,14 +1,13 @@
-<div class="container mt-5">
-    <div class="card">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <div class="header">
+<div class="card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="header">
                     <h4 class="title">Teacher List</h4>
                     <p class="category">General Teacher List</p>
                 </div>
             </div>
             <div class="col-md-4 text-right">
-                <a href="teachers/register/teacher/details/" class="btn btn-primary btn-sm mt-3 mr-5 p-3">Register New Teacher</a>
+                <a href="/teachers/register/teacher/details/" class="btn btn-primary btn-sm mt-3 mr-5 p-3">Register New Teacher</a>
             </div>
         </div>
         <!-- Search Form -->
@@ -28,7 +27,6 @@
                         <th class="text-primary fw-bold">First Name</th>
                         <th class="text-primary fw-bold">Last Name</th>
                         <th class="text-primary fw-bold">Gender</th>
-                        <th class="text-primary fw-bold">Registered By</th>
                         <th class="text-primary fw-bold">Action</th>
                     </tr>
                 </thead>
@@ -90,7 +88,6 @@
                                         <td>${teacher.first_name}</td>
                                         <td>${teacher.last_name}</td>
                                         <td>${teacher.gender || "-"}</td>
-                                        <td>${teacher.registered_by || "-"}</td>
                                         <td>
                                             <a href="/teachers/details/${teacher.id}/" class="btn btn-sm btn-primary">Manage</a>
                                         </td>
