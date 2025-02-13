@@ -4,18 +4,20 @@ from django.urls import reverse
 from django.views import generic
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
-from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm
+from django.contrib.auth.decorators import login_required
+from .models import Grade, Subject, Curriculum, Topic, Exam, Notes, StudentMark
+from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm, StudentMarksForm
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 
-
+@login_required
 def academics(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Process AJAX request
         exams = list(Exam.objects.all().order_by('subject').values(
             'subject__name', 'date', 'duration_minutes', 'description', 'id', 'grade', 'created'
         ))
+        
         data = {
             'grades_count': Grade.objects.all().count(),
             'subjects_count': Subject.objects.all().count(),
@@ -55,22 +57,14 @@ class ExamList(ListView, LoginRequiredMixin):
 
     
 # View details of a specific exam
+@login_required
 def exam_detail(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     return render(request, 'exam_detail.html', {'exam': exam})
 
-# Add a new exam
-def exam_create(request):
-    if request.method == 'POST':
-        form = ExamForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('exam_list'))
-    else:
-        form = ExamForm()
-    return render(request, 'exams/exam_form.html', {'form': form})
 
 # Edit an exam
+@login_required
 def exam_update(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     if request.method == 'POST':
@@ -83,6 +77,7 @@ def exam_update(request, pk):
     return render(request, 'exams/exam_form.html', {'form': form})
 
 # Delete an exam
+@login_required
 def exam_delete(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     if request.method == 'POST':
@@ -90,33 +85,36 @@ def exam_delete(request, pk):
         return HttpResponseRedirect(reverse('exam_list'))
     return render(request, 'exams/exam_confirm_delete.html', {'exam': exam})
 
+@login_required
 def grades(requests):
     grades_list = Grade.objects.all()
     return render(requests, "grades.html", {"grades_list": grades_list})
 
+@login_required
 def subjects(requests):
     subject_list = Subject.objects.all()
     return render(requests, "subjects.html", {"subject_list":subject_list})
 
-class RegisterGrade(generic.CreateView):
+
+class RegisterGrade(generic.CreateView, LoginRequiredMixin):
     model = Grade
     template_name = "registerGrade.html"
     form_class = GradeForm
     success_url = "/"
 
-class RegisterSubject(generic.CreateView):
+class RegisterSubject(generic.CreateView, LoginRequiredMixin):
     model = Subject
     template_name = "registerSubject.html"
     form_class = SubjectForm
     success_url = "/"
 
-class RegisterCurriculum(generic.CreateView):
+class RegisterCurriculum(generic.CreateView, LoginRequiredMixin):
     model = Curriculum
     template_name = "registerCurriculum.html"
     form_class = CurriculumForm
     success_url = '/'
 
-class RegisterTopic(generic.CreateView):
+class RegisterTopic(generic.CreateView, LoginRequiredMixin):
     model = Topic
     template_name = "registerTopic.html"
     form_class = TopicForm
@@ -128,7 +126,11 @@ class UploadExamView(generic.CreateView):
     form_class = ExamForm
     success_url = '/'
 
-class UploadNotesView(generic.CreateView):
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user.teacher
+        return super().form_valid(form)
+
+class UploadNotesView(generic.CreateView, LoginRequiredMixin):
     model = Notes
     form_class = NotesForm
     template_name = 'uploadNotes.html'
@@ -137,3 +139,21 @@ class UploadNotesView(generic.CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user 
         return super().form_valid(form)
+    
+class RegisterStudentMarksView(LoginRequiredMixin, generic.CreateView):
+    model = StudentMark
+    form_class = StudentMarksForm
+    template_name = "registerStudentMarks.html"
+
+    def form_valid(self, form):
+        """Assign the logged-in teacher before saving."""
+        form.instance.teacher = self.request.user.teacher  # Ensure `Teacher` is linked to `User`
+        self.object = form.save()
+        return JsonResponse({"message": "Marks recorded successfully!"}, status=200)
+
+    def form_invalid(self, form):
+        """Return JSON response for invalid form submission."""
+        return JsonResponse(
+            {"error": "Failed to save marks. Please check the form data."}, 
+            status=400
+        )

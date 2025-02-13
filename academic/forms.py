@@ -1,7 +1,7 @@
 from django import forms
-from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
-from ckeditor.widgets import CKEditorWidget
+from .models import Grade, Subject, Curriculum, Topic, Exam, Notes, StudentMark
 from django.core.exceptions import ValidationError
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 # Form for Grade model
 class GradeForm(forms.ModelForm):
@@ -74,7 +74,7 @@ class TopicForm(forms.ModelForm):
 class ExamForm(forms.ModelForm):
     class Meta:
         model = Exam
-        fields = ['subject', 'date', 'duration_minutes', 'file', 'description', 'grade', 'created_by']
+        fields = ['subject', 'date', 'duration_minutes', 'file', 'description', 'grade']
         labels = {
             'subject': 'Subject',
             'date': 'Exam Date',
@@ -82,7 +82,6 @@ class ExamForm(forms.ModelForm):
             'file': 'Upload Exam File',
             'description': 'Description',
             'grade': 'Grade',
-            'created_by': 'Created By'
         }
         widgets = {
             'subject': forms.Select(attrs={'class': 'form-control border-input'}),
@@ -91,7 +90,6 @@ class ExamForm(forms.ModelForm):
             'file': forms.ClearableFileInput(attrs={'class': 'form-control border-input'}),
             'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide additional details', 'rows': 4}),
             'grade': forms.Select(attrs={'class': 'form-control border-input'}),
-            'created_by': forms.Select(attrs={'class': 'form-control border-input'}),
         }
         help_texts = {
             'file': 'You can upload PDF, DOCX, or PPTX files.'
@@ -104,7 +102,7 @@ class ExamForm(forms.ModelForm):
 class NotesForm(forms.ModelForm):
     # Use CKEditorWidget for notes_content
     notes_content = forms.CharField(
-        widget=CKEditorWidget(attrs={'class': 'form-control border-input'}),
+        widget=CKEditor5Widget(attrs={'class': 'form-control border-input'}),
         label='Notes Content',
     )
 
@@ -151,3 +149,16 @@ class NotesForm(forms.ModelForm):
             if file_extension not in allowed_extensions:
                 raise ValidationError('Only PDF, DOCX, or PPTX files are allowed.')
         return notes_file
+    
+
+class StudentMarksForm(forms.ModelForm):
+    class Meta:
+        model = StudentMark
+        fields = ['student', 'subject', 'teacher', "term", 'marks']
+        widgets = {
+            'student': forms.Select(attrs={'class': 'form-control border-input'}),
+            'subject': forms.Select(attrs={'class': 'form-control border-input'}),
+            'teacher': forms.Select(attrs={'class': 'form-control border-input'}),
+            'term': forms.Select(attrs={'class': 'form-control border-input'}),
+            'marks': forms.NumberInput(attrs={'class': 'form-control border-input'}),
+        }

@@ -1,9 +1,35 @@
-# Ignore Python virtual environment
-venv/
-env/
+# Python compiled files
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
 
-# Ignore Django migration files
-*/migrations/
+# Django secret keys
+.env
+*.env
 
-# Ignore SQLite database file
+# Database
 db.sqlite3
+
+# Django migrations
+*.log
+*.pot
+*.pyc
+*.pyo
+*.so
+
+# Virtual Environment
+venv/
+.env/
+.envrc
+*.env
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*~
+
+# System files
+.DS_Store
+Thumbs.db

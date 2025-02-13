@@ -3,12 +3,9 @@ from . import views
 
 urlpatterns = [
     path("", views.academics, name="academics"),
-
-    # Grades
     path('grades/', views.grades, name="grades"),
     path('exams/', views.ExamList.as_view(), name = "exams"),
     path('exams/<int:pk>/', views.exam_detail, name='exam_detail'),
-    path('exams/create/', views.exam_create, name='exam_create'),
     path('exams/<int:pk>/edit/', views.exam_update, name='exam_update'),
     path('exams/<int:pk>/delete/', views.exam_delete, name='exam_delete'),
     path('subjects/', views.subjects, name="subjects"),
@@ -18,5 +15,5 @@ urlpatterns = [
     path('register/topic/', views.RegisterTopic.as_view(), name='register_topic'),
     path('upload/exam/', views.UploadExamView.as_view(), name='upload_exam'),
     path('upload/notes/', views.UploadNotesView.as_view(), name='upload_notes'),
-
+    path('upload/marks/', views.RegisterStudentMarksView.as_view(), name='register-student-marks'),
 ]
