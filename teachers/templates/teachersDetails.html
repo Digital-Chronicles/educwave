@@ -17,7 +17,8 @@
             <div class="col-lg-4 col-md-5">
                 <div class="card card-user">
                     <div class="image">
-                        <img src="{{ teacher.profile_picture | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}" alt="Background Image" />
+                        <img src="{{ teacher.profile_picture | default:'https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg' }}"
+                            alt="Background Image" />
                     </div>
                     <div class="content">
                         <div class="author">
@@ -55,22 +56,61 @@
                         <hr>
                         <div class="row d-flex flex-wrap justify-content-center text-center">
                             <div>
-                                <a class="btn btn-primary  my-1" style="font-weight: bolder;" href="/academics/upload/notes/">Upload Notes</a>
+                                <a class="btn btn-primary  my-1" style="font-weight: bolder;"
+                                    href="/academics/upload/notes/">Upload Notes</a>
                             </div>
                             <div>
-                                <a class="btn btn-primary my-1" style="font-weight: bolder;" href="/academics/upload/exam/">Upload Exams</a>
+                                <a class="btn btn-primary my-1" style="font-weight: bolder;"
+                                    href="/academics/upload/exam/">Upload Exams</a>
                             </div>
                             <div>
-                                <a class="btn btn-primary my-1" style="font-weight: bolder;" href="#">Upload Marks</a>
+                                <a class="btn btn-primary my-1" style="font-weight: bolder;"
+                                    href="/academics/upload/marks/">Upload Marks</a>
                             </div>
                         </div>
                     </div>
-                </div>                
+                </div>
             </div>
 
             <!-- Right Column: Teacher General Information -->
             <div class="col-lg-8 col-md-7">
-                
+                <div class="card">
+                    <div class="header p-3">
+                        <h4 class="title">Register Teacher Information</h4>
+                    </div>
+                    <div class="row px-3 py-2">
+                        <div class="col-md-6">
+                            <a href="/teachers/register/teacher/payroll/{{ teacher.id }}"
+                                class="btn btn-primary btn-block mb-2">
+                                Add Payroll Information
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/teachers/register/teacher/education_background/{{ teacher.id }}"
+                                class="btn btn-primary btn-block mb-2">
+                                Add Education Background
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/teachers/register/teacher/employmenthistory/{{ teacher.id }}"
+                                class="btn btn-primary btn-block mb-2">
+                                Add Employment History
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/teachers/register/teacher/nextofkin/{{ teacher.id }}"
+                                class="btn btn-primary btn-block mb-2">
+                                Add Next of Kin
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="/teachers/register/teacher/currentemployment/{{ teacher.id }}"
+                                class="btn btn-primary btn-block mb-2">
+                                Add Current Employment
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="header">
                         <h4 class="title">Teacher Information</h4>
@@ -78,28 +118,33 @@
                     <div class="content">
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#teacher-details" role="tab">Teacher Details</a>
+                                <a class="nav-link active" data-toggle="tab" href="#teacher-details" role="tab">Teacher
+                                    Details</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#payroll-info" role="tab">Payroll Information</a>
+                                <a class="nav-link" data-toggle="tab" href="#payroll-info" role="tab">Payroll
+                                    Information</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#education-background" role="tab">Education Background</a>
+                                <a class="nav-link" data-toggle="tab" href="#education-background" role="tab">Education
+                                    Background</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#employment-history" role="tab">Employment History</a>
+                                <a class="nav-link" data-toggle="tab" href="#employment-history" role="tab">Employment
+                                    History</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#next-of-kin" role="tab">Next of Kin</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#current-employment" role="tab">Current Employment</a>
+                                <a class="nav-link" data-toggle="tab" href="#current-employment" role="tab">Current
+                                    Employment</a>
                             </li>
                         </ul>
                         <div class="tab-content">
                             <!-- Teacher Details Tab -->
                             <div class="tab-pane active" id="teacher-details" role="tabpanel">
-                               {% include 'features/teacher_general_details.html' %}
+                                {% include 'features/teacher_general_details.html' %}
                             </div>
 
                             <!-- Payroll Information Tab -->
@@ -130,8 +175,8 @@
                     </div>
                 </div>
             </div>
-             <!-- Right Column: Teacher General Information -->
-             <div class="col-lg-8 col-md-7">
+            <!-- Right Column: Teacher General Information -->
+            <div class="col-lg-8 col-md-7">
                 <div class="card">
                     <div class="header">
                         <h4 class="title">Teacher Uploads</h4>
@@ -139,7 +184,8 @@
                     <div class="content">
                         <ul class="nav nav-tabs" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#student-marks" role="tab">Uploaded Student Marks</a>
+                                <a class="nav-link active" data-toggle="tab" href="#student-marks" role="tab">Uploaded
+                                    Student Marks</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#notes" role="tab">Uploaded Notes</a>
@@ -147,12 +193,12 @@
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#exams" role="tab">Uploaded Exams</a>
                             </li>
-                           
+
                         </ul>
                         <div class="tab-content">
                             <!-- Student Grades -->
                             <div class="tab-pane active" id="student-marks" role="tabpanel">
-                               {% include 'features/teacher_general_details.html' %}
+                                {% include 'features/teacher_general_details.html' %}
                             </div>
 
                             <!-- Notes -->

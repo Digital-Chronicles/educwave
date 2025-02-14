@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
+@login_required
 def dashboard(request):
     # Fetching the counts from the database
     students_count = Student.objects.all().count()

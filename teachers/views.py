@@ -36,7 +36,7 @@ class TeacherList(LoginRequiredMixin, ListView):
             data = {
                 "students":list(
                     page_obj.object_list.values(
-                        "registration_id", "first_name", "last_name", "gender", "year_of_entry"
+                        "id", "registration_id", "first_name", "last_name", "gender", "year_of_entry"
                     )
                 ),
                 "has_next":page_obj.has_next(),

@@ -3,19 +3,6 @@
 {% block content %}
 <div class="card">
     <div class="m-2 p-5 my-2">
-        <!-- Progress Bar Section -->
-        <div class="progress mb-3" aria-label="Form Completion Progress">
-            <div 
-                class="progress-bar" 
-                role="progressbar" 
-                style="width: {{ progress|default:25 }}%; background-color: #991b1b;"
-                aria-valuenow="{{ progress|default:25 }}" 
-                aria-valuemin="0" 
-                aria-valuemax="100">
-                {{ progress|default:25 }}%
-            </div>
-        </div>
-
         <!-- Title Section -->
         <div class="mb-4">
             <h5 class="text-center fw-bold">School General Information</h5>
