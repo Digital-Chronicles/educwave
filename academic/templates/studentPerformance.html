@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Student Performance{% endblock page_title %}
+{% block academicsSetActive %}active{% endblock academicsSetActive %}
+{% block content %}
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="header mb-3">
+            <h4 class="title text-dark fw-bold">Student Marks</h4>
+            <p class="category text-muted">Marks categorized by terms</p>
+        </div>
+        <div class="content table-responsive">
+            {% if marks_by_term %}
+            {% for term, marks in marks_by_term.items %}
+            <div class="row align-items-center mb-3 px-3 py-2 bg-light rounded">
+                <div class="col-md-6">
+                    <h5 class="text-primary fw-bold">{{ term }}</h5>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="col-md-6">
+                        <a href="/academics/student/{{ student.id }}/report/{{ marks.term.id }}/" class="btn btn btn-primary">View Report</a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/academics/print/{{ student.id }}/{{ marks.term.id }}/" class="btn btn btn-primary">Print Results</a>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover border">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th>Subject</th>
+                            <th>Teacher</th>
+                            <th>Marks</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mark in marks %}
+                        <tr>
+                            <td class="fw-medium">{{ mark.subject.name }}</td>
+                            <td>{{ mark.teacher.first_name }} {{ mark.teacher.last_name }}</td>
+                            <td class="fw-bold">{{ mark.marks }}</td>
+                            <td class="fw-bold">
+                                <span class="text-primary">{{ mark.get_grade }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-info text-center fw-bold">No Marks found.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

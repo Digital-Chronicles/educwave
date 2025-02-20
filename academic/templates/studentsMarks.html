@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block page_title %}Academics{% endblock page_title %}
+{% block academicsSetActive %}active{% endblock academicsSetActive %}
+
+{% block content %}
+<style>
+    .marks-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .marks-table th,
+    .marks-table td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .marks-table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+    }
+
+    .marks-table tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    .marks-table tr:hover {
+        background-color: #f0f0f0;
+    }
+
+    .student-name {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .term-name {
+        color: #666;
+    }
+
+    .mark-value {
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .total-column {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .search-filters {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .filter-group {
+        flex: 1;
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: 5px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .filter-input:focus {
+        border-color: #4a90e2;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(74,144,226,0.2);
+    }
+
+    .btn-filter {
+        padding: 8px 20px;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-filter:hover {
+        background-color: #357abd;
+    }
+
+    .stats-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        flex: 1;
+        background: white;
+        padding: 15px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .stat-title {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4a90e2;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        gap: 10px;
+    }
+
+    .pagination a {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #4a90e2;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .pagination a:hover {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    .current {
+        padding: 8px 12px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        font-size: 18px;
+    }
+</style>
+
+<div class="card">
+    <div class="header">
+        <h4 class="title">Result List</h4>
+        <p class="category">General Student Results List</p>
+    </div>
+
+    <!-- Search and Filters Section -->
+    <div class="search-filters">
+        <form method="GET" action="">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Search Student</label>
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}"
+                           class="filter-input" 
+                           placeholder="Name or Registration ID">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Term</label>
+                    <select name="term" class="filter-input">
+                        <option value="">All Terms</option>
+                        {% for term in terms %}
+                            <option value="{{ term.id }}" 
+                                    {% if term.id|stringformat:"s" == current_term %}selected{% endif %}>
+                                {{ term.term_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select name="sort" class="filter-input">
+                        <option value="term" {% if sort_by == 'term' %}selected{% endif %}>Term</option>
+                        <option value="reg_id" {% if sort_by == 'reg_id' %}selected{% endif %}>Registration ID</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Student Name</option>
+                        <option value="total" {% if sort_by == 'total' %}selected{% endif %}>Total Marks</option>
+                    </select>
+                </div>
+                <div class="filter-group" style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="btn-filter">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-title">Total Students</div>
+            <div class="stat-value">{{ total_students }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Average Score</div>
+            <div class="stat-value">{{ average_score|default:"0" }}%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Passing Rate</div>
+            <div class="stat-value">{{ passing_rate|default:"0" }}%</div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="content table-responsive table-full-width">
+        {% if page_obj %}
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th>Reg No.</th>
+                        <th>Student Name</th>
+                        <th>Term</th>
+                        {% for subject in subjects %}
+                            <th>{{ subject.name }}</th>
+                        {% endfor %}
+                        <th class="total-column">Total Marks</th>
+                        <th class="total-column">Average</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in page_obj %}
+                        <tr>
+                            <td>{{ student.reg_id }}</td>
+                            <td class="student-name">{{ student.name }}</td>
+                            <td class="term-name">{{ student.term }}</td>
+                            {% for subject in subjects %}
+                                <td class="mark-value">
+                                    {% with mark=student.marks|get_dict_value:subject.name %}
+                                        {% if mark %}
+                                            {{ mark }}
+                                        {% else %}
+                                            <span style="color: #999;">-</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            {% endfor %}
+                            <td class="mark-value total-column">{{ student.total }}</td>
+                            <td class="mark-value total-column">{{ student.average }}%</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                No results found.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&search={{ search_query }}&term={{ current_term }}&sort={{ sort_by }}">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&term={{ current_term }}&sort={{ sort_by }}">Previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&term={{ current_term }}&sort={{ sort_by }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}&term={{ current_term }}&sort={{ sort_by }}">Last &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

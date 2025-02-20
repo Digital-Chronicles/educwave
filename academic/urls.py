@@ -16,4 +16,8 @@ urlpatterns = [
     path('upload/exam/', views.UploadExamView.as_view(), name='upload_exam'),
     path('upload/notes/', views.UploadNotesView.as_view(), name='upload_notes'),
     path('upload/marks/', views.RegisterStudentMarksView.as_view(), name='register-student-marks'),
+    path('marks/', views.studentMarks, name='marks'),
+    path('student/<str:id>/performance/', views.studentPerformance, name="student_performance"),
+    path('print/<str:student_id>/<str:id>/', views.print_term_result, name='print_term_result'),
+    path('student/<str:student_id>/report/<str:term_id>/', views.studentReport, name='student_report'),
 ]
