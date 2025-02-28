@@ -13,13 +13,16 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib import colors
-
+from django.db.models import Sum, Avg
 from .models import Grade, Subject, Curriculum, Topic, Exam, Notes, StudentMark, TermExamSession
 from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm, StudentMarksForm
 from students.models import Student
+from management.models import GeneralInformation
+from accounts.mixins import RoleRequiredMixin
+from accounts.decorators import role_required
 
 
-@login_required
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def academics(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Process AJAX request
@@ -60,9 +63,10 @@ def academics(request):
     return render(request, "academics.html", context)
 
 # Exams
-class ExamList(ListView, LoginRequiredMixin):
+class ExamList(ListView, RoleRequiredMixin):
     model = Exam
     template_name = "exams.html"
+    allowed_roles = ['TEACHER', 'FINANCE']
 
     
 # View details of a specific exam
@@ -73,7 +77,7 @@ def exam_detail(request, pk):
 
 
 # Edit an exam
-@login_required
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def exam_update(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     if request.method == 'POST':
@@ -86,7 +90,7 @@ def exam_update(request, pk):
     return render(request, 'exams/exam_form.html', {'form': form})
 
 # Delete an exam
-@login_required
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def exam_delete(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     if request.method == 'POST':
@@ -94,65 +98,72 @@ def exam_delete(request, pk):
         return HttpResponseRedirect(reverse('exam_list'))
     return render(request, 'exams/exam_confirm_delete.html', {'exam': exam})
 
-@login_required
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def grades(requests):
     grades_list = Grade.objects.all()
     return render(requests, "grades.html", {"grades_list": grades_list})
 
-@login_required
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def subjects(requests):
     subject_list = Subject.objects.all()
     return render(requests, "subjects.html", {"subject_list":subject_list})
 
 
-class RegisterGrade(generic.CreateView, LoginRequiredMixin):
+class RegisterGrade(generic.CreateView, RoleRequiredMixin):
     model = Grade
     template_name = "registerGrade.html"
     form_class = GradeForm
     success_url = "/"
+    allowed_roles = ['TEACHER', 'FINANCE']
 
-class RegisterSubject(generic.CreateView, LoginRequiredMixin):
+class RegisterSubject(generic.CreateView, RoleRequiredMixin):
     model = Subject
     template_name = "registerSubject.html"
     form_class = SubjectForm
     success_url = "/"
+    allowed_roles = ['TEACHER', 'FINANCE']
 
-class RegisterCurriculum(generic.CreateView, LoginRequiredMixin):
+class RegisterCurriculum(generic.CreateView, RoleRequiredMixin):
     model = Curriculum
     template_name = "registerCurriculum.html"
     form_class = CurriculumForm
     success_url = '/'
+    allowed_roles = ['TEACHER', 'FINANCE']
 
-class RegisterTopic(generic.CreateView, LoginRequiredMixin):
+class RegisterTopic(generic.CreateView, RoleRequiredMixin):
     model = Topic
     template_name = "registerTopic.html"
     form_class = TopicForm
     success_url = '/'
+    allowed_roles = ['TEACHER', 'FINANCE']
 
-class UploadExamView(generic.CreateView):
+class UploadExamView(generic.CreateView, RoleRequiredMixin):
     model = Exam
     template_name = "uploadExam.html"
     form_class = ExamForm
     success_url = '/'
+    allowed_roles = ['TEACHER', 'FINANCE']
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user.teacher
         return super().form_valid(form)
 
-class UploadNotesView(generic.CreateView, LoginRequiredMixin):
+class UploadNotesView(generic.CreateView, RoleRequiredMixin):
     model = Notes
     form_class = NotesForm
     template_name = 'uploadNotes.html'
     success_url = "/"
+    allowed_roles = ['TEACHER', 'FINANCE']
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user 
         return super().form_valid(form)
     
-class RegisterStudentMarksView(LoginRequiredMixin, generic.CreateView):
+class RegisterStudentMarksView(RoleRequiredMixin, generic.CreateView):
     model = StudentMark
     form_class = StudentMarksForm
     template_name = "registerStudentMarks.html"
+    allowed_roles = ['TEACHER', 'FINANCE']
 
     def form_valid(self, form):
         """Assign the logged-in teacher before saving."""
@@ -168,11 +179,12 @@ class RegisterStudentMarksView(LoginRequiredMixin, generic.CreateView):
         )
     
 
-@login_required
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def studentMarks(request):
     # Get search parameters
     search_query = request.GET.get('search', '').strip()
     term_filter = request.GET.get('term', '')
+    
     
     # Build base queryset
     queryset = StudentMark.objects.select_related(
@@ -201,6 +213,8 @@ def studentMarks(request):
         'total': 0,
         'count': 0
     })
+    
+    print("Printing Queryset: ", queryset)
 
     for mark in queryset:
         student_key = f"{mark.student.registration_id}_{mark.term.id}"
@@ -244,32 +258,101 @@ def studentMarks(request):
     
     return render(request, 'studentsMarks.html', context)
 
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def studentPerformance(request, id):
     student = get_object_or_404(Student, id=id)
-    student_marks = StudentMark.objects.filter(student=student)
-
-    marks_by_term = defaultdict(list)
+    
+    # Get all marks and print the count for debugging
+    student_marks = StudentMark.objects.filter(student=student).order_by('-term__year', 'term__term_name')
+    print(f"Total marks found: {student_marks.count()}")
+    marks_by_term_and_exam = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    
     for mark in student_marks:
-        marks_by_term[mark.term.term_name].append(mark)
+        year = mark.term.year
+        term_name = mark.term.get_term_name_display()
+        exam_type = mark.term.get_exam_type_display()
+        
+        marks_by_term_and_exam[year][term_name][exam_type].append(mark)
+        
+        print(f"Processing mark: Year={year}, Term={term_name}, Exam={exam_type}, Subject={mark.subject.name}")
+
+    
+    marks_dict = {
+        year: {
+            term: dict(exams) for term, exams in terms.items()
+        } for year, terms in marks_by_term_and_exam.items()
+    }
+
+    print("Final marks structure:", marks_dict)
 
     context = {
         'student': student,
-        'marks_by_term': dict(marks_by_term),
+        'marks_by_term_and_exam': marks_dict
     }
+    
     return render(request, "studentPerformance.html", context)
 
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
+def studentReport(request, id, term_name, year):
+    # Get student object or 404
+    student = get_object_or_404(Student, id=id)
+    school = GeneralInformation.objects.first()
 
-def studentReport(request, student_id, term_id):
-    student = get_object_or_404(Student, id=student_id)
-    marks = StudentMark.objects.filter(student=student, term__id=term_id).select_related('term', 'subject')
+    # Calculate term averages and total marks
+    all_marks = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year)
+    beginning_of_term = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year, term__exam_type = 'BOT',  )
+    mid_of_term = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year, term__exam_type = 'MOT')
+    end_of_term = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year, term__exam_type = 'EOT')
+
+    # Mark Avg Sum and Count
+    term_total = all_marks.aggregate(total=Sum('marks'))['total'] or 0
+    term_average = all_marks.aggregate(avg=Avg('marks'))['avg'] or 0
+    bot_total = beginning_of_term.aggregate(total=Sum('marks'))['total'] or 0
+    bot_average = beginning_of_term.aggregate(avg=Avg('marks'))['avg'] or 0
+    mot_total = mid_of_term.aggregate(total=Sum('marks'))['total'] or 0
+    mot_average = mid_of_term.aggregate(avg=Avg('marks'))['avg'] or 0
+    eot_total = end_of_term.aggregate(total=Sum('marks'))['total'] or 0
+    eot_average = end_of_term.aggregate(avg=Avg('marks'))['avg'] or 0
+    subject_count = all_marks.values('subject').distinct().count()
+    bot_grade = sum(mark.get_grade() for mark in beginning_of_term)
+    bot_of_total = len(beginning_of_term) * 100
+    mot_of_total = len(mid_of_term) * 100
+    eot_of_total = len(end_of_term) * 100
+    
 
     context = {
         'student': student,
-        'marks': marks,
+        'all_marks': all_marks,
+        'term_total': term_total,
+        'term_average': round(term_average, 1),
+        'subject_count': subject_count,
+        'year': year,
+        'term_name': term_name,
+        'school':school,
+        'beginning_of_term':beginning_of_term,
+        'mid_of_term':mid_of_term,
+        'end_of_term':end_of_term,
+        'bot_total':bot_total,
+        'bot_average':bot_average,
+        'mot_total':mot_total,
+        'mot_average':mot_average,
+        'eot_total':eot_total,
+        'eot_average':eot_average,
+        'bot_of_total':bot_of_total,
+        'mot_of_total':mot_of_total,
+        'eot_of_total':eot_of_total,
+        'bot_grade': bot_grade,
+        'term_display': {
+            'term_1': 'Term One',
+            'term_2': 'Term Two',
+            'term_3': 'Term Three'
+        }.get(term_name, ' ')
     }
+
     return render(request, "studentReport.html", context)
 
 
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def print_term_result(request, student_id, id):
     student = get_object_or_404(Student, id=student_id)
     marks = StudentMark.objects.filter(student=student, term__id=id)

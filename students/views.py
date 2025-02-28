@@ -12,11 +12,14 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView
+from accounts.mixins import RoleRequiredMixin
+from accounts.decorators import role_required
 
 
-class StudentList(LoginRequiredMixin, ListView):
+class StudentList(RoleRequiredMixin, ListView):
     template_name = "students.html"
     paginate_by = 10
+    allowed_roles = ['TEACHER', 'ADMIN']
 
     def get_queryset(self):
         queryset = Student.objects.all()
@@ -52,20 +55,22 @@ class StudentList(LoginRequiredMixin, ListView):
         return super().get(request, *args, **kwargs)
 
 
-class RegisterStudentDetails(LoginRequiredMixin, CreateView):
+class RegisterStudentDetails(RoleRequiredMixin, CreateView):
     model = Student
     template_name = "registerStudentDetails.html"
     form_class = StudentForm
+    allowed_roles = ['TEACHER', 'ADMIN']
 
     def form_valid(self, form):
         student = form.save()
         return redirect(f'/students/register/student-address/{student.pk}/')
 
 
-class RegisterStudentAddress(LoginRequiredMixin, CreateView):
+class RegisterStudentAddress(RoleRequiredMixin, CreateView):
     model = StudentAddress
     template_name = "registerStudentAddress.html"
     form_class = StudentAddressForm
+    allowed_roles = ['TEACHER', 'ADMIN']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -84,10 +89,11 @@ class RegisterStudentAddress(LoginRequiredMixin, CreateView):
         return f'/students/register/student-caretaker/{self.object.student.pk}/'
 
 
-class CareTakerCreateView(LoginRequiredMixin, CreateView):
+class CareTakerCreateView(RoleRequiredMixin, CreateView):
     model = CareTaker
     form_class = CareTakerForm
     template_name = 'registerStudentCaretaker.html'
+    allowed_roles = ['TEACHER', 'ADMIN']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -105,10 +111,11 @@ class CareTakerCreateView(LoginRequiredMixin, CreateView):
         return f'/students/register/student-grade/{self.object.student.pk}/'
 
 
-class StudentGradeCreateView(LoginRequiredMixin, CreateView):
+class StudentGradeCreateView(RoleRequiredMixin, CreateView):
     model = StudentGrade
     form_class = StudentGradeForm
     template_name = 'registerStudentGrade.html'
+    allowed_roles = ['TEACHER', 'ADMIN']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -126,16 +133,12 @@ class StudentGradeCreateView(LoginRequiredMixin, CreateView):
         return "/students/"
 
 # Student Detail View
-@login_required(login_url='login')
+@role_required(allowed_roles=['ADMIN', 'TEACHER'])
 def studentDetail(request, id):
-    # Fetch the student using get_object_or_404, which will raise a 404 error if the student doesn't exist
     student = get_object_or_404(Student, id=id)
-    
-    # You can also fetch related data, like address or guardians, if needed
     student_address = student.studentaddress if hasattr(student, 'studentaddress') else None
-    caretakers = student.caretaker_set.all()  # All caretakers related to the student
+    caretakers = student.caretaker_set.all()
     
-    # Pass the student and related data to the template
     return render(request, "studentDetail.html", {
         "student": student,
         "student_address": student_address,

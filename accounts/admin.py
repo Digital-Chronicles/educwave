@@ -1,15 +1,22 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.hashers import make_password
 from .models import CustomUser
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ("email", "username", "is_staff", "is_active")
 
-    def save_model(self, request, obj, form, change):
-        if form.cleaned_data.get("password") and not obj.password.startswith("pbkdf2_sha256$"):
-            obj.password = make_password(form.cleaned_data["password"])
-        super().save_model(request, obj, form, change)
+    # Add 'role' to the admin form
+    fieldsets = UserAdmin.fieldsets + (
+        ('Role Information', {'fields': ('role',)}),
+    )
+
+    # Add 'role' to the user creation form
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Role Information', {'fields': ('role',)}),
+    )
+
+    # Show 'role' in the user list
+    list_display = ('email', 'username', 'role', 'is_active', 'is_staff')
+    list_filter = ('role', 'is_active', 'is_staff')
 
 admin.site.register(CustomUser, CustomUserAdmin)

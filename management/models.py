@@ -11,7 +11,9 @@ from django.core.exceptions import ValidationError
 # Create your models here.
 class GeneralInformation(models.Model):
     school_name = models.CharField(max_length=255, unique=True)
-    address = models.TextField()
+    school_badge = models.ImageField(upload_to="badges", blank=True, null=True)
+    box_no = models.CharField(max_length=100, blank=True, null=True)
+    location = models.TextField()
     contact_number = models.CharField(
         max_length=15,
         validators=[RegexValidator(r'^\+?\d{7,15}$', message="Enter a valid phone number.")],

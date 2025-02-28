@@ -1,46 +1,195 @@
 {% extends 'base.html' %}
 
-{% block page_title %}Student Report - {{ term.term_name }}{% endblock page_title %}
-{% block academicsSetActive %}active{% endblock academicsSetActive %}
 {% block content %}
-
-<div class="card shadow-sm border-0">
+<div class="card shadow-lg border-0">
     <div class="card-body">
-        <div class="header mb-3">
-            <h4 class="title text-dark fw-bold">Student Report - {{ term.term_name }}</h4>
-            <p class="category text-muted">Detailed report for {{ student.first_name }} {{ student.last_name }}</p>
-        </div>
-        <div class="content table-responsive">
-            {% if marks %}
-            <div class="table-responsive">
-                <table class="table table-hover border">
-                    <thead class="bg-primary text-white">
-                        <tr>
-                            <th>Subject</th>
-                            <th>Teacher</th>
-                            <th>Marks</th>
-                            <th>Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for mark in marks %}
-                        <tr>
-                            <td class="fw-medium">{{ mark.subject.name }}</td>
-                            <td>{{ mark.teacher.first_name }} {{ mark.teacher.last_name }}</td>
-                            <td class="fw-bold">{{ mark.marks }}</td>
-                            <td class="fw-bold">
-                                <span class="text-primary">{{ mark.get_grade }}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <!-- Header Section -->
+        <div class="header mb-4">
+            <div class="row align-items-center">
+                <!-- School information on the left -->
+                <div class="col-md-3">
+                    <div class="d-flex align-items-center">
+                        <img style="width: 80px;"
+                            src="{% if school.school_badge %}{{ school.school_badge.url}}{% else %} https://i.pinimg.com/736x/03/b4/67/03b467f31023b42f75951ba4aa7efe02.jpg {% endif %}"
+                            alt="School Badge">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="ms-3 text-center">
+                        <h2 style="font-weight: 900; margin-top: -10px;">{{school.school_name}}</h2>
+                        <h4 style="font-weight: 600; margin-top: -10px;">{{school.box_no}}</h4>
+                        <h5 style="font-weight: 600; margin-top: -10px; margin-bottom: -10px;">{{school.location}}</h5>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <img class="avatar border-white rounded-circle shadow-sm text-end"
+                        src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}https://i.pinimg.com/736x/57/00/c0/5700c04197ee9a4372a35ef16eb78f4e.jpg{% endif %}"
+                        alt="Profile Image" width="150" height="150" style="float: right;" />
+                </div>
             </div>
-            {% else %}
-            <div class="alert alert-info text-center fw-bold">No Marks found.</div>
-            {% endif %}
+        </div>
+        <hr>
+        <div style="margin-left: 10px; margin-right: 10px;">
+            <p><strong class="text-dark">Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+            <p><strong class="text-dark">Registration ID:</strong> {{ student.registration_id }}</p>
+        </div>
+        <!-- Marks Table -->
+        {% if beginning_of_term %}
+        <div style="margin-left: 10px; margin-right: 10px;" class="table-responsive">
+            <h5 class="text-primary mt-5" style="font-weight: 900;">Beginning of Term Results</h5>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Out Of</th>
+                        <th>Grade</th>
+                        <th style="width: 50%;">Teacher's Comments</th>
+                        <th style="width: 10%;">Signature</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rs in beginning_of_term %}
+                    <tr style="height: 20px;">
+                        <td>{{ rs.subject.name }}</td>
+                        <td>{{ rs.marks }}</td>
+                        <td>100</td>
+                        <td>{{ rs.get_grade }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="height: 20px;" class="bg-light">
+                        <td style="font-weight: bolder;">Total Marks</td>
+                        <td style="font-weight: bold;">{{ bot_total }}</td>
+                        <td style="font-weight: bold;">{{ bot_of_total }}</td>
+                        <td style="font-weight: bold;">{{bot_grade}}</td>
+                        <td style="font-weight: bold;"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-danger mx-3">No results available for the Beginning of Term.</p>
+        {% endif %}
+
+        {% if mid_of_term %}
+        <div style="margin-left: 10px; margin-right: 10px;" class="table-responsive">
+            <h5 class="text-primary mt-5" style="font-weight: 900;">Mid of Term Results</h5>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Out Of</th>
+                        <th>Grade</th>
+                        <th style="width: 50%;">Teacher's Comments</th>
+                        <th style="width: 10%;">Signature</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rs in mid_of_term %}
+                    <tr style="height: 30px;">
+                        <td>{{ rs.subject.name }}</td>
+                        <td>{{ rs.marks }}</td>
+                        <td>100</td>
+                        <td>{{ rs.get_grade }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="height: 30px;" class="bg-light">
+                        <td style="font-weight: bolder;">Total Marks</td>
+                        <td style="font-weight: bold;">{{ mot_total }}</td>
+                        <td style="font-weight: bold;">{{ mot_of_total }}</td>
+                        <td style="font-weight: bold;">{{ mot_grade }}</td>
+                        <td style="font-weight: bold;"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-danger mx-3">No results available for the Mid of Term.</p>
+        {% endif %}
+
+
+        {% if end_of_term %}
+        <div style="margin-left: 10px; margin-right: 10px;" class="table-responsive">
+            <h5 class="text-primary mt-5" style="font-weight: 900;">End of Term Results</h5>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Marks</th>
+                        <th>Out Of</th>
+                        <th>Grade</th>
+                        <th style="width: 50%;">Teacher's Comments</th>
+                        <th style="width: 10%;">Signature</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rs in end_of_term %}
+                    <tr style="height: 30px;">
+                        <td>{{ rs.subject.name }}</td>
+                        <td>{{ rs.marks }}</td>
+                        <td>100</td>
+                        <td>{{ rs.get_grade }}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    {% endfor %}
+                    <tr style="height: 20px;" class="bg-light">
+                        <td style="font-weight: bolder;">Total Marks</td>
+                        <td style="font-weight: bold;">{{ eot_total }}</td>
+                        <td style="font-weight: bold;">{{ eot_of_total }}</td>
+                        <td style="font-weight: bold;">{{ eot_grade }}</td>
+                        <td style="font-weight: bold;"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-danger mx-3">No results available for the End of Term.</p>
+        {% endif %}
+        <div class="teacher-comments mt-1 p-3 bg-light rounded shadow-sm">
+            <h5 class="text-primary mb-1 font-weight-bold">Class Teacher's Comment</h5>
+            <p><strong class="text-dark">{{ class_teacher_comment }}</strong> ______________________________________________________________________________________________________________</p>
+            <p><strong class="text-dark">Signature:</strong> ______________________</p>
+        </div>
+        <div class="headteacher-comments mt-1 p-3 bg-light rounded shadow-sm">
+            <h5 class="text-primary mb-1 font-weight-bold">Headteacher's Comment</h5>
+            <p><strong class="text-dark">{{ headteacher_comment }}</strong>_________________________________________________________________________________________________________________</p>
+            <p><strong class="text-dark">Signature:</strong> ______________________</p>
         </div>
     </div>
 </div>
+{% endblock %}
 
-{% endblock content %}
+{% block extra_css %}
+<style>
+    .avatar {
+        border-radius: 50%;
+    }
+
+    .header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table thead th {
+        text-align: center;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+        font-size: 1.1em;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}

@@ -4,30 +4,144 @@
 {% block academicsSetActive %}active{% endblock academicsSetActive %}
 {% block content %}
 
+<!-- Custom Styling for the Page -->
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+        padding-bottom: 20px;
+        margin-bottom: 15px;
+    }
+
+    .category {
+        font-size: 16px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table th,
+    .table td {
+        padding: 12px;
+        text-align: center;
+    }
+
+    .table th {
+        background-color: #337ab7;
+        color: white;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f8f9fc;
+    }
+
+    .fw-bold {
+        font-weight: bold;
+    }
+
+    .text-primary {
+        color: #337ab7;
+    }
+
+    .text-secondary {
+        color: #6c757d;
+    }
+
+    .bg-light {
+        background-color: #f8f9fc;
+    }
+
+    .btn-primary {
+        background-color: #337ab7;
+        border-color: #337ab7;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #337ab7;
+        border-color: #337ab7;
+    }
+
+    .rounded {
+        border-radius: 8px;
+    }
+
+    .text-end {
+        text-align: right;
+    }
+
+    .table-responsive {
+        margin-top: 20px;
+    }
+
+    .no-marks {
+        color: #868e96;
+    }
+
+    .no-data {
+        padding: 20px;
+        background-color: #f8d7da;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+    }
+</style>
+
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="header mb-3">
-            <h4 class="title text-dark fw-bold">Student Marks</h4>
-            <p class="category text-muted">Marks categorized by terms</p>
-        </div>
-        <div class="content table-responsive">
-            {% if marks_by_term %}
-            {% for term, marks in marks_by_term.items %}
-            <div class="row align-items-center mb-3 px-3 py-2 bg-light rounded">
+            <div class="row">
                 <div class="col-md-6">
-                    <h5 class="text-primary fw-bold">{{ term }}</h5>
+                    <h4 class="title text-dark fw-bold">Student Marks</h4>
+                    <p class="category text-muted">Marks categorized by terms and exam type</p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <div class="col-md-6">
-                        <a href="/academics/student/{{ student.id }}/report/{{ marks.term.id }}/" class="btn btn btn-primary">View Report</a>
-                    </div>
-                    <div class="col-md-6">
-                        <a href="/academics/print/{{ student.id }}/{{ marks.term.id }}/" class="btn btn btn-primary">Print Results</a>
-                    </div>
+                    <p class="fw-bold">Student: {{ student.first_name }} {{ student.last_name }}</p>
+                    <p class="fw-bold">Data available: {{ marks_by_term_and_exam|length }} years</p>
                 </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover border">
+        </div>
+
+        <div class="content table-responsive">
+            {% if marks_by_term_and_exam %}
+            {% for year, terms in marks_by_term_and_exam.items %}
+            <h4 class="text-dark mb-3">Academic Year {{ year }}</h4>
+            {% for term_name, exam_types in terms.items %}
+            <div class="row align-items-center mb-3 px-3 py-2 bg-light rounded">
+                <div class="col-md-6">
+                    {% if term_name == "term_1" %}
+                    <h5 class="text-primary fw-bold">Term One</h5>
+                    {% elif term_name == "term_2" %}
+                    <h5 class="text-primary fw-bold">Term Two</h5>
+                    {% elif term_name == "term_3" %}
+                    <h5 class="text-primary fw-bold">Term Three</h5>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 text-end d-flex justify-content-end">
+                    <a href="/academics/student/{{ student.id }}/report/{{ term_name }}/{{ year }}/"
+                        class="btn btn-primary me-2">View Report</a>
+                    <a href="/academics/print/{{ student.id }}/{{ term_name }}/{{ year }}/"
+                        class="btn btn-primary">Print Results</a>
+                </div>
+            </div>
+
+            {% for exam_type, marks in exam_types.items %}
+            <h5 class="text-secondary">{{ exam_type }}</h5>
+            <div class="table-responsive mb-4">
+                <table class="table table-hover border table-striped">
                     <thead class="bg-primary text-white">
                         <tr>
                             <th>Subject</th>
@@ -37,6 +151,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% if marks %}
                         {% for mark in marks %}
                         <tr>
                             <td class="fw-medium">{{ mark.subject.name }}</td>
@@ -47,12 +162,22 @@
                             </td>
                         </tr>
                         {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="no-marks">No marks found for this exam type</td>
+                        </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
             {% endfor %}
+            {% endfor %}
+            {% endfor %}
             {% else %}
-            <div class="alert alert-info text-center fw-bold">No Marks found.</div>
+            <div class="no-data">
+                <strong>No marks found.</strong> Please check back later or ensure the data is available for the
+                student.
+            </div>
             {% endif %}
         </div>
     </div>

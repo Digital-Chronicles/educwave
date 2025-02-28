@@ -10,10 +10,13 @@ from academic.models import Exam
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required 
+from accounts.mixins import RoleRequiredMixin
+from accounts.decorators import role_required
 
 class TeacherList(LoginRequiredMixin, ListView):
     template_name = "teachers.html"
     paginate_by = 10
+    allowed_roles = ['ADMIN', 'FINANCE']
 
     def get_queryset(self):
         queryset = Teacher.objects.all()
@@ -47,12 +50,9 @@ class TeacherList(LoginRequiredMixin, ListView):
             return JsonResponse(data)
         return super().get(request, *args, **kwargs)
 
-# def teachers(request):
-#     teachers = Teacher.objects.all()
-
-#     return render(request, 'teachers.html', {'teachers':teachers})
 
 # Teacher Detail
+@role_required(allowed_roles=['ADMIN', 'FINANCE'])
 def teacher_details(request, id):
     # Fetch teacher object
     teacher = get_object_or_404(Teacher, id=id)
@@ -79,19 +79,21 @@ def teacher_details(request, id):
     return render(request, "teachersDetails.html", context)
 
 
-class RegisterTeacherDetails(LoginRequiredMixin, generic.CreateView):
+class RegisterTeacherDetails(RoleRequiredMixin, generic.CreateView):
     model = Teacher
     template_name = 'registerteacherdetails.html'
     form_class = TeacherForm
+    allowed_roles = ['TEACHER', 'FINANCE']
 
     def form_valid(self, form):
         teacher = form.save()
         return redirect(f'/teachers/details/{teacher.pk}/') 
     
-class Teacher_Payroll(LoginRequiredMixin, generic.CreateView):
+class Teacher_Payroll(RoleRequiredMixin, generic.CreateView):
     model = PayrollInformation
     template_name = 'payroll.html'
     form_class = PayrollInformationForm
+    allowed_roles = ['ADMIN', 'FINANCE']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -110,10 +112,11 @@ class Teacher_Payroll(LoginRequiredMixin, generic.CreateView):
 
         
 
-class Teacher_EducationBackground(LoginRequiredMixin, generic.CreateView):
+class Teacher_EducationBackground(RoleRequiredMixin, generic.CreateView):
     model = EducationBackground
     template_name = 'educationback.html'
     form_class = EducationBackgroundForm
+    allowed_roles = ['ADMIN', 'FINANCE']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -130,10 +133,11 @@ class Teacher_EducationBackground(LoginRequiredMixin, generic.CreateView):
         form.save()
         return redirect(f'/teachers/details/{self.object.teacher.id}')
 
-class Teacher_EmploymentHistory(LoginRequiredMixin, generic.CreateView):
+class Teacher_EmploymentHistory(RoleRequiredMixin, generic.CreateView):
     model = EmploymentHistory
     template_name = 'employmenthistory.html'
     form_class = EmploymentHistoryForm
+    allowed_roles = ['ADMIN', 'FINANCE']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -150,10 +154,11 @@ class Teacher_EmploymentHistory(LoginRequiredMixin, generic.CreateView):
         form.save()
         return redirect(f'/teachers/details/{self.object.teacher.id}')
 
-class Teacher_Next_of_Kin(LoginRequiredMixin, generic.CreateView):
+class Teacher_Next_of_Kin(RoleRequiredMixin, generic.CreateView):
     model = NextOfKin
     template_name = 'nextofkin.html'
     form_class = NextOfKinForm
+    allowed_roles = ['ADMIN', 'FINANCE']
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -170,10 +175,11 @@ class Teacher_Next_of_Kin(LoginRequiredMixin, generic.CreateView):
         form.save()
         return redirect(f'/teachers/details/{self.object.teacher.id}')
 
-class Teacher_Current_Employment(LoginRequiredMixin, generic.CreateView):
+class Teacher_Current_Employment(RoleRequiredMixin, generic.CreateView):
     model = CurrentEmployment
     template_name = 'currentemployment.html'
     form_class = CurrentEmploymentForm
+    allowed_roles = ['TEACHER', 'FINANCE']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

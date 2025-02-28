@@ -128,26 +128,26 @@ class Notes(models.Model):
 
 def academic_year_choices():
     current_year = datetime.date.today().year
-    return [(year, str(year)) for year in range(current_year - 10, current_year)]
+    return [(year, str(year)) for year in range(current_year - 10, current_year + 2)]
 
 
 class TermExamSession(models.Model):
     class TermChoices(models.TextChoices):
-        TERM_1 = "term_1", "Term 1"
-        TERM_2 = "term_2", "Term 2"
-        TERM_3 = "term_3", "Term 3"
+        TERM_1 = "TERM_1", "Term 1"
+        TERM_2 = "TERM_2", "Term 2"
+        TERM_3 = "TERM_3", "Term 3"
         
     class ExamChoices(models.TextChoices):
         BOT = "BOT", "Beginning of Term"
         MOT = "MOT", "Mid of Term"
         EOT = "EOT", "End of Term"
 
-    term_name = models.CharField(max_length=10, choices=TermChoices.choices, verbose_name="Term Name")
-    year = models.PositiveIntegerField(default=datetime.date.today().year, choices=academic_year_choices, verbose_name="Academic Year")
-    exam_type = models.CharField(max_length=3, choices=ExamChoices.choices, verbose_name="Exam Type")
-    start_date = models.DateField()
-    end_date = models.DateField()
-    created_by = models.ForeignKey(Teacher, on_delete=models.DO_NOTHING, related_name="terms")
+    term_name = models.CharField(max_length=10, choices=TermChoices.choices, verbose_name="Term Name",help_text="Select the term for this exam session")
+    year = models.PositiveIntegerField(default=datetime.date.today().year, choices=academic_year_choices, verbose_name="Academic Year", help_text="Select the academic year for this exam session", db_index=True)
+    exam_type = models.CharField(max_length=3, choices=ExamChoices.choices, verbose_name="Exam Type", help_text="Select the type of examination")
+    start_date = models.DateField(help_text="Start date of the exam session")
+    end_date = models.DateField(help_text="End date of the exam session")
+    created_by = models.ForeignKey(Teacher, on_delete=models.PROTECT, related_name="terms", help_text="Teacher who created this exam session")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -155,15 +155,22 @@ class TermExamSession(models.Model):
         db_table = "term_exam_session"
         ordering = ["-year", "term_name"]
         unique_together = ("term_name", "year", "exam_type")
+        indexes = [
+            models.Index(fields=['-year', 'term_name']),
+            models.Index(fields=['term_name', 'year', 'exam_type']),
+        ]
 
     def clean(self):
-        if self.start_date >= self.end_date:
-            raise ValidationError("Start date must be before end date.")
+        if self.start_date and self.end_date and self.start_date >= self.end_date:
+            raise ValidationError({
+                'start_date': "Start date must be before end date.",
+                'end_date': "End date must be after start date."
+            })
 
     def __str__(self):
         return f"{self.get_term_name_display()} - {self.year} ({self.get_exam_type_display()})"
-
-
+    
+    
 class StudentMark(models.Model):
     student = models.ForeignKey("students.Student", on_delete=models.CASCADE, related_name="marks")
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="marks")
@@ -184,23 +191,23 @@ class StudentMark(models.Model):
 
     def get_grade(self):
         if self.marks >= 90:
-            return "D1"
+            return 1
         elif self.marks >= 80:
-            return "D2"
+            return 2
         elif self.marks >= 70:
-            return "C3"
+            return 3
         elif self.marks >= 60:
-            return "C4"
+            return 4
         elif self.marks >= 55:
-            return "C5"
+            return 5
         elif self.marks >= 50:
-            return "C6"
+            return 6
         elif self.marks >= 45:
-            return "P7"
+            return 7
         elif self.marks >= 40:
-            return "P8"
+            return 8
         else:
-            return "F9"
+            return 9
 
     def __str__(self):
         return f"{self.student.first_name} {self.student.last_name} - {self.subject.name} - {self.term} - {self.marks} ({self.get_grade()})"

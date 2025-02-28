@@ -11,6 +11,8 @@ import io
 import base64
 import numpy as np
 from django.contrib.auth.decorators import login_required
+from accounts.mixins import RoleRequiredMixin
+from accounts.decorators import role_required
 
 # Create your views here.
 
@@ -50,7 +52,7 @@ def dashboard(request):
     }
     return render(request, "dashboard.html", context)
 
-@login_required 
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def create_general_information(request):
     # Check if an instance of GeneralInformation already exists
     if GeneralInformation.objects.exists():
