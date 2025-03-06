@@ -136,13 +136,14 @@ class FeeTransaction(models.Model):
         ('overdue', 'Overdue'),
     )
 
-
+    grade = models.ForeignKey(
+        Grade, on_delete=models.CASCADE, related_name="fee_transactions", null=True, blank=True
+    )
    
     amount_due = models.DecimalField(max_digits=10, decimal_places=2)
 
     student = models.ForeignKey(StudentTuitionDescription, on_delete=models.CASCADE, related_name="fee_transactions")
     amount_due = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
     due_date = models.DateField(null=True, blank=True, editable=True)

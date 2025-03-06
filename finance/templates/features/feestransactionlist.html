@@ -18,17 +18,18 @@
       {% endfor %}
     </ul>
 
-    <div class="tab-content" id="gradeTabsContent">
+    <div class="tab-content">
       {% for grade, students in grades.items %}
+
       <div
-        class="tab-pane fade {% if forloop.first %}show active{% endif %}"
+        class="tab-pane fade {% if forloop.first %}in active{% endif %}"
         id="tab-{{ forloop.counter }}"
         role="tabpanel"
       >
         <table class="table table-striped table-bordered">
           <thead>
             <tr>
-              <th>ID</th>
+              <!-- <th>ID</th> -->
               <th>Student</th>
               <th>Amount Due</th>
               <th>Amount Paid</th>
@@ -42,13 +43,15 @@
           <tbody>
             {% for student in students %}
             <tr>
-              <td>{{ student.student_id }}</td>
+              <!-- <td>{{ student.student_id }}</td> -->
               <td>{{ student.student_name }}</td>
               <td>{{ student.amount_due|floatformat:2 }}</td>
               <td>{{ student.amount_paid|floatformat:2 }}</td>
               <td>{{ student.payment_method }}</td>
               <td>
-                <span class="{% if student.status == 'Paid' %}text-success{% else %}text-danger{% endif %}">
+                <span
+                  class="{% if student.status == 'Paid' %}text-success{% else %}text-danger{% endif %}"
+                >
                   {{ student.status }}
                 </span>
               </td>
