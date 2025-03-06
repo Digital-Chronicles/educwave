@@ -3,7 +3,7 @@ from .models import SchoolFees, OtherSchoolPayments, TransportFee, StudentTuitio
 
 @admin.register(SchoolFees)
 class SchoolFeesAdmin(admin.ModelAdmin):
-    list_display = ('grade', 'tuitionfee', 'hotelfee', 'breakfastfee', 'lunchfee', 'created', 'updated', 'created_by')
+    list_display = ('grade', 'tuitionfee', 'hostelfee', 'breakfastfee', 'lunchfee', 'created', 'updated', 'created_by')
     search_fields = ('grade__grade_name', 'created_by__username')
     list_filter = ('created', 'updated', 'grade')
     readonly_fields = ('created', 'updated')
@@ -47,7 +47,8 @@ class FeeTransactionAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Payment Details", {
             "fields": (
-                'student', 'amount_paid', 'payment_method', 'payment_reference', 'receipt_url', 'remarks',
+                'student', 'amount_paid', 'payment_method', 'payment_reference', 'receipt_url',
+                'remarks',
             ),
         }),
         ("Status & Dates", {
