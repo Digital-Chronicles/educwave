@@ -1,0 +1,30 @@
+{% extends 'base.html' %} {% block content %}
+
+  <div class="container ">
+    <h5>All Topics</h5><a href="/assessment/record/topic/"> Record Topic</a>
+    <table class="table table-striped table-bordered ">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Subject</th>
+          <th>Topic</th>
+          <th>Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for topic in lists %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ topic.subject }}</td>
+          <td>{{ topic.name }}</td>
+          <td>{{ topic.grade }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <a href="/assessment/" class="btn btn-secondary mt-4">Back to Assessment</a>
+  </div>
+
+
+{% endblock content %}

@@ -179,7 +179,7 @@ class Teacher_Current_Employment(RoleRequiredMixin, generic.CreateView):
     model = CurrentEmployment
     template_name = 'currentemployment.html'
     form_class = CurrentEmploymentForm
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'FINANCE','ADMIN']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
