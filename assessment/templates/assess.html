@@ -1,21 +1,18 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <h1>Assess Our Performance</h1>
 
+<div>
+  <div class="col-md-1">
+    <a href="/assessment/all/topics/">Topics</a>
 
-<div>
-<div class="">
-     <a href="/assessment/all/topics/">Topics</a>
-   
-    <a href="/assessment/record/question/"> Record Questions</a>
-      <a href="/assessment/results">Results</a>
-    
-</div>
-<div>
+    <a href="/assessment/record/question/">  Questions</a>
+    <a href="/assessment/results">Results</a>
+  </div>
+  <!-- <div>
     {% for grade in grading %}
     {{ grade.grade_name }}
     {% endfor %}
-</div>
+</div> -->
 </div>
 
 {% endblock %}

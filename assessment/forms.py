@@ -8,8 +8,9 @@ class TopicsForm(forms.ModelForm):
         fields = ["name", "subject", "grade"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control border-input", "placeholder": "Topic"}),
-            "subject": forms.Select(attrs={"class": "form-control border-input"}),
             "grade": forms.Select(attrs={"class": "form-control border-input"}),
+            "subject": forms.Select(attrs={"class": "form-control border-input"}),
+            
         }
         
     
@@ -19,9 +20,10 @@ class QuestionForm(forms.ModelForm):
         fields = ["term_exam", 'question_number', "topic", 'grade', 'max_score']
         widgets ={
             'term_exam':forms.Select(attrs={'class':'form-control border-input'}),
+            'grade': forms.Select(attrs={'class': 'form-control border-input'}),
             'topic':forms.Select(attrs={'class':'form-control border-input'}),
             'question_number':forms.TextInput(attrs={'class':'form-control border-input'}),
-            'grade':forms.Select(attrs={'class':'form-control border-input'}),
+         
             'max_score':forms.NumberInput(attrs={'class':'form-control border-input'})
         }    
 
@@ -29,12 +31,11 @@ class QuestionForm(forms.ModelForm):
 class ExamResultForm(forms.ModelForm):
     class Meta:
         model = ExamResult
-        fields = ['grade', 'student', 'topic', 'question', 'score',]
-        widgets={
-            'grade': forms.Select(attrs={'class': 'form-control border-input'}),
-            'topic': forms.Select(attrs={'class': 'form-control border-input'}),
-            'student':forms.Select(attrs={'class':'form-control border-input'}),
-            'question':forms.Select(attrs={'class':'form-control border-input'}),
-            'score':forms.NumberInput(attrs={'class':'form-control border-input'})
-            
-        }    
+        fields = ['grade', 'student', 'topic', 'question', 'score']
+        widgets = {
+            'grade': forms.Select(attrs={'class': 'form-control border-input', 'id': 'grade-select'}),
+            'student': forms.Select(attrs={'class': 'form-control border-input', 'id': 'student-select'}),
+            'topic': forms.Select(attrs={'class': 'form-control border-input', 'id': 'topic-select'}),
+            'question': forms.Select(attrs={'class': 'form-control border-input', 'id': 'question-select'}),
+            'score': forms.NumberInput(attrs={'class': 'form-control border-input'}),
+        }

@@ -1,30 +1,54 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid">
+    <h5>All Topics</h5>
+    
+    <div class="card mb-3">
+        <div class="card-header">
+            <a href="/assessment/record/topic/" class="btn btn-primary">
+                Record Topic
+            </a>
+        </div>
+        
+        <div class="card m-2 p-5 my-2">
+            <div>
+                <h5 class="">Record Topics</h5>
+            </div>
+            <div>
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="row">
+                        <div class="col-md-2 col-sm-3 m-1">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-  <div class="container ">
-    <h5>All Topics</h5><a href="/assessment/record/topic/"> Record Topic</a>
-    <table class="table table-striped table-bordered ">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Subject</th>
-          <th>Topic</th>
-          <th>Grade</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for topic in lists %}
-        <tr>
-          <td>{{ forloop.counter }}</td>
-          <td>{{ topic.subject }}</td>
-          <td>{{ topic.name }}</td>
-          <td>{{ topic.grade }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
+    <table class="table table-striped table-bordered table-sm">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 5%; max-width: 30px">NO</th>
+                <th class="text-center" style="width: 10%; max-width: 50px">Subject</th>
+                <th class="text-center" style="width: 20%; max-width: 100px">Topic</th>
+                <th class="text-center" style="width: 10%; max-width: 50px">Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for topic in lists %}
+            <tr>
+                <td class="text-center">{{ forloop.counter }}</td>
+                <td>{{ topic.subject }}</td>
+                <td class="text-truncate">{{ topic.name }}</td>
+                <td class="text-center">{{ topic.grade }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
     <a href="/assessment/" class="btn btn-secondary mt-4">Back to Assessment</a>
-  </div>
-
-
+</div>
 {% endblock content %}

@@ -2,23 +2,110 @@
 {% block content %}
 <div class="card">
     <div class="m-2 p-5 my-2">
-      
-
         <div>
             <h5 class="">Exam Result Assessment</h5>
         </div>
         <div>
-            <form  method="POST" action="">
+            <form method="POST" action="">
                 {% csrf_token %}
-                {{ form.as_p }}
+                <div class="mb-3">
+                    <label for="grade-select">Grade:</label>
+                    {{ form.grade }}
+                </div>
+                <div class="mb-3">
+                    <label for="student-select">Student:</label>
+                    <select id="student-select" name="student" class="form-control border-input">
+                        <option value="">Select a grade first</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="topic-select">Topic:</label>
+                    <select id="topic-select" name="topic" class="form-control border-input">
+                        <option value="">Select a grade first</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="question-select">Question:</label>
+                    <select id="question-select" name="question" class="form-control border-input">
+                        <option value="">Select a topic first</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="score">Score:</label>
+                    {{ form.score }}
+                </div>
                 <div class="row">
                     <div class="col-md-2 col-sm-3 m-1">
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
-
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const gradeSelect = document.getElementById("grade-select");
+        const studentSelect = document.getElementById("student-select");
+        const topicSelect = document.getElementById("topic-select");
+        const questionSelect = document.getElementById("question-select");
+
+        function clearOptions(selectElement, defaultText) {
+            selectElement.innerHTML = `<option value="">${defaultText}</option>`;
+        }
+
+        // Fetch students and topics when a grade is selected
+        gradeSelect.addEventListener("change", function () {
+            const gradeId = this.value;
+
+            if (!gradeId) {
+                clearOptions(studentSelect, "Select a grade first");
+                clearOptions(topicSelect, "Select a grade first");
+                clearOptions(questionSelect, "Select a topic first");
+                return;
+            }
+
+            fetch(`/assessment/get-students/?grade_id=${gradeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    clearOptions(studentSelect, "Select Student");
+                    data.forEach(student => {
+                        studentSelect.innerHTML += `<option value="${student.id}">${student.first_name} ${student.last_name}</option>`;
+                    });
+                });
+
+            fetch(`/assessment/get-topics/?grade_id=${gradeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    clearOptions(topicSelect, "Select Topic");
+                    data.forEach(topic => {
+                        topicSelect.innerHTML += `<option value="${topic.id}">${topic.name}</option>`;
+                    });
+                });
+
+            clearOptions(questionSelect, "Select a topic first");  // Reset questions
+        });
+
+        // Fetch questions when a topic is selected
+        topicSelect.addEventListener("change", function () {
+            const topicId = this.value;
+
+            if (!topicId) {
+                clearOptions(questionSelect, "Select a topic first");
+                return;
+            }
+
+            fetch(`/assessment/get-questions/?topic_id=${topicId}`)
+                .then(response => response.json())
+                .then(data => {
+                    clearOptions(questionSelect, "Select Question");
+                    data.forEach(question => {
+                        questionSelect.innerHTML += `<option value="${question.id}">${question.question_number}</option>`;
+                    });
+                });
+        });
+    });
+</script>
+
 {% endblock content %}

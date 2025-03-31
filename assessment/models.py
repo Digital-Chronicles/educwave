@@ -18,18 +18,13 @@ class Question (models.Model):
     term_exam = models.ForeignKey(TermExamSession, on_delete=models.CASCADE)
     # text= models.TextField (null=True)
     question_number = models.CharField(max_length=100, default="41a")
-    topic = models.ForeignKey(Topics, on_delete=models.CASCADE, related_name="question")
+    topic = models.ForeignKey(Topics, on_delete=models.CASCADE, related_name="questions")
     grade = models.ForeignKey(Grade, on_delete=models.DO_NOTHING,
                               related_name="grade_questions")  # Unique related_name
-    max_score = models.PositiveIntegerField(default=5)
-   
+    max_score = models.PositiveIntegerField(default=5)    
     
     def __str__(self):
-        return self.topic
-    
-    
-    def __str__(self):
-        return self.question_number
+        return f"{self.question_number} - {self.topic.name}"
     
 
 class ExamResult(models.Model):
@@ -38,7 +33,7 @@ class ExamResult(models.Model):
     grade = models.ForeignKey(Grade, on_delete=models.DO_NOTHING,
                               related_name="grade_exam_result")
     topic = models.ForeignKey(
-        Topics, on_delete=models.CASCADE, related_name="exam_result")
+        Topics, on_delete=models.CASCADE, related_name="exam_results")
     score = models.PositiveIntegerField()
 
     def __str__(self):
