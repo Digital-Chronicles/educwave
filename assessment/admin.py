@@ -20,7 +20,7 @@ class Question(admin.ModelAdmin):
 
 @admin.register(ExamResult)
 class ExamResult(admin.ModelAdmin):
-    list_display = ("student", "grade", "topic", "question", "score")
-    search_fields=("student", "question")
+    list_display = ("student", "grade", "subject","topic", "question", "score")
+    search_fields = ("student", "subject", "question")
     list_filter = ("question",)
     

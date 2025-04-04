@@ -1,52 +1,79 @@
-{% extends 'base.html' %}
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="card">
-    <div class="m-2 p-5 my-2">
-        <div>
-            <h5 class="">Exam Result Assessment</h5>
-        </div>
-        <div>
-            <form method="POST" action="">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="grade-select">Grade:</label>
-                    {{ form.grade }}
-                </div>
-                <div class="mb-3">
-                    <label for="student-select">Student:</label>
-                    <select id="student-select" name="student" class="form-control border-input">
-                        <option value="">Select a grade first</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="topic-select">Topic:</label>
-                    <select id="topic-select" name="topic" class="form-control border-input">
-                        <option value="">Select a grade first</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="question-select">Question:</label>
-                    <select id="question-select" name="question" class="form-control border-input">
-                        <option value="">Select a topic first</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="score">Score:</label>
-                    {{ form.score }}
-                </div>
-                <div class="row">
-                    <div class="col-md-2 col-sm-3 m-1">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+  <div class="m-2 p-5 my-2">
+    <div>
+      <h5 class="">Exam Result Assessment</h5>
     </div>
-</div>
+    <div>
+      <form method="POST" action="">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="grade-select">Grade:</label>
+          {{ form.grade }}
+        </div>
 
+        <div class="mb-3">
+          <label for="subject-select">Subject:</label>
+          <select
+            id="subject-select"
+            name="subject"
+            class="form-control border-input"
+          >
+            <option value="">Select a grade first</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="student-select">Student:</label>
+          <select
+            id="student-select"
+            name="student"
+            class="form-control border-input"
+          >
+            <option value="">Select a grade first</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="topic-select">Topic:</label>
+          <select
+            id="topic-select"
+            name="topic"
+            class="form-control border-input"
+          >
+            <option value="">Select a subject first</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="question-select">Question:</label>
+          <select
+            id="question-select"
+            name="question"
+            class="form-control border-input"
+          >
+            <option value="">Select a topic first</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="score">Score:</label>
+          {{ form.score }}
+        </div>
+
+        <div class="row">
+          <div class="col-md-2 col-sm-3 m-1">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const gradeSelect = document.getElementById("grade-select");
+        const subjectSelect = document.getElementById("subject-select");
         const studentSelect = document.getElementById("student-select");
         const topicSelect = document.getElementById("topic-select");
         const questionSelect = document.getElementById("question-select");
@@ -55,17 +82,19 @@
             selectElement.innerHTML = `<option value="">${defaultText}</option>`;
         }
 
-        // Fetch students and topics when a grade is selected
+        // On grade change, fetch students and subjects
         gradeSelect.addEventListener("change", function () {
             const gradeId = this.value;
 
             if (!gradeId) {
                 clearOptions(studentSelect, "Select a grade first");
-                clearOptions(topicSelect, "Select a grade first");
+                clearOptions(subjectSelect, "Select a grade first");
+                clearOptions(topicSelect, "Select a subject first");
                 clearOptions(questionSelect, "Select a topic first");
                 return;
             }
 
+            // Load students
             fetch(`/assessment/get-students/?grade_id=${gradeId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -75,7 +104,30 @@
                     });
                 });
 
-            fetch(`/assessment/get-topics/?grade_id=${gradeId}`)
+            // Load subjects for grade
+            fetch(`/assessment/get-subjects/?grade_id=${gradeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    clearOptions(subjectSelect, "Select Subject");
+                    data.forEach(subject => {
+                        subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+                    });
+                });
+
+            clearOptions(topicSelect, "Select a subject first");
+            clearOptions(questionSelect, "Select a topic first");
+        });
+
+        // On subject change, fetch topics
+        subjectSelect.addEventListener("change", function () {
+            const subjectId = this.value;
+
+            if (!subjectId) {
+                clearOptions(topicSelect, "Select a subject first");
+                return;
+            }
+
+            fetch(`/assessment/get-topics-by-subject/?subject_id=${subjectId}`)
                 .then(response => response.json())
                 .then(data => {
                     clearOptions(topicSelect, "Select Topic");
@@ -84,10 +136,10 @@
                     });
                 });
 
-            clearOptions(questionSelect, "Select a topic first");  // Reset questions
+            clearOptions(questionSelect, "Select a topic first");
         });
 
-        // Fetch questions when a topic is selected
+        // On topic change, fetch questions
         topicSelect.addEventListener("change", function () {
             const topicId = this.value;
 
@@ -107,5 +159,6 @@
         });
     });
 </script>
+
 
 {% endblock content %}

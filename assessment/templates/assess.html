@@ -1,18 +1,68 @@
-{% extends "base.html" %} {% block content %}
-<h1>Assess Our Performance</h1>
+{% extends "base.html" %}
 
-<div>
-  <div class="col-md-1">
-    <a href="/assessment/all/topics/">Topics</a>
-
-    <a href="/assessment/record/question/">  Questions</a>
-    <a href="/assessment/results">Results</a>
+{% block content %}
+<div class="assessment-container">
+  <h1 class="assessment-title">Assess Our Performance</h1>
+  
+  <div class="assessment-navigation">
+    <nav>
+      <ul class="nav-links">
+        <li><a href="/assessment/all/topics/" class="nav-link">Topics</a></li>
+        <li><a href="/assessment/record/question/" class="nav-link">Questions</a></li>
+        <li><a href="/assessment/results" class="nav-link">Results</a></li>
+      </ul>
+    </nav>
   </div>
+
+  <!-- Commented section preserved from original -->
   <!-- <div>
     {% for grade in grading %}
-    {{ grade.grade_name }}
+      {{ grade.grade_name }}
     {% endfor %}
-</div> -->
+  </div> -->
 </div>
 
+<style>
+  .assessment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .assessment-title {
+    color: #333;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+  }
+  
+  .assessment-navigation {
+    margin-bottom: 40px;
+  }
+  
+  .nav-links {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .nav-links li {
+    margin-right: 20px;
+  }
+  
+  .nav-link {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #f5f5f5;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    background-color: #e0e0e0;
+  }
+</style>
 {% endblock %}

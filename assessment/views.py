@@ -17,6 +17,12 @@ def Assessment(request):
 
 
 # RECORD TOPIC
+
+def get_Tsubjects_by_grade(request):
+    grade_id = request.GET.get('grade_id')
+    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
+    return JsonResponse(list(subjects), safe=False)
+
 def RecordTopic(request):
     if request.method == 'POST':
         form = TopicsForm(request.POST)
@@ -27,12 +33,34 @@ def RecordTopic(request):
         form = TopicsForm()
     return render(request, "all_topics.html", {'form':form})
 
-def TopicLists(request):
-    lists = Topics.objects.all()
-    return render(request, "all_topics.html",{'lists':lists})
+
+def topic_lists(request):
+    grades = Grade.objects.all()
+    selected_grade = request.GET.get('grade_id')
+
+    topics = Topics.objects.all()
+    if selected_grade:
+        topics = topics.filter(grade_id=selected_grade)
+
+    return render(request, "all_topics.html", {
+        'grades': grades,
+        'topics': topics,
+        'selected_grade': selected_grade
+    })
 
 # RECORD QUESTIONS
 
+
+def get_Qsubjects_by_grade(request):
+    grade_id = request.GET.get('grade_id')
+    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
+    return JsonResponse(list(subjects), safe=False)
+
+
+def get_Qtopics_by_subject(request):
+    subject_id = request.GET.get('subject_id')
+    topics = Topics.objects.filter(subject_id=subject_id).values('id', 'name')
+    return JsonResponse(list(topics), safe=False)
 
 def RecordQuestion(request):
     if request.method == "POST":
@@ -44,6 +72,18 @@ def RecordQuestion(request):
         form = QuestionForm()
     return render(request, "record_question.html", {'form': form})
 
+#RECORD RESULT
+def get_subjects_by_grade(request):
+    grade_id = request.GET.get('grade_id')
+    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
+    return JsonResponse(list(subjects), safe=False)
+
+
+def get_topics_by_subject(request):
+    subject_id = request.GET.get('subject_id')
+    topics = Topics.objects.filter(subject_id=subject_id).values('id', 'name')
+    return JsonResponse(list(topics), safe=False)
+
 
 def get_students_by_grade(request):
     grade_id = request.GET.get('grade_id')
@@ -52,10 +92,10 @@ def get_students_by_grade(request):
     return JsonResponse(list(students), safe=False)
 
 
-def get_topics_by_grade(request):
-    grade_id = request.GET.get('grade_id')
-    topics = Topics.objects.filter(grade_id=grade_id).values('id', 'name')
-    return JsonResponse(list(topics), safe=False)
+# def get_topics_by_grade(request):
+#     grade_id = request.GET.get('grade_id')
+#     topics = Topics.objects.filter(grade_id=grade_id).values('id', 'name')
+#     return JsonResponse(list(topics), safe=False)
 
 
 def get_questions_by_topic(request):
