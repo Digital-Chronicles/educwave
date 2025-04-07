@@ -1,19 +1,27 @@
+
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect
+
+from django.contrib import messages
+
 from django.shortcuts import render
-from .models import ExamResult
-from .forms import ExamResultForm
-from .models import ExamResult, Student, Topics, Question, Grade
+
+
+
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from .models import *
-from academic.models import Grade
+
 from .forms import *
+from academic.models import *
+from students.models import *
 # Create your views here.
 
 
 def Assessment(request):
     grading = Grade.objects.all()
-    return render(request, "assess.html",{"grading":grading})
+    return render(request, "assess.html", {"grading": grading})
 
 
 # RECORD TOPIC
@@ -23,6 +31,7 @@ def get_Tsubjects_by_grade(request):
     subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
     return JsonResponse(list(subjects), safe=False)
 
+
 def RecordTopic(request):
     if request.method == 'POST':
         form = TopicsForm(request.POST)
@@ -31,7 +40,7 @@ def RecordTopic(request):
             return redirect('all_topics')
     else:
         form = TopicsForm()
-    return render(request, "all_topics.html", {'form':form})
+    return render(request, "all_topics.html", {'form': form})
 
 
 def topic_lists(request):
@@ -62,6 +71,7 @@ def get_Qtopics_by_subject(request):
     topics = Topics.objects.filter(subject_id=subject_id).values('id', 'name')
     return JsonResponse(list(topics), safe=False)
 
+
 def RecordQuestion(request):
     if request.method == "POST":
         form = QuestionForm(request.POST)
@@ -71,49 +81,6 @@ def RecordQuestion(request):
     else:
         form = QuestionForm()
     return render(request, "record_question.html", {'form': form})
-
-#RECORD RESULT
-def get_subjects_by_grade(request):
-    grade_id = request.GET.get('grade_id')
-    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
-    return JsonResponse(list(subjects), safe=False)
-
-
-def get_topics_by_subject(request):
-    subject_id = request.GET.get('subject_id')
-    topics = Topics.objects.filter(subject_id=subject_id).values('id', 'name')
-    return JsonResponse(list(topics), safe=False)
-
-
-def get_students_by_grade(request):
-    grade_id = request.GET.get('grade_id')
-    students = Student.objects.filter(current_grade_id=grade_id).values(
-        'id', 'first_name', 'last_name')
-    return JsonResponse(list(students), safe=False)
-
-
-# def get_topics_by_grade(request):
-#     grade_id = request.GET.get('grade_id')
-#     topics = Topics.objects.filter(grade_id=grade_id).values('id', 'name')
-#     return JsonResponse(list(topics), safe=False)
-
-
-def get_questions_by_topic(request):
-    topic_id = request.GET.get('topic_id')
-    questions = Question.objects.filter(
-        topic_id=topic_id).values('id', 'question_number')
-    return JsonResponse(list(questions), safe=False)
-
-
-def record_result(request):
-    if request.method == "POST":
-        form = ExamResultForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('results')
-    else:
-        form = ExamResultForm()
-    return render(request, 'record_result.html', {'form': form})
 
 
 def Exam_Results(request):
@@ -128,3 +95,80 @@ def Exam_Results(request):
     return render(request, 'results.html', {'grades': grades, 'results': results, 'selected_grade': selected_grade})
 
 
+# BULK RECORDS
+def bget_subjects_by_grade(request):
+    grade_id = request.GET.get('grade_id')
+    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
+    return JsonResponse(list(subjects), safe=False)
+
+
+def bulk_exam_entry(request):
+    if request.method == "POST":
+        grade_id = request.POST.get('grade')
+        subject_id = request.POST.get('subject')
+        exam_id = request.POST.get('exam')
+
+        if not grade_id or not subject_id or not exam_id:
+            messages.error(request, "All selections are required.")
+            return redirect('bulk-items')  # Replace with your URL name
+
+        try:
+            grade = Grade.objects.get(id=grade_id)
+            subject = Subject.objects.get(id=subject_id)
+            exam = TermExamSession.objects.get(id=exam_id)
+        except (Grade.DoesNotExist, Subject.DoesNotExist, TermExamSession.DoesNotExist):
+            messages.error(request, "Invalid grade, subject, or exam.")
+            return redirect('bulk-items')
+
+        students = Student.objects.filter(current_grade=grade)
+        questions = Question.objects.filter(subject=subject, term_exam=exam)
+
+        if 'save' in request.POST:  # Check if the save button was pressed
+            for student in students:
+                for question in questions:
+                    # Get the score from the form data using the student and question IDs
+                    score_key = f'student_{student.id}_question_{question.id}'
+                    score = request.POST.get(score_key)
+
+                    if score:  # If there's a score entered, save it
+                        try:
+                            score = int(score)
+                            # Create an ExamResult entry
+                            exam_result = ExamResult(
+                                student=student,
+                                grade=grade,
+                                subject=subject,
+                                question=question,
+                                topic=question.topic,  # Assuming Topic is a field in Question
+                                score=score,
+                            )
+                            exam_result.save()
+                        except ValueError:
+                            messages.error(
+                                request, f"Invalid score for {student.first_name} {student.last_name} on question {question.question_number}")
+                            return redirect('bulk-items')
+                        except ValidationError as e:
+                            messages.error(
+                                request, f"Validation error for {student.first_name} {student.last_name}: {e.message}")
+                            return redirect('bulk-items')
+
+            messages.success(request, "Scores saved successfully!")
+            return redirect('bulk-items')  # Redirect after saving
+
+        context = {
+            'grade': grade,
+            'subject': subject,
+            'exam': exam,
+            'students': students,
+            'questions': questions,
+        }
+
+        return render(request, 'bulk_entry_table.html', context)
+
+    # GET request (render the selection form)
+    grades = Grade.objects.all()
+    exams = TermExamSession.objects.all()
+    return render(request, 'bulk_entry_select.html', {
+        'grades': grades,
+        'exams': exams
+    })
