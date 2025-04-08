@@ -96,6 +96,7 @@ def Exam_Results(request):
     student_totals = {}
     topic_scores = defaultdict(
         lambda: {'total_score': 0, 'max_score': 0, 'count': 0})
+    topic_students = defaultdict(list)
 
     if selected_grade_id and selected_subject_id:
         students = Student.objects.filter(current_grade_id=selected_grade_id)
@@ -133,6 +134,28 @@ def Exam_Results(request):
             topic_scores[topic]['max_score'] += result.question.max_score
             topic_scores[topic]['count'] += 1
 
+            # Add student performance for each topic
+            topic_students[topic].append({
+                'student': result.student,
+                'score': result.score,
+                'percentage': percentage,
+            })
+
+        # Select top 3 and bottom 3 students per topic
+        topic_top_bottom_students = {}
+        for topic, students_data in topic_students.items():
+            # Sort students based on their percentage for each topic
+            sorted_students = sorted(
+                students_data, key=lambda x: x['percentage'], reverse=True)
+
+            top_students = sorted_students[:3]  # Top 3
+            bottom_students = sorted_students[-3:]  # Bottom 3
+
+            topic_top_bottom_students[topic] = {
+                'top': top_students,
+                'bottom': bottom_students
+            }
+
         # Compute topic performance percentages
         topic_performance = []
         for topic, data in topic_scores.items():
@@ -151,6 +174,7 @@ def Exam_Results(request):
         best_done_topics = []
         worst_done_topics = []
         student_totals = {}
+        topic_top_bottom_students = {}
 
     return render(request, 'results.html', {
         'grades': grades,
@@ -163,6 +187,7 @@ def Exam_Results(request):
         'selected_subject': selected_subject_id,
         'best_done_topics': best_done_topics,
         'worst_done_topics': worst_done_topics,
+        'topic_top_bottom_students': topic_top_bottom_students,  # Add this to pass the data
     })
 
 
