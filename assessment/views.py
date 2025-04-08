@@ -1,4 +1,5 @@
 
+from django.db.models import Avg
 from django.db.models import Sum
 from collections import defaultdict
 from django.core.exceptions import ValidationError
@@ -79,9 +80,9 @@ def RecordQuestion(request):
     return render(request, "record_question.html", {'form': form})
 
 
-
-
 #RESULTS
+
+
 def Exam_Results(request):
     grades = Grade.objects.all()
     selected_grade_id = request.GET.get('grade_id')
@@ -92,10 +93,12 @@ def Exam_Results(request):
     students = []
     questions = []
     results_matrix = {}
+    student_totals = {}
+    topic_scores = defaultdict(
+        lambda: {'total_score': 0, 'max_score': 0, 'count': 0})
 
     if selected_grade_id and selected_subject_id:
-        students = Student.objects.filter(
-            current_grade_id=selected_grade_id)
+        students = Student.objects.filter(current_grade_id=selected_grade_id)
         questions = Question.objects.filter(subject_id=selected_subject_id).select_related(
             'topic').order_by('topic__name', 'question_number')
 
@@ -105,22 +108,49 @@ def Exam_Results(request):
             question__in=questions
         ).select_related('student', 'question', 'question__topic')
 
-
-        # Organize results into matrix: results_matrix[student_id][question_id] = score
+        # Initialize results matrix and totals
         for student in students:
             results_matrix[student.id] = {}
-            for question in questions:
-                # will be replaced with dict
-                results_matrix[student.id][question.id] = None
+            student_totals[student.id] = {
+                'total_score': 0, 'total_possible': 0}
 
+            for question in questions:
+                results_matrix[student.id][question.id] = None
+                student_totals[student.id]['total_possible'] += question.max_score
 
         for result in results:
             percentage = (result.score / result.question.max_score) * \
-                100 if result.question.max_score > 0 else 0
+                100 if result.question.max_score else 0
             results_matrix[result.student.id][result.question.id] = {
                 'score': result.score,
                 'percentage': percentage
             }
+
+            student_totals[result.student.id]['total_score'] += result.score
+
+            topic = result.question.topic.name
+            topic_scores[topic]['total_score'] += result.score
+            topic_scores[topic]['max_score'] += result.question.max_score
+            topic_scores[topic]['count'] += 1
+
+        # Compute topic performance percentages
+        topic_performance = []
+        for topic, data in topic_scores.items():
+            percentage = (data['total_score'] / data['max_score']
+                          ) * 100 if data['max_score'] else 0
+            topic_performance.append(
+                {'topic': topic, 'percentage': percentage})
+
+        # Sort topics by performance
+        topic_performance_sorted = sorted(
+            topic_performance, key=lambda x: x['percentage'], reverse=True)
+        best_done_topics = topic_performance_sorted[:2]
+        worst_done_topics = topic_performance_sorted[-2:]
+
+    else:
+        best_done_topics = []
+        worst_done_topics = []
+        student_totals = {}
 
     return render(request, 'results.html', {
         'grades': grades,
@@ -128,10 +158,12 @@ def Exam_Results(request):
         'questions': questions,
         'students': students,
         'results_matrix': results_matrix,
+        'student_totals': student_totals,
         'selected_grade': selected_grade_id,
-        'selected_subject': selected_subject_id
+        'selected_subject': selected_subject_id,
+        'best_done_topics': best_done_topics,
+        'worst_done_topics': worst_done_topics,
     })
-
 
 
 # BULK RECORDS
