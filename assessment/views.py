@@ -1,18 +1,14 @@
 
+from django.db.models import Sum
+from collections import defaultdict
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
-
 from django.contrib import messages
-
 from django.shortcuts import render
-
-
-
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from .models import *
-
 from .forms import *
 from academic.models import *
 from students.models import *
@@ -83,16 +79,59 @@ def RecordQuestion(request):
     return render(request, "record_question.html", {'form': form})
 
 
+
+
+#RESULTS
 def Exam_Results(request):
     grades = Grade.objects.all()
-    selected_grade = request.GET.get('grade_id')
+    selected_grade_id = request.GET.get('grade_id')
+    selected_subject_id = request.GET.get('subject_id')
 
-    if selected_grade:
-        results = ExamResult.objects.filter(grade_id=selected_grade)
-    else:
-        results = ExamResult.objects.none()  # Show nothing initially
+    subjects = Subject.objects.filter(
+        grade_id=selected_grade_id) if selected_grade_id else []
+    students = []
+    questions = []
+    results_matrix = {}
 
-    return render(request, 'results.html', {'grades': grades, 'results': results, 'selected_grade': selected_grade})
+    if selected_grade_id and selected_subject_id:
+        students = Student.objects.filter(
+            current_grade_id=selected_grade_id)
+        questions = Question.objects.filter(subject_id=selected_subject_id).select_related(
+            'topic').order_by('topic__name', 'question_number')
+
+        results = ExamResult.objects.filter(
+            grade_id=selected_grade_id,
+            subject_id=selected_subject_id,
+            question__in=questions
+        ).select_related('student', 'question', 'question__topic')
+
+
+        # Organize results into matrix: results_matrix[student_id][question_id] = score
+        for student in students:
+            results_matrix[student.id] = {}
+            for question in questions:
+                # will be replaced with dict
+                results_matrix[student.id][question.id] = None
+
+
+        for result in results:
+            percentage = (result.score / result.question.max_score) * \
+                100 if result.question.max_score > 0 else 0
+            results_matrix[result.student.id][result.question.id] = {
+                'score': result.score,
+                'percentage': percentage
+            }
+
+    return render(request, 'results.html', {
+        'grades': grades,
+        'subjects': subjects,
+        'questions': questions,
+        'students': students,
+        'results_matrix': results_matrix,
+        'selected_grade': selected_grade_id,
+        'selected_subject': selected_subject_id
+    })
+
 
 
 # BULK RECORDS
