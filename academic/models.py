@@ -10,12 +10,30 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import datetime
 
+#Grade
+class Grade(models.Model):
+    grade_name = models.CharField(max_length=50)
+    class_teacher = models.ForeignKey(
+        Teacher, on_delete=models.SET_NULL, null=True, related_name="grades")
+    created = models.DateField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
+
+    class Meta:
+        db_table = "class"
+        db_table_comment = "This includes Students address data"
+        ordering = ["grade_name"]
+
+    def __str__(self):
+        return self.grade_name
 
 # Subjects Table
 class Subject(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    curriculum = models.ForeignKey('Curriculum', on_delete=models.CASCADE, related_name="subjects")
+    grade = models.ForeignKey(
+        Grade, blank=True, on_delete=models.DO_NOTHING, related_name="subject_grade")
+    curriculum = models.ForeignKey(
+        'Curriculum', on_delete=models.CASCADE, related_name="subjects")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
@@ -25,9 +43,11 @@ class Subject(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return f'{self.name} - {self.curriculum.name}'
+        return f'{self.name}-{self.grade} '
 
 # Curriculum Table
+
+
 class Curriculum(models.Model):
     name = models.CharField(max_length=150)
     objectives = models.TextField()
@@ -44,8 +64,11 @@ class Curriculum(models.Model):
         return self.name
 
 # Topics Table
+
+
 class Topic(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="topics")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name="topics")
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     order = models.PositiveIntegerField()
@@ -61,18 +84,25 @@ class Topic(models.Model):
         return f"{self.name} - {self.subject.name}"
 
 # Exams Table
+
+
 class Exam(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="exams")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name="exams")
     date = models.DateField()
     duration_minutes = models.PositiveIntegerField()
     file = models.FileField(
-        upload_to='exam_uploads/', 
+        upload_to='exam_uploads/',
         blank=True,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'pptx'])]  # Add file type validation
+        # Add file type validation
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'docx', 'pptx'])]
     )
     description = models.TextField(null=True, blank=True)
-    grade = models.ForeignKey('Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exams")
-    created_by = models.ForeignKey(Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exams")
+    grade = models.ForeignKey(
+        'Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exams")
+    created_by = models.ForeignKey(
+        Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exams")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
@@ -85,33 +115,29 @@ class Exam(models.Model):
         return f"{self.subject}"
 
 # Classes Table
-class Grade(models.Model):
-    grade_name = models.CharField(max_length=50)
-    class_teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name="grades")
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
 
-    class Meta:
-        db_table = "class"
-        db_table_comment = "This includes Students address data"
-        ordering = ["grade_name"]
 
-    def __str__(self):
-        return self.grade_name
-    
+
+
 # Notes
+
+
 class Notes(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="notes")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name="notes")
     topics = models.ManyToManyField(Topic, related_name="notes")
     notes_file = models.FileField(
-        upload_to='notes_uploads/', 
+        upload_to='notes_uploads/',
         blank=True,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx', 'pptx'])]
+        validators=[FileExtensionValidator(
+            allowed_extensions=['pdf', 'docx', 'pptx'])]
     )
     notes_content = CKEditor5Field('Text', config_name='extends')
     description = models.TextField(null=True, blank=True)
-    grade = models.ForeignKey('Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exam")
-    created_by = models.ForeignKey(Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exam")
+    grade = models.ForeignKey(
+        'Grade', blank=True, on_delete=models.DO_NOTHING, related_name="exam")
+    created_by = models.ForeignKey(
+        Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exam")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
@@ -123,7 +149,6 @@ class Notes(models.Model):
 
     def __str__(self):
         return f"{self.subject}"
-    
 
 
 def academic_year_choices():
@@ -136,18 +161,22 @@ class TermExamSession(models.Model):
         TERM_1 = "TERM_1", "Term 1"
         TERM_2 = "TERM_2", "Term 2"
         TERM_3 = "TERM_3", "Term 3"
-        
+
     class ExamChoices(models.TextChoices):
         BOT = "BOT", "Beginning of Term"
         MOT = "MOT", "Mid of Term"
         EOT = "EOT", "End of Term"
 
-    term_name = models.CharField(max_length=10, choices=TermChoices.choices, verbose_name="Term Name",help_text="Select the term for this exam session")
-    year = models.PositiveIntegerField(default=datetime.date.today().year, choices=academic_year_choices, verbose_name="Academic Year", help_text="Select the academic year for this exam session", db_index=True)
-    exam_type = models.CharField(max_length=3, choices=ExamChoices.choices, verbose_name="Exam Type", help_text="Select the type of examination")
+    term_name = models.CharField(max_length=10, choices=TermChoices.choices,
+                                 verbose_name="Term Name", help_text="Select the term for this exam session")
+    year = models.PositiveIntegerField(default=datetime.date.today().year, choices=academic_year_choices,
+                                       verbose_name="Academic Year", help_text="Select the academic year for this exam session", db_index=True)
+    exam_type = models.CharField(max_length=3, choices=ExamChoices.choices,
+                                 verbose_name="Exam Type", help_text="Select the type of examination")
     start_date = models.DateField(help_text="Start date of the exam session")
     end_date = models.DateField(help_text="End date of the exam session")
-    created_by = models.ForeignKey(Teacher, on_delete=models.PROTECT, related_name="terms", help_text="Teacher who created this exam session")
+    created_by = models.ForeignKey(Teacher, on_delete=models.PROTECT,
+                                   related_name="terms", help_text="Teacher who created this exam session")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
@@ -169,20 +198,26 @@ class TermExamSession(models.Model):
 
     def __str__(self):
         return f"{self.get_term_name_display()} - {self.year} ({self.get_exam_type_display()})"
-    
-    
+
+
 class StudentMark(models.Model):
-    student = models.ForeignKey("students.Student", on_delete=models.CASCADE, related_name="marks")
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="marks")
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="marks")
-    term = models.ForeignKey(TermExamSession, on_delete=models.CASCADE, related_name="marks")
-    marks = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Marks must be between 0 and 100.")
+    student = models.ForeignKey(
+        "students.Student", on_delete=models.CASCADE, related_name="marks")
+    subject = models.ForeignKey(
+        Subject, on_delete=models.CASCADE, related_name="marks")
+    teacher = models.ForeignKey(
+        Teacher, on_delete=models.CASCADE, related_name="marks")
+    term = models.ForeignKey(
+        TermExamSession, on_delete=models.CASCADE, related_name="marks")
+    marks = models.PositiveIntegerField(validators=[MinValueValidator(
+        0), MaxValueValidator(100)], help_text="Marks must be between 0 and 100.")
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "student_marks"
-        ordering = ["-term__year", "term__term_name", "student__registration_id"]
+        ordering = ["-term__year", "term__term_name",
+                    "student__registration_id"]
         unique_together = ["student", "subject", "term"]
 
     def clean(self):
@@ -214,20 +249,24 @@ class StudentMark(models.Model):
 
 
 class StudentExamSummary(models.Model):
-    student = models.ForeignKey("students.Student", on_delete=models.CASCADE, related_name="exam_summaries")
-    term = models.ForeignKey(TermExamSession, on_delete=models.CASCADE, related_name="exam_summaries")
+    student = models.ForeignKey(
+        "students.Student", on_delete=models.CASCADE, related_name="exam_summaries")
+    term = models.ForeignKey(
+        TermExamSession, on_delete=models.CASCADE, related_name="exam_summaries")
     total_marks = models.PositiveIntegerField(default=0)
     average_marks = models.FloatField(default=0.0)
 
     class Meta:
         db_table = "student_exam_summary"
-        ordering = ["-term__year", "term__term_name", "student__registration_id"]
+        ordering = ["-term__year", "term__term_name",
+                    "student__registration_id"]
         unique_together = ["student", "term"]
 
     def calculate_totals(self):
         marks = self.student.marks.filter(term=self.term)
         self.total_marks = sum(mark.marks for mark in marks)
-        self.average_marks = self.total_marks / marks.count() if marks.count() > 0 else 0
+        self.average_marks = self.total_marks / \
+            marks.count() if marks.count() > 0 else 0
         self.save()
 
     def __str__(self):

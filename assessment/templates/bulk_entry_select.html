@@ -1,0 +1,52 @@
+{% extends "base.html" %}{% block content %}
+<form method="POST" id="bulk-entry-form">
+  {% csrf_token %}
+  <label>Grade:</label>
+  <select id="grade-select" name="grade" class="form-control" required>
+    <option value="">Select Grade</option>
+    {% for grade in grades %}
+    <option value="{{ grade.id }}">{{ grade.grade_name }}</option>
+    {% endfor %}
+  </select>
+
+  <label>Subject:</label>
+  <select name="subject" id="subject-select" class="form-control mb-2">
+    <option value="">Select a grade first</option>
+  </select>
+
+  <label>Exam:</label>
+  <select name="exam" class="form-control mb-2">
+    {% for exam in exams %}
+    <option value="{{ exam.id }}">{{ exam.term_name }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit" class="btn btn-primary">Proceed to Entry</button>
+</form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const gradeSelect = document.getElementById("grade-select");
+    const subjectSelect = document.getElementById("subject-select");
+
+    gradeSelect.addEventListener("change", function () {
+      const gradeId = this.value;
+
+      if (!gradeId) {
+        subjectSelect.innerHTML = `<option value="">Select a grade first</option>`;
+        return;
+      }
+
+      fetch(`/assessment/bget-subjects/?grade_id=${gradeId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          subjectSelect.innerHTML = `<option value="">Select Subject</option>`;
+          data.forEach((subject) => {
+            subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+          });
+        });
+    });
+  });
+</script>
+
+{% endblock %}

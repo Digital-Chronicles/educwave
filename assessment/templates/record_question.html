@@ -1,0 +1,118 @@
+{% extends 'base.html' %} {% block content %}
+<div class="card">
+  <div class="m-2 p-5 my-2">
+    <div>
+      <h5 class="">Record Questions</h5>
+    </div>
+    <div>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="term_exam">Exam:</label>
+          {{ form.term_exam }}
+        </div>
+
+        <div class="mb-3">
+          <label for="grade-select">Grade:</label>
+          <select
+            id="grade-select"
+            name="grade"
+            class="form-control border-input"
+          >
+            {% for choice in form.grade.field.choices %}
+            <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="subject-select">Subject:</label>
+          <select
+            id="subject-select"
+            name="subject"
+            class="form-control border-input"
+          >
+            <option value="">Select a grade first</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="topic-select">Topic:</label>
+          <select
+            id="topic-select"
+            name="topic"
+            class="form-control border-input"
+          >
+            <option value="">Select a subject first</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="question_number">Question Number:</label>
+          {{ form.question_number }}
+        </div>
+
+        <div class="mb-3">
+          <label for="max_score">Max Score:</label>
+          {{ form.max_score }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Question</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const gradeSelect = document.getElementById("grade-select");
+    const subjectSelect = document.getElementById("subject-select");
+    const topicSelect = document.getElementById("topic-select");
+
+    function clearOptions(select, defaultText) {
+        select.innerHTML = `<option value="">${defaultText}</option>`;
+    }
+
+    // Grade -> Subjects
+    gradeSelect.addEventListener("change", function () {
+        const gradeId = this.value;
+
+        if (!gradeId) {
+            clearOptions(subjectSelect, "Select a grade first");
+            clearOptions(topicSelect, "Select a subject first");
+            return;
+        }
+
+        fetch(`/assessment/qget-subjects/?grade_id=${gradeId}`)
+            .then(response => response.json())
+            .then(data => {
+                clearOptions(subjectSelect, "Select Subject");
+                data.forEach(subject => {
+                    subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+                });
+            });
+
+        clearOptions(topicSelect, "Select a subject first");
+    });
+
+    // Subject -> Topics
+    subjectSelect.addEventListener("change", function () {
+        const subjectId = this.value;
+
+        if (!subjectId) {
+            clearOptions(topicSelect, "Select a subject first");
+            return;
+        }
+
+        fetch(`/assessment/qget-topics-by-subject/?subject_id=${subjectId}`)
+            .then(response => response.json())
+            .then(data => {
+                clearOptions(topicSelect, "Select Topic");
+                data.forEach(topic => {
+                    topicSelect.innerHTML += `<option value="${topic.id}">${topic.name}</option>`;
+                });
+            });
+    });
+});
+</script>
+
+{% endblock content %}
