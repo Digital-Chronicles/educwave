@@ -32,7 +32,7 @@ class StudentTuitionDescriptionAdmin(admin.ModelAdmin):
         'breakfast', 
         'total_fee'
     )
-    list_filter = ('hostel', 'lunch', 'breakfast',)
+    list_filter = ('hostel', 'lunch', 'breakfast',"tuition")
     search_fields = ('student__name', 'tuition__grade__grade_name',)
     readonly_fields = ('total_fee',)
 

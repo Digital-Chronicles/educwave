@@ -19,9 +19,9 @@ class GradeAdmin(admin.ModelAdmin):
 # Subject Model
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'curriculum', 'created', 'updated')
-    search_fields = ('name', 'description', 'curriculum__name')
-    list_filter = ('name', 'curriculum')
+    list_display = ('name', 'description', 'grade', 'created', )
+    search_fields = ('name', 'description', 'grade')
+    list_filter = ('name', 'grade')
     ordering = ['name']
     readonly_fields = ('created', 'updated')
 

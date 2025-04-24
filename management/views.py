@@ -5,11 +5,6 @@ from management.models import *
 from django.core.exceptions import ValidationError
 from .models import GeneralInformation
 from .forms import GeneralInformationForm
-import matplotlib.pyplot as plt
-import seaborn as sns
-import io
-import base64
-import numpy as np
 from django.contrib.auth.decorators import login_required
 from accounts.mixins import RoleRequiredMixin
 from accounts.decorators import role_required

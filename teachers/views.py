@@ -83,7 +83,7 @@ class RegisterTeacherDetails(RoleRequiredMixin, generic.CreateView):
     model = Teacher
     template_name = 'registerteacherdetails.html'
     form_class = TeacherForm
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'FINANCE', 'ADMIN']
 
     def form_valid(self, form):
         teacher = form.save()
@@ -93,7 +93,7 @@ class Teacher_Payroll(RoleRequiredMixin, generic.CreateView):
     model = PayrollInformation
     template_name = 'payroll.html'
     form_class = PayrollInformationForm
-    allowed_roles = ['ADMIN', 'FINANCE']
+    allowed_roles = ['ADMIN', 'FINANCE', 'ADMIN']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -179,7 +179,7 @@ class Teacher_Current_Employment(RoleRequiredMixin, generic.CreateView):
     model = CurrentEmployment
     template_name = 'currentemployment.html'
     form_class = CurrentEmploymentForm
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'FINANCE','ADMIN']
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

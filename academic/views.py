@@ -66,7 +66,7 @@ def academics(request):
 class ExamList(ListView, RoleRequiredMixin):
     model = Exam
     template_name = "exams.html"
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
     
 # View details of a specific exam
@@ -114,35 +114,35 @@ class RegisterGrade(generic.CreateView, RoleRequiredMixin):
     template_name = "registerGrade.html"
     form_class = GradeForm
     success_url = "/"
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
 class RegisterSubject(generic.CreateView, RoleRequiredMixin):
     model = Subject
     template_name = "registerSubject.html"
     form_class = SubjectForm
     success_url = "/"
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
 class RegisterCurriculum(generic.CreateView, RoleRequiredMixin):
     model = Curriculum
     template_name = "registerCurriculum.html"
     form_class = CurriculumForm
     success_url = '/'
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
 class RegisterTopic(generic.CreateView, RoleRequiredMixin):
     model = Topic
     template_name = "registerTopic.html"
     form_class = TopicForm
     success_url = '/'
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
 class UploadExamView(generic.CreateView, RoleRequiredMixin):
     model = Exam
     template_name = "uploadExam.html"
     form_class = ExamForm
     success_url = '/'
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user.teacher
@@ -153,7 +153,7 @@ class UploadNotesView(generic.CreateView, RoleRequiredMixin):
     form_class = NotesForm
     template_name = 'uploadNotes.html'
     success_url = "/"
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user 
@@ -163,7 +163,7 @@ class RegisterStudentMarksView(RoleRequiredMixin, generic.CreateView):
     model = StudentMark
     form_class = StudentMarksForm
     template_name = "registerStudentMarks.html"
-    allowed_roles = ['TEACHER', 'FINANCE']
+    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
     def form_valid(self, form):
         """Assign the logged-in teacher before saving."""

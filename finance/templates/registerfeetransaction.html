@@ -25,6 +25,34 @@
         </div>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#id_grade').change(function() {
+        var gradeId = $(this).val();
+        if (gradeId) {
+            $.ajax({
+                url: "{% url 'get_students_by_grade' %}",
+                data: { 'grade_id': gradeId },
+                dataType: 'json',
+                success: function(data) {
+                    var studentSelect = $('#id_student');
+                    studentSelect.empty();
+                    studentSelect.append('<option value="">Select a student</option>');
+
+                    $.each(data.students, function(index, student) {
+                        // Ensure we're using StudentTuitionDescription.id
+                        studentSelect.append('<option value="' + student.id + '">' + student.first_name + ' ' + student.last_name + '</option>');
+                    });
+
+                    studentSelect.trigger("change"); // Ensures Django recognizes the change
+                }
+            });
+        }
+    });
+});
+
+</script>
 
 
 {% endblock %}
