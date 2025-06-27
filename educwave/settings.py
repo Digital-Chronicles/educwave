@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pbt=ihm7-w+*moo+=qc9t$3n*nub!ywnhump%8gy^4#i=g$&xx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -89,23 +89,23 @@ WSGI_APPLICATION = 'educwave.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'school_manager',
-#         'USER': 'root',
-#         'PASSWORD': '',
-#         'HOST':'localhost',
-#         'PORT':'3306',
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'school_manager',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST':'localhost',
+        'PORT':'3306',
+    }
+}
 
 
 # Password validation
@@ -147,8 +147,8 @@ STATIC_URL = '/static/'
 # Directory where static files will be collected
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Directories where Django will search for additional static files
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# # Directories where Django will search for additional static files
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files (uploads by users)
 MEDIA_URL = '/media/'
