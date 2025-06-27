@@ -1,0 +1,40 @@
+{% extends "base.html" %} {% block content %}
+<h4>
+  Payment Transactions for {{ student_tuition_description.student.first_name }}
+  {{ student_tuition_description.student.last_name }}
+</h4>
+
+{% if transactions %}
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>Amount Paid</th>
+      <th>Amount Due</th>
+
+      <th>Payment Method</th>
+      <th>Status</th>
+      <th>Due Date</th>
+      <th>Last Payment Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for transaction in transactions %}
+    <tr>
+      <td>{{ transaction.amount_paid|floatformat:2 }}</td>
+      <td>{{ transaction.remaining_due|floatformat:2 }}</td>
+      <!-- Updated amount due -->
+      
+      <td>{{ transaction.payment_method }}</td>
+      <td>{{ transaction.status }}</td>
+      <td>{{ transaction.due_date|date:"F d, Y" }}</td>
+      <td>{{ transaction.last_payment_date|date:"M. d, Y" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No transactions found for this student.</p>
+{% endif %}
+
+<a href="/finance/fee/transaction/">Back to Fee Transactions</a>
+{% endblock %}

@@ -3,9 +3,11 @@ from .models import Student, StudentAddress, CareTaker, StudentGrade
 
 # Customizing the display of the Student model
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ('registration_id', 'first_name', 'last_name', 'current_status', 'date_of_birth', 'guardian_name', 'created', 'updated')
-    search_fields = ('registration_id', 'first_name', 'last_name', 'guardian_name')
-    list_filter = ('current_status', 'date_of_birth', 'created')
+    list_display = ('registration_id', 'first_name', 'last_name',
+                    'current_status', 'current_grade', 'guardian_name', 'created', 'updated')
+    search_fields = ('registration_id', 'first_name',
+                     'last_name', 'current_grade')
+    list_filter = ('current_status', 'current_grade', 'created')
     ordering = ('first_name',)
     readonly_fields = ('created', 'updated')  # To make the fields read-only
 

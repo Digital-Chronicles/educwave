@@ -1,5 +1,7 @@
 from django.shortcuts import redirect, render
 from django.views import generic
+from finance.forms import StudentTuitionDescriptionForm
+from finance.models import StudentTuitionDescription
 from .models import Student, StudentAddress, CareTaker, StudentGrade
 from .forms import StudentForm, StudentAddressForm, CareTakerForm, StudentGradeForm
 from django.urls import reverse_lazy
@@ -136,11 +138,14 @@ class StudentGradeCreateView(RoleRequiredMixin, CreateView):
 @role_required(allowed_roles=['ADMIN', 'TEACHER'])
 def studentDetail(request, id):
     student = get_object_or_404(Student, id=id)
-    student_address = student.studentaddress if hasattr(student, 'studentaddress') else None
+    student_address = student.studentaddress if hasattr(
+        student, 'studentaddress') else None
     caretakers = student.caretaker_set.all()
-    
+
     return render(request, "studentDetail.html", {
         "student": student,
         "student_address": student_address,
-        "caretakers": caretakers
+        "caretakers": caretakers,
+      
     })
+  

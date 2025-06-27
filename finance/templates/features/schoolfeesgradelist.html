@@ -1,0 +1,36 @@
+<div class="card">
+    <div class="header">
+        <h4 class="title">Grade fees List</h4>
+        <!-- <p class="category">General Teacher List</p> -->
+    </div>
+    <div class="content table-responsive table-full-width">
+    {% if grade_fees %}    
+        <table class="table table-striped">
+            <thead>
+                <th class="text-primary fw-semo">Grade Id</th>
+                <th class="text-primary fw-bold">Tuition Fee</th>
+                <th class="text-primary fw-bold">Hostel Fee</th>
+                <th class="text-primary fw-bold">Breakfast Fee</th>
+                <th class="text-primary fw-bold">Lunch Fee</th>
+            </thead>
+            <tbody>
+   
+                {% for fees in grade_fees %}
+                <tr>
+                    <td>{{ fees.grade }}</td>
+                    <td>{{ fees.tuitionfee}}</td>
+                    <td>{{ fees.hostelfee}}</td>
+                    <td>{{ fees.breakfastfee}}</td>
+                    <td>{{ fees.lunchfee}}</td>
+                </tr>
+                {% endfor %}
+    {% else %}
+              <center>
+                <p>No Grade fees found</p>
+              </center> 
+
+    {% endif %}            
+            </tbody>
+        </table>
+    </div>
+</div>

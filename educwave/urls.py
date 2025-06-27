@@ -27,6 +27,7 @@ urlpatterns = [
     path('teachers/', include('teachers.urls')),
     path('academics/', include('academic.urls')),
     path('finance/', include('finance.urls')),
+    path('assessment/', include('assessment.urls')),
     # CKeditor
     path('ckeditor/', include('ckeditor_uploader.urls')),
 ]

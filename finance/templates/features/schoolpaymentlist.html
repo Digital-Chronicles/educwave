@@ -1,0 +1,36 @@
+<div class="card">
+    <div class="header">
+        <h4 class="title">Other School Payments</h4>
+        <!-- <p class="category">General Teacher List</p> -->
+    </div>
+    <div class="content table-responsive table-full-width">
+    {% if payments %}    
+        <table class="table table-striped">
+            <thead>
+                <th class="text-primary fw-semo">Grade </th>
+                <th class="text-primary fw-bold">Fees Type</th>
+                <th class="text-primary fw-bold">Amount</th>
+                <th class="text-primary fw-bold">Unique Code</th>
+                <th class="text-primary fw-bold">Description</th>
+            </thead>
+            <tbody>
+   
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.grade }}</td>
+                    <td>{{ payment.fees_type}}</td>
+                    <td>{{ payment.amount}}</td>
+                    <td>{{ payment.unique_code}}</td>
+                    <td>{{ payment.description}}</td>
+                </tr>
+                {% endfor %}
+    {% else %}
+              <center>
+                <p>No Grade fees found</p>
+              </center> 
+
+    {% endif %}            
+            </tbody>
+        </table>
+    </div>
+</div>
