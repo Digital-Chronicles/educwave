@@ -91,23 +91,23 @@ WSGI_APPLICATION = 'educwave.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'school_manager',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'school_manager',
+#         'USER': 'root',
+#         'PASSWORD': '',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#     }
+# }
 
 
 # Password validation
@@ -148,17 +148,10 @@ STATIC_URL = '/static/'
 
 # Directory where static files will be collected
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-<<<<<<< HEAD
-# # Directories where Django will search for additional static files
 # STATICFILES_DIRS = [BASE_DIR / 'static']
-=======
-# Directories where Django will search for additional static files
-# 
->>>>>>> 4594e5299257601aad8647f86d96586304720b54
 
 # Media files (uploads by users)
-MEDIA_URL = '/media/'
+# MEDIA_URL = '/media/'
 
 # Directory where uploaded media files will be stored
 MEDIA_ROOT = BASE_DIR / 'media'
