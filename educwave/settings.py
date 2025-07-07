@@ -99,7 +99,7 @@ WSGI_APPLICATION = 'educwave.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'school_manager',
+        'NAME': 'educwave',
         'USER': 'postgres',
         'PASSWORD': 'educwave123',
         'HOST':'localhost',
