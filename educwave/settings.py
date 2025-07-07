@@ -145,10 +145,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Directory where static files will be collected
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'static'
 
 
-# STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
 
 # Media files (uploads by users)
 # MEDIA_URL = '/media/'
