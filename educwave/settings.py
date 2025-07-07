@@ -69,7 +69,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR,'templates')
+            os.path.join(BASE_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -147,12 +147,11 @@ STATIC_URL = '/static/'
 # Directory where static files will be collected
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# # Directories where Django will search for additional static files
+
 # STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files (uploads by users)
 # MEDIA_URL = '/media/'
-
 
 # Directory where uploaded media files will be stored
 MEDIA_ROOT = BASE_DIR / 'media'
