@@ -100,10 +100,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'school_manager',
-        'USER': 'root',
+        'USER': 'postgres',
         'PASSWORD': 'educwave123',
         'HOST':'localhost',
-        'PORT':'3306',
+        'PORT': '5432',
     }
 }
 
