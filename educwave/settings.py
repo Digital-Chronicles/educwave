@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': 'educwave',
         'USER': 'postgres',
         'PASSWORD': 'educwave123',
-        'HOST':'localhost',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
