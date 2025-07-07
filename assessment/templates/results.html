@@ -6,20 +6,18 @@
     <h5>Performance Sheet</h5>
 
   
-<!-- Grade Selection -->
-        <div class="mb-4">
-            <label for="grade_id" class="form-label"><strong>Select Grade:</strong></label>
-            <div class="btn-group btn-group-toggle d-flex flex-wrap" data-toggle="buttons">
-                {% for grade in grades %}
-                    <a href="?grade_id={{ grade.id }}" class="btn btn-sm mx-2 my-1 {% if selected_grade == grade.id|stringformat:"s" %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                        {{ grade.grade_name }}
-                    </a>
-                {% endfor %}
-            </div>
-        </div>
+   <!-- Grade Selection -->
+    <div class="mb-2">
+        <label><strong>Select Grade:</strong></label>
+        {% for grade in grades %}
+            <a href="?grade_id={{ grade.id }}" class="btn btn-sm mx-1 {% if selected_grade == grade.id|stringformat:"s" %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                {{ grade.grade_name }}
+            </a>
+        {% endfor %}
+    </div>
 
 
-    <!-- Subject Selection -->
+   <!-- Subject Selection -->
     {% if selected_grade %}
     <form method="get" class="mb-3">
         <input type="hidden" name="grade_id" value="{{ selected_grade }}">
