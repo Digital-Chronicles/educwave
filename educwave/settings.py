@@ -148,10 +148,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'static'
 
 
-# STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files (uploads by users)
-# MEDIA_URL = '/media/'
+MEDIA_URL = '/media/'
 
 # Directory where uploaded media files will be stored
 MEDIA_ROOT = BASE_DIR / 'media'
