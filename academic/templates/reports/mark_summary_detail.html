@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Mark Summary Details{% endblock %}
+{% block breadcrumb %}Mark Summaries / Details{% endblock %}
+{% block assessmentSetActive %}active{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex justify-between items-start mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Mark Summary Details</h2>
+        <a href="{% url 'mark_summary_report' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Report
+        </a>
+    </div>
+
+    <!-- Student Summary Card -->
+    <div class="bg-gray-50 rounded-lg p-6 mb-8 border border-gray-200">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+            <div>
+                <h3 class="text-xl font-semibold text-gray-800">
+                    {{ summary.student.last_name }}, {{ summary.student.first_name }}
+                </h3>
+                <p class="text-gray-600">
+                    {{ summary.subject.name }} • {{ summary.term_exam }} • {{ summary.grade.grade_name }}
+                </p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {% if summary.percentage >= 70 %}bg-green-100 text-green-800{% elif summary.percentage >= 50 %}bg-blue-100 text-blue-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    Overall: {{ summary.percentage }}%
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-md shadow-xs border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Total Score</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ summary.total_score }}/{{ summary.max_possible }}
+                </p>
+            </div>
+            <div class="bg-white p-4 rounded-md shadow-xs border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Subject Position</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ summary.subject_position|default:"Not ranked" }}
+                </p>
+            </div>
+            <div class="bg-white p-4 rounded-md shadow-xs border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Class Average</p>
+                <p class="text-lg font-semibold text-gray-800">
+                    {{ summary.class_average|default:"Not available" }}
+                </p>
+            </div>
+            <div class="bg-white p-4 rounded-md shadow-xs border border-gray-100">
+                <p class="text-sm text-gray-500 mb-1">Performance</p>
+                <p class="text-lg font-semibold {% if performance_comparison >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                    {% if summary.class_average %}
+                        {% if performance_comparison >= 0 %}
+                            Above Average (+{{ performance_comparison }}%)
+                        {% else %}
+                            Below Average ({{ performance_comparison }}%)
+                        {% endif %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Breakdown -->
+    <div class="mb-6">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">Question Breakdown</h4>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Score</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for result in exam_results %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ result.question.question_number }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ result.topic.name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ result.score }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ result.question.max_score }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if result.percentage >= 70 %}text-green-600 font-medium{% elif result.percentage < 50 %}text-red-600 font-medium{% else %}text-gray-500{% endif %}">
+                            {{ result.percentage_rounded }}%
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No question details available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Performance Visualization -->
+    <div class="bg-white p-6 rounded-lg shadow-xs border border-gray-200">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">Performance by Topic</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <canvas id="topicPerformanceChart" height="250"></canvas>
+            </div>
+            <div>
+                <canvas id="scoreDistributionChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Topic Performance Chart
+    const topicCtx = document.getElementById('topicPerformanceChart').getContext('2d');
+    new Chart(topicCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ topic_labels|safe }},
+            datasets: [{
+                label: 'Average Score (%)',
+                data: {{ topic_averages|safe }},
+                backgroundColor: '#1e40af',
+                borderColor: '#1e3a8a',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Score Distribution Chart
+    const distCtx = document.getElementById('scoreDistributionChart').getContext('2d');
+    new Chart(distCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Correct', 'Incorrect', 'Unattempted'],
+            datasets: [{
+                data: [
+                    {{ score_distribution.correct }},
+                    {{ score_distribution.incorrect }},
+                    {{ score_distribution.unattempted }}
+                ],
+                backgroundColor: [
+                    '#15803d',
+                    '#ef4444',
+                    '#64748b'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

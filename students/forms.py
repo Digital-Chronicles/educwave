@@ -21,25 +21,51 @@ class StudentForm(forms.ModelForm):
             'school',
         ]
 
-        # Applying Bootstrap classes to form fields using widgets
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
-            'gender': forms.Select(attrs={'class': 'form-control border-input'}),
-            'current_status': forms.Select(attrs={'class': 'form-control border-input'}),
-            'year_of_entry': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'school': forms.Select(attrs={'class': 'form-control border-input'}),
-            'guardian_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'guardian_phone': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'father_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'father_phone': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'mother_name': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'mother_phone': forms.TextInput(attrs={'class': 'form-control border-input'}),
-            'profile_picture': forms.FileInput(attrs={'class': 'form-control border-input'}),
+            'first_name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'date_of_birth': forms.DateInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'type': 'date'
+            }),
+            'gender': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'current_status': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'year_of_entry': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'school': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'guardian_name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'guardian_phone': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'father_name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'father_phone': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'mother_name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'mother_phone': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'profile_picture': forms.FileInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
         }
-
-
 
 class StudentAddressForm(forms.ModelForm):
     class Meta:
@@ -47,10 +73,23 @@ class StudentAddressForm(forms.ModelForm):
         fields = ['address', 'city', 'state', 'zip_code']
         
         widgets = {
-            'address': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your address', 'rows': 4}),
-            'city': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your city'}),
-            'state': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your state'}),
-            'zip_code': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter your zip code'}),
+            'address': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'rows': 4,
+                'placeholder': 'Enter your address'
+            }),
+            'city': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter your city'
+            }),
+            'state': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter your state'
+            }),
+            'zip_code': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter your zip code'
+            }),
         }
 
 class CareTakerForm(forms.ModelForm):
@@ -59,12 +98,23 @@ class CareTakerForm(forms.ModelForm):
         fields = ['name', 'relationship', 'contact_number', 'email']
 
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter caretaker name'}),
-            'relationship': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter relationship'}),
-            'contact_number': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter contact number'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter email'}),
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter caretaker name'
+            }),
+            'relationship': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter relationship'
+            }),
+            'contact_number': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter contact number'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter email'
+            }),
         }
-
 
 class StudentGradeForm(forms.ModelForm):
     class Meta:
@@ -72,6 +122,11 @@ class StudentGradeForm(forms.ModelForm):
         fields = ['class_assigned', 'assigned_date']
 
         widgets = {
-            'class_assigned': forms.Select(attrs={'class': 'form-control border-input'}),
-            'assigned_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
+            'class_assigned': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'assigned_date': forms.DateInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'type': 'date'
+            }),
         }

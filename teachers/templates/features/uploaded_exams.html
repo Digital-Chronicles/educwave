@@ -1,32 +1,93 @@
-<div class="card">
-    <div class="content table-responsive table-full-width">
-        {% if exams %}
-        <table class="table table-striped">
-            <thead>
-                <th class="text-primary fw-semo">Subject</th>
-                <th class="text-primary fw-bold">Exam Date</th>
-                <th class="text-primary fw-bold">Duration (Minutes)</th>
-                <th class="text-primary fw-bold">Description</th>
-                <th class="text-primary fw-bold">Grade</th>
-                <th class="text-primary fw-bold">Action</th>
-            </thead>
-            <tbody>
-                {% for exam in exams %}
-                <tr>
-                    <td>{{ exam.subject.name }}</td>
-                    <td>{{ exam.date }}</td>
-                    <td>{{ exam.duration_minutes }}</td>
-                    <td>{{ exam.description }}</td>
-                    <td>{{ exam.grade.grade_name }}</td>
-                    <td><a href="/exams/details/{{ exam.id }}/" class="btn btn-sm btn-primary">Manage</a></td>
-                </tr>
-                {% endfor %}
-                {% else %}
-                <center>
-                    <p>No exams found</p>
-                </center>
-                {% endif %}
-            </tbody>
-        </table>
+<div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 mb-8">
+  {% if exams %}
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+        <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Exam Schedule
+      </h3>
     </div>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-600 uppercase tracking-wider">
+              Subject
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-600 uppercase tracking-wider">
+              Exam Date
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-600 uppercase tracking-wider">
+              Duration
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-600 uppercase tracking-wider">
+              Description
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-600 uppercase tracking-wider">
+              Grade
+            </th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-indigo-600 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for exam in exams %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <span class="text-indigo-600 font-medium">{{ exam.subject.name|slice:":1" }}</span>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{ exam.subject.name }}</div>
+                  <div class="text-sm text-gray-500">{{ exam.subject.code|default:"" }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{ exam.date|date:"M d, Y" }}</div>
+              <div class="text-sm text-gray-500">{{ exam.date|date:"D" }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                {{ exam.duration_minutes }} mins
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm text-gray-900 max-w-xs truncate">{{ exam.description|default:"-" }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                {{ exam.grade.grade_name }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <a href="/exams/details/{{ exam.id }}/" class="text-indigo-600 hover:text-indigo-900 mr-3">View</a>
+              <a href="/exams/edit/{{ exam.id }}/" class="text-yellow-600 hover:text-yellow-900">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center p-8">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <h3 class="mt-2 text-lg font-medium text-gray-900">No exams scheduled</h3>
+      <p class="mt-1 text-gray-500">There are currently no exams in the system.</p>
+      <div class="mt-6">
+        <a href="/exams/create/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Create New Exam
+        </a>
+      </div>
+    </div>
+  {% endif %}
 </div>

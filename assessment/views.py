@@ -55,8 +55,6 @@ def topic_lists(request):
     })
 
 # RECORD QUESTIONS
-
-
 def get_Qsubjects_by_grade(request):
     grade_id = request.GET.get('grade_id')
     subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')

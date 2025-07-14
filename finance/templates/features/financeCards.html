@@ -1,171 +1,112 @@
-
-<div>
-    
-    <div class="row">
-        <!-- Grades Section -->
-        <div class="col-lg-3 col-sm-6">
-            <div class="card custom-card-1">
-                <div class="content">
-                    <div class="row">
-                        <a href="/finance/schoolfees/" style="color: #374151;">
-                            <div class="col-xs-5">
-                                <div class="icon-big text-center custom-icon-1">
-                                    <i class="ti-server"></i>
-                                </div>
-                            </div>
-                            <div class="col-xs-7">
-                                <div class="numbers">
-                                    <p>School fees Structure </p>
-                                    {{grades_count}}
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="footer">
-                        <hr />
-                        <div class="footer">
-                            <a href="/finance/schoolfees/" class="stats">
-                                <i class="ti-pencil-alt"></i> Manage
-                            </a>
-                        </div>
-                    </div>
-                </div>
+<div class="container mx-auto px-4 py-6">
+  <!-- Finance Cards Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- School Fees Structure Card -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+      <a href="/finance/schoolfees/" class="block">
+        <div class="p-6">
+          <div class="flex items-center">
+            <div class="p-4 mr-4 rounded-lg bg-blue-50 text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">School Fees Structure</p>
+              <h3 class="text-2xl font-semibold text-gray-800">{{grades_count}}</h3>
+            </div>
+          </div>
         </div>
-
-        <!-- Subjects Section -->
-        <div class="col-lg-3 col-sm-6">
-            <div class="card custom-card-2">
-                <div class="content">
-                    <div class="row">
-                        <a href="/finance/otherpayment/" style="color: #374151;">
-                            <div class="col-xs-5">
-                                <div class="icon-big text-center custom-icon-1">
-                                    <i class="ti-server"></i>
-                                </div>
-                            </div>
-                            <div class="col-xs-7">
-                                <div class="numbers">
-                                    <p>Other School Payments</p>
-                                    <p>{{subjects_count}}</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="footer">
-                        <hr />
-                        <div class="footer">
-                            <a href="/finance/otherpayment/" class="stats">
-                                <i class="ti-pencil-alt"></i> Manage
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+          <div class="flex items-center text-blue-600 hover:text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span class="text-sm font-medium">Manage</span>
+          </div>
         </div>
-
-        <!-- Topics Section -->
-        <div class="col-lg-3 col-sm-6">
-            <div class="card custom-card-4">
-                <div class="content">
-                    <div class="row">
-                        <a href="/finance/tuition/description/" style="color: #374151;">
-                            <div class="col-xs-5">
-                                <div class="icon-big text-center custom-icon-1">
-                                    <i class="ti-server"></i>
-                                </div>
-                            </div>
-                            <div class="col-xs-7">
-                                <div class="numbers">
-                                    <p>Student Tuition Payment</p>
-                                    {{topics_count}}
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="footer">
-                        <hr />
-                        <div class="stats">
-                            <a href="/finance/tuition/description/" class="stats">
-                                <i class="ti-pencil-alt"></i> Manage
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-               <!-- Topics Section -->
-               <div class="col-lg-3 col-sm-6">
-                <div class="card custom-card-4">
-                    <div class="content">
-                        <div class="row">
-                            <a href="/finance/fee/transaction/" style="color: #374151;">
-                                <div class="col-xs-5">
-                                    <div class="icon-big text-center custom-icon-1">
-                                        <i class="ti-server"></i>
-                                    </div>
-                                </div>
-                                <div class="col-xs-7">
-                                    <div class="numbers">
-                                        <p>Fees Transaction</p>
-                                        {{topics_count}}
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="footer">
-                            <hr />
-                            <div class="stats">
-                                <a href="/finance/fee/transaction/" class="stats">
-                                    <i class="ti-pencil-alt"></i> Manage
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </a>
     </div>
 
+    <!-- Other School Payments Card -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+      <a href="/finance/otherpayment/" class="block">
+        <div class="p-6">
+          <div class="flex items-center">
+            <div class="p-4 mr-4 rounded-lg bg-green-50 text-green-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Other School Payments</p>
+              <h3 class="text-2xl font-semibold text-gray-800">{{subjects_count}}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+          <div class="flex items-center text-green-600 hover:text-green-800">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span class="text-sm font-medium">Manage</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Student Tuition Payment Card -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+      <a href="/finance/tuition/description/" class="block">
+        <div class="p-6">
+          <div class="flex items-center">
+            <div class="p-4 mr-4 rounded-lg bg-yellow-50 text-yellow-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Student Tuition Payment</p>
+              <h3 class="text-2xl font-semibold text-gray-800">{{topics_count}}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+          <div class="flex items-center text-yellow-600 hover:text-yellow-800">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span class="text-sm font-medium">Manage</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Fees Transaction Card -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+      <a href="/finance/fee/transaction/" class="block">
+        <div class="p-6">
+          <div class="flex items-center">
+            <div class="p-4 mr-4 rounded-lg bg-blue-50 text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Fees Transaction</p>
+              <h3 class="text-2xl font-semibold text-gray-800">{{topics_count}}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+          <div class="flex items-center text-blue-600 hover:text-blue-800">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span class="text-sm font-medium">Manage</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
 </div>
-
-<style>
-    /* Custom card styles */
-    .custom-card-1 {
-        background-color: #f8fafc;
-        /* Blue */
-        color: white;
-    }
-
-    .custom-card-2 {
-        background-color: #f9fafb;
-        /* Green */
-        color: white;
-    }
-
-    .custom-card-3 {
-        background-color: #fafafa;
-        /* Red */
-        color: white;
-    }
-
-    .custom-card-4 {
-        background-color: #fafafa;
-        /* Light Blue */
-        color: white;
-    }
-
-    /* Optional footer styling */
-    .footer {
-        color: #f8f9fa;
-    }
-
-    .stats {
-        color: #427C89;
-    }
-
-    /* Optional icon size adjustments */
-    .icon-big {
-        font-size: 3rem;
-        /* Adjust as needed */
-    }
-</style>
-

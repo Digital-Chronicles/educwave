@@ -1,269 +1,290 @@
 <!DOCTYPE html>
-{% load static %}
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link
-      rel="apple-touch-icon"
-      sizes="76x76"
-      href="assets/img/apple-icon.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="96x96"
-      href="assets/img/favicon.png"
-    />
 
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduWave Uganda</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3713/3713363.png" type="image/png">
 
-    <title>EduWave Uganda</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <meta
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
-      name="viewport"
-    />
-    <meta name="viewport" content="width=device-width" />
+  <!-- Custom Tailwind configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            },
+            secondary: {
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            accent: {
+              700: '#a16207',
+              800: '#854d0e',
+              900: '#713f12',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter var', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
 
-    <!-- Bootstrap core CSS     -->
-    <link href="{% static 'assets/css/custom.css' %}" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <!-- Bootstrap core CSS     -->
-    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Animation library for notifications   -->
-    <link href="{% static 'assets/css/animate.min.css' %}" rel="stylesheet" />
+  <!-- ChartJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!--  Paper Dashboard core CSS    -->
-    <link
-      href="{% static 'assets/css/paper-dashboard.css' %}"
-      rel="stylesheet"
-    />
+  <style>
+    /* Custom styles */
+    .sidebar {
+      transition: all 0.3s ease;
+      scrollbar-width: thin;
+      scrollbar-color: #e2e8f0 transparent;
+    }
 
-    <!--  CSS for Demo Purpose, don't include it in your project     -->
-    <link href="{% static 'assets/css/demo.css' %}" rel="stylesheet" />
+    .sidebar::-webkit-scrollbar {
+      width: 6px;
+    }
 
-    <!-- ChartJS -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    .sidebar::-webkit-scrollbar-thumb {
+      background-color: #e2e8f0;
+      border-radius: 3px;
+    }
 
-    <!--  Fonts and icons     -->
-    <link
-      href="http://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css?family=Muli:400,300"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link href="{% static 'assets/css/themify-icons.css' %}" rel="stylesheet" />
-    <link
-      rel="stylesheet"
-      href="{% static 'assets/font-awesome/css/font-awesome.min.css' %}"
-    />
-  </head>
+    .nav-item {
+      transition: all 0.2s ease;
+    }
 
-  <body>
-    <div class="wrapper">
-      <div
-        class="sidebar"
-        data-background-color="white"
-        data-active-color="danger"
-      >
-        <!--
-		Tip 1: you can change the color of the sidebar's background using: data-background-color="white | black"
-		Tip 2: you can change the color of the active button using the data-active-color="primary | info | success | warning | danger"
-	-->
+    .nav-item.active {
+      background-color: rgba(30, 64, 175, 0.1);
+      border-left: 4px solid #1e40af;
+    }
 
-        <div class="sidebar-wrapper">
-          <div class="logo">
-            <a href="http://www.creative-tim.com" class="simple-text">
-              EduWave Uganda
-            </a>
-          </div>
+    .nav-item.active i,
+    .nav-item.active p {
+      color: #1e40af;
+    }
 
-          <ul class="nav">
-            <li
-              class="{% block dashboardSetActive %}{% endblock dashboardSetActive %}"
-            >
-              <a href="/">
-                <i class="ti-user"></i>
-                <p>Dashboard</p>
-              </a>
-            </li>
-            <li
-              class="{% block studentSetActive %}{% endblock studentSetActive %}"
-            >
-              <a href="/students/">
-                <i class="ti-view-list-alt"></i>
-                <p>Students</p>
-              </a>
-            </li>
-            <li
-              class="{% block academicsSetActive %}{% endblock academicsSetActive %}"
-            >
-              <a href="/academics/">
-                <i class="ti-book"></i>
-                <p>Academics</p>
-              </a>
-            </li>
-            <li
-              class="{% block assessmentSetActive %}{% endblock assessmentSetActive %}"
-            >
-              <a href="/assessment/">
-                <i class="ti-book"></i>
-                <p>Assessment</p>
-              </a>
-            </li>
-            <li
-              class="{% block teacherSetActive %}{% endblock teacherSetActive %}"
-            >
-              <a href="/teachers/">
-                <i class="ti-text"></i>
-                <p>Teachers</p>
-              </a>
-            </li>
-            <li
-              class="{% block financeSetActive %}{% endblock financeSetActive %}"
-            >
-              <a href="/finance/">
-                <i class="ti-wallet"></i>
-                <p>Finance</p>
-              </a>
-            </li>
-          </ul>
-        </div>
+    .nav-item:hover:not(.active) {
+      background-color: rgba(241, 245, 249, 0.7);
+    }
+
+    .dropdown-menu {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+    }
+
+    .dropdown:hover .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .notification-dot {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #ef4444;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 font-sans antialiased">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <div class="sidebar w-64 bg-white shadow-sm flex flex-col border-r border-gray-200">
+      <div class="p-4 border-b border-gray-200 flex items-center">
+        <img src="https://cdn-icons-png.flaticon.com/512/3079/3079165.png" alt="Logo" class="h-8 w-8 mr-2">
+        <a href="#" class="text-xl font-bold text-primary-800">EduWave</a>
       </div>
 
-      <div class="main-panel">
-        <nav class="navbar navbar-default">
-          <div class="container-fluid">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar bar1"></span>
-                <span class="icon-bar bar2"></span>
-                <span class="icon-bar bar3"></span>
-              </button>
-              <a class="navbar-brand" href="#">
-                {% block page_title %} {% endblock page_title %}
-              </a>
-            </div>
-            <div class="collapse navbar-collapse">
-              <ul class="nav navbar-nav navbar-right">
-                <li>
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                    <i class="ti-panel"></i>
-                    <p>Stats</p>
-                  </a>
-                </li>
-                <!--                            <li class="dropdown">-->
-                <!--                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">-->
-                <!--                                    <i class="ti-bell"></i>-->
-                <!--                                    <p class="notification">5</p>-->
-                <!--                                    <p>Notifications</p>-->
-                <!--                                    <b class="caret"></b>-->
-                <!--                                </a>-->
-                <!--                                <ul class="dropdown-menu">-->
-                <!--                                    <li><a href="#">Notification 1</a></li>-->
-                <!--                                    <li><a href="#">Notification 2</a></li>-->
-                <!--                                    <li><a href="#">Notification 3</a></li>-->
-                <!--                                    <li><a href="#">Notification 4</a></li>-->
-                <!--                                    <li><a href="#">Another notification</a></li>-->
-                <!--                                </ul>-->
-                <!--                            </li>-->
-                <li>
-                  <a href="/general-information/create/">
-                    <i class="ti-settings"></i>
-                    <p>School Settings</p>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-
-        <div class="content">
-          <div class="container-fluid">
-            {% block content %} {% endblock content %}
+      <nav class="flex-1 overflow-y-auto py-2">
+        <div class="px-3 mb-4">
+          <div class="relative">
+            <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-transparent text-sm">
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
           </div>
         </div>
 
-        <footer class="footer">
-          <div class="container-fluid">
-            <nav class="pull-left">
-              <ul>
-                <li>
-                  <a href="http://www.creative-tim.com"> EduWave </a>
-                </li>
-                <li>
-                  <a href="http://blog.creative-tim.com"> Blog </a>
-                </li>
-                <li>
-                  <a href="http://www.creative-tim.com/license"> Licenses </a>
-                </li>
-              </ul>
-            </nav>
-            <div class="copyright pull-right">
-              &copy;
-              <script>
-                document.write(new Date().getFullYear());
-              </script>
-              , made with <i class="fa fa-heart heart"></i> by
-              <a href="http://www.creative-tim.com">Creative Tim</a>
-            </div>
+        <ul class="space-y-1 px-2">
+          <li class="nav-item {% block dashboardSetActive %}{% endblock %}">
+            <a href="/" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-tachometer-alt mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item {% block studentSetActive %}{% endblock %}">
+            <a href="/students/" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-users mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Students</span>
+              <span class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">1,234</span>
+            </a>
+          </li>
+          <li class="nav-item {% block academicsSetActive %}{% endblock %}">
+            <a href="/academics/" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-book-open mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Academics</span>
+            </a>
+          </li>
+          <li class="nav-item {% block assessmentSetActive %}{% endblock %}">
+            <a href="/assessment/" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-clipboard-check mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Assessment</span>
+            </a>
+          </li>
+          <li class="nav-item {% block teacherSetActive %}{% endblock %}">
+            <a href="/teachers/" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-chalkboard-teacher mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Teachers</span>
+              <span class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">42</span>
+            </a>
+          </li>
+          <li class="nav-item {% block financeSetActive %}{% endblock %}">
+            <a href="/finance/" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-wallet mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Finance</span>
+            </a>
+          </li>
+          
+          <!-- Divider -->
+          <li class="px-3 pt-4">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</span>
+          </li>
+          
+          <li class="nav-item">
+            <a href="#" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-cog mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">Settings</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="flex items-center p-3 rounded-lg">
+              <i class="fas fa-user-shield mr-3 text-gray-500"></i>
+              <span class="text-gray-700 font-medium">User Management</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- User profile -->
+      <div class="p-4 border-t border-gray-200">
+        <div class="flex items-center">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="h-10 w-10 rounded-full mr-3">
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-800 truncate">John Doe</p>
+            <p class="text-xs text-gray-500 truncate">Admin</p>
           </div>
-        </footer>
+          <button class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-chevron-down text-xs"></i>
+          </button>
+        </div>
       </div>
     </div>
-  </body>
 
-  <!--   Core JS Files   -->
-  <script
-    src="{% static 'assets/js/jquery-1.10.2.js' %}"
-    type="text/javascript"
-  ></script>
-  <script
-    src="{% static 'assets/js/bootstrap.min.js' %}"
-    type="text/javascript"
-  ></script>
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top navigation -->
+      <header class="bg-white shadow-xs border-b border-gray-200">
+        <div class="flex items-center justify-between px-6 py-3">
+          <!-- Breadcrumbs -->
+          <div class="flex items-center">
+            <h1 class="text-lg font-semibold text-gray-800 mr-4">
+              {% block page_title %}{% endblock %}
+            </h1>
+            <nav class="flex items-center text-sm">
+              <a href="/" class="text-primary-700 hover:text-primary-900">Dashboard</a>
+              <span class="mx-2 text-gray-400">/</span>
+              <span class="text-gray-600">{% block breadcrumb %}{% endblock %}</span>
+            </nav>
+          </div>
 
-  <!--  Checkbox, Radio & Switch Plugins -->
-  <script src="{% static 'assets/js/bootstrap-checkbox-radio.js' %}"></script>
+          <!-- Right side actions -->
+          <div class="flex items-center space-x-4">
+            <button class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+              <i class="fas fa-bell"></i>
+              <span class="notification-dot"></span>
+            </button>
+            
+            <button class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+              <i class="fas fa-envelope"></i>
+              <span class="notification-dot"></span>
+            </button>
+            
+            <div class="relative dropdown">
+              <button class="flex items-center space-x-2 focus:outline-none">
+                <div class="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                  <span class="text-primary-800 font-medium text-sm">JD</span>
+                </div>
+                <span class="hidden md:inline text-sm font-medium text-gray-700">John Doe</span>
+                <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+              </button>
+              
+              <div class="dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                <div class="border-t border-gray-200"></div>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-  <!--  Charts Plugin -->
-  <script src="{% static 'assets/js/chartist.min.js' %}"></script>
+      <!-- Content area -->
+      <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        {% block content %}{% endblock %}
+      </main>
 
-  <!--  Notifications Plugin    -->
-  <script src="{% static 'assets/js/bootstrap-notify.js' %}"></script>
+      <!-- Footer -->
+      <footer class="bg-white border-t border-gray-200 py-3">
+        <div class="container mx-auto px-6">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="flex space-x-6 mb-3 md:mb-0">
+              <a href="#" class="text-gray-600 hover:text-primary-800 text-sm">About</a>
+              <a href="#" class="text-gray-600 hover:text-primary-800 text-sm">Privacy</a>
+              <a href="#" class="text-gray-600 hover:text-primary-800 text-sm">Terms</a>
+              <a href="#" class="text-gray-600 hover:text-primary-800 text-sm">Contact</a>
+            </div>
+            <div class="text-gray-500 text-sm">
+              &copy; <span id="year"></span> EduWave Uganda. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
 
-  <!--  Google Maps Plugin    -->
-  <script
-    type="text/javascript"
-    src="https://maps.googleapis.com/maps/api/js"
-  ></script>
+  <script>
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-  <!-- Paper Dashboard Core javascript and methods for Demo purpose -->
-  <script src="{% static 'assets/js/paper-dashboard.js' %}"></script>
+    // Toggle mobile sidebar
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('hidden');
+      sidebar.classList.toggle('md:flex');
+    }
+  </script>
+</body>
 
-  <!-- Paper Dashboard DEMO methods, don't include it in your project! -->
-  <script src="{% static 'assets/js/demo.js' %}"></script>
-
-  <!-- <script type="text/javascript">
-    $(document).ready(function () {
-
-        demo.initChartist();
-
-        $.notify({
-            icon: 'ti-gift',
-            message: "Welcome to <b>Paper Dashboard</b> - a beautiful Bootstrap freebie for your next project."
-
-        }, {
-            type: 'success',
-            timer: 4000
-        });
-
-    });
-</script> -->
 </html>

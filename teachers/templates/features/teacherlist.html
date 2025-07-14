@@ -1,132 +1,166 @@
-<div class="card">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <div class="header">
-                    <h4 class="title">Teacher List</h4>
-                    <p class="category">General Teacher List</p>
-                </div>
-            </div>
-            <div class="col-md-4 text-right">
-                <a href="/teachers/register/teacher/details/" class="btn btn-primary btn-sm mt-3 mr-5 p-3">Register New Teacher</a>
-            </div>
-        </div>
-        <!-- Search Form -->
-        <div class="py-3 px-3">
-            <form id="searchForm" onsubmit="return false;">
-                <input type="text" id="searchInput" class="form-control border-input"
-                    placeholder="Search for Teachers" />
-            </form>
-        </div>
-
-        <!-- Table to Display Teachers -->
-        <div class="content table-responsive table-full-width">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="text-primary fw-bold">Reg Id</th>
-                        <th class="text-primary fw-bold">First Name</th>
-                        <th class="text-primary fw-bold">Last Name</th>
-                        <th class="text-primary fw-bold">Gender</th>
-                        <th class="text-primary fw-bold">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="teachersBody">
-                    <!-- Data will be dynamically inserted here -->
-                </tbody>
-            </table>
-
-            <!-- Pagination Controls -->
-            <div id="paginationControls" class="text-center mt-3">
-                <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
-                <span id="currentPage">1</span>
-                <button id="nextPage" class="btn btn-secondary" disabled>Next</button>
-            </div>
-        </div>
+<div class="bg-white rounded-xl shadow-md overflow-hidden">
+  <!-- Card Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4 border-b border-gray-200">
+    <div class="mb-4 md:mb-0">
+      <h4 class="text-xl font-semibold text-gray-800">Teacher List</h4>
+      <p class="text-gray-600">General Teacher List</p>
     </div>
+    <div>
+      <a href="/teachers/register/teacher/details/" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Register New Teacher
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Form -->
+  <div class="px-6 py-4">
+    <form id="searchForm" onsubmit="return false;" class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Search for Teachers">
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Reg ID</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">First Name</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Last Name</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Gender</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Action</th>
+        </tr>
+      </thead>
+      <tbody id="teachersBody" class="bg-white divide-y divide-gray-200">
+        <!-- Data will be dynamically inserted here -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div id="paginationControls" class="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+    <button id="prevPage" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+      Previous
+    </button>
+    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-center">
+      <span id="currentPage" class="relative z-0 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700">1</span>
+    </div>
+    <button id="nextPage" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+      Next
+    </button>
+  </div>
 </div>
 
 <!-- JavaScript for AJAX and Dynamic Content -->
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const teachersBody = document.getElementById("teachersBody");
-        const searchInput = document.getElementById("searchInput");
-        const prevPage = document.getElementById("prevPage");
-        const nextPage = document.getElementById("nextPage");
-        const currentPage = document.getElementById("currentPage");
+  document.addEventListener("DOMContentLoaded", () => {
+    const teachersBody = document.getElementById("teachersBody");
+    const searchInput = document.getElementById("searchInput");
+    const prevPage = document.getElementById("prevPage");
+    const nextPage = document.getElementById("nextPage");
+    const currentPage = document.getElementById("currentPage");
 
-        // Default query parameters
-        let currentParams = {
-            page: 1,
-            search: "",
-        };
+    // Default query parameters
+    let currentParams = {
+      page: 1,
+      search: "",
+    };
 
-        // Function to load teachers dynamically
-        const loadTeachers = () => {
-            const params = new URLSearchParams(currentParams).toString();
+    // Function to load teachers dynamically
+    const loadTeachers = () => {
+      const params = new URLSearchParams(currentParams).toString();
 
-            fetch(`?${params}`, {
-                headers: {
-                    "x-requested-with": "XMLHttpRequest",
-                },
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch data");
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    // Populate the table with teacher data
-                    if (data.students.length === 0) {
-                        teachersBody.innerHTML = `<tr><td colspan="6" class="text-center text-primary fw-bold">No teachers found.</td></tr>`;
-                    } else {
-                        teachersBody.innerHTML = data.students
-                            .map(
-                                (teacher) => `
-                                    <tr>
-                                        <td>${teacher.registration_id}</td>
-                                        <td>${teacher.first_name}</td>
-                                        <td>${teacher.last_name}</td>
-                                        <td>${teacher.gender || "-"}</td>
-                                        <td>
-                                            <a href="/teachers/details/${teacher.id}/" class="btn btn-sm btn-primary">Manage</a>
-                                        </td>
-                                    </tr>`
-                            )
-                            .join("");
-                    }
+      fetch(`?${params}`, {
+        headers: {
+          "x-requested-with": "XMLHttpRequest",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          // Populate the table with teacher data
+          if (data.students.length === 0) {
+            teachersBody.innerHTML = `
+              <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-blue-600 font-medium">
+                  No teachers found.
+                </td>
+              </tr>`;
+          } else {
+            teachersBody.innerHTML = data.students
+              .map(
+                (teacher) => `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${teacher.registration_id}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${teacher.first_name}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${teacher.last_name}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                      ${teacher.gender === 'Male' ? 'bg-blue-100 text-blue-800' : 
+                        teacher.gender === 'Female' ? 'bg-pink-100 text-pink-800' : 
+                        'bg-gray-100 text-gray-800'}">
+                      ${teacher.gender || "-"}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <a href="/teachers/details/${teacher.id}/" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md text-sm font-medium">
+                      Manage
+                    </a>
+                  </td>
+                </tr>`
+              )
+              .join("");
+          }
 
-                    // Update pagination controls
-                    prevPage.disabled = !data.has_previous;
-                    nextPage.disabled = !data.has_next;
-                    currentPage.textContent = data.current_page;
-                })
-                .catch((error) => {
-                    console.error("Error loading teachers:", error);
-                });
-        };
-
-        // Pagination controls
-        prevPage.addEventListener("click", () => {
-            if (currentParams.page > 1) {
-                currentParams.page--;
-                loadTeachers();
-            }
+          // Update pagination controls
+          prevPage.disabled = !data.has_previous;
+          nextPage.disabled = !data.has_next;
+          currentPage.textContent = data.current_page;
+        })
+        .catch((error) => {
+          console.error("Error loading teachers:", error);
+          teachersBody.innerHTML = `
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-red-500 font-medium">
+                Error loading teacher data. Please try again.
+              </td>
+            </tr>`;
         });
+    };
 
-        nextPage.addEventListener("click", () => {
-            currentParams.page++;
-            loadTeachers();
-        });
-
-        // Search functionality
-        searchInput.addEventListener("input", (e) => {
-            currentParams.search = e.target.value.trim();
-            currentParams.page = 1; // Reset to the first page on search
-            loadTeachers();
-        });
-
-        // Initial load
+    // Pagination controls
+    prevPage.addEventListener("click", () => {
+      if (currentParams.page > 1) {
+        currentParams.page--;
         loadTeachers();
+      }
     });
+
+    nextPage.addEventListener("click", () => {
+      currentParams.page++;
+      loadTeachers();
+    });
+
+    // Search functionality
+    searchInput.addEventListener("input", (e) => {
+      currentParams.search = e.target.value.trim();
+      currentParams.page = 1; // Reset to the first page on search
+      loadTeachers();
+    });
+
+    // Initial load
+    loadTeachers();
+  });
 </script>

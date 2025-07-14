@@ -46,8 +46,6 @@ class Subject(models.Model):
         return f'{self.name}-{self.grade} '
 
 # Curriculum Table
-
-
 class Curriculum(models.Model):
     name = models.CharField(max_length=150)
     objectives = models.TextField()
@@ -63,9 +61,8 @@ class Curriculum(models.Model):
     def __str__(self):
         return self.name
 
+
 # Topics Table
-
-
 class Topic(models.Model):
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="topics")
@@ -84,8 +81,6 @@ class Topic(models.Model):
         return f"{self.name} - {self.subject.name}"
 
 # Exams Table
-
-
 class Exam(models.Model):
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="exams")
@@ -114,14 +109,8 @@ class Exam(models.Model):
     def __str__(self):
         return f"{self.subject}"
 
-# Classes Table
-
-
-
 
 # Notes
-
-
 class Notes(models.Model):
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="notes")
@@ -200,74 +189,31 @@ class TermExamSession(models.Model):
         return f"{self.get_term_name_display()} - {self.year} ({self.get_exam_type_display()})"
 
 
-class StudentMark(models.Model):
-    student = models.ForeignKey(
-        "students.Student", on_delete=models.CASCADE, related_name="marks")
-    subject = models.ForeignKey(
-        Subject, on_delete=models.CASCADE, related_name="marks")
-    teacher = models.ForeignKey(
-        Teacher, on_delete=models.CASCADE, related_name="marks")
-    term = models.ForeignKey(
-        TermExamSession, on_delete=models.CASCADE, related_name="marks")
-    marks = models.PositiveIntegerField(validators=[MinValueValidator(
-        0), MaxValueValidator(100)], help_text="Marks must be between 0 and 100.")
+class StudentMarkSummary(models.Model):
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name="mark_summaries")
+    term_exam = models.ForeignKey(TermExamSession, on_delete=models.CASCADE, related_name="mark_summaries")
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="mark_summaries")
+    
+    # Subject-level summary
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="mark_summaries")
+    total_score = models.PositiveIntegerField()
+    max_possible = models.PositiveIntegerField()
+    percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    
+    # Additional metrics
+    subject_position = models.PositiveIntegerField(null=True, blank=True)
+    class_average = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-
+    
     class Meta:
-        db_table = "student_marks"
-        ordering = ["-term__year", "term__term_name",
-                    "student__registration_id"]
-        unique_together = ["student", "subject", "term"]
-
-    def clean(self):
-        if not (0 <= self.marks <= 100):
-            raise ValidationError("Marks should be between 0 and 100.")
-
-    def get_grade(self):
-        if self.marks >= 90:
-            return 1
-        elif self.marks >= 80:
-            return 2
-        elif self.marks >= 70:
-            return 3
-        elif self.marks >= 60:
-            return 4
-        elif self.marks >= 55:
-            return 5
-        elif self.marks >= 50:
-            return 6
-        elif self.marks >= 45:
-            return 7
-        elif self.marks >= 40:
-            return 8
-        else:
-            return 9
-
+        unique_together = ('student', 'term_exam', 'subject')
+        verbose_name_plural = "Student Mark Summaries"
+        indexes = [
+            models.Index(fields=['student', 'term_exam']),
+            models.Index(fields=['subject', 'term_exam']),
+        ]
+    
     def __str__(self):
-        return f"{self.student.first_name} {self.student.last_name} - {self.subject.name} - {self.term} - {self.marks} ({self.get_grade()})"
-
-
-class StudentExamSummary(models.Model):
-    student = models.ForeignKey(
-        "students.Student", on_delete=models.CASCADE, related_name="exam_summaries")
-    term = models.ForeignKey(
-        TermExamSession, on_delete=models.CASCADE, related_name="exam_summaries")
-    total_marks = models.PositiveIntegerField(default=0)
-    average_marks = models.FloatField(default=0.0)
-
-    class Meta:
-        db_table = "student_exam_summary"
-        ordering = ["-term__year", "term__term_name",
-                    "student__registration_id"]
-        unique_together = ["student", "term"]
-
-    def calculate_totals(self):
-        marks = self.student.marks.filter(term=self.term)
-        self.total_marks = sum(mark.marks for mark in marks)
-        self.average_marks = self.total_marks / \
-            marks.count() if marks.count() > 0 else 0
-        self.save()
-
-    def __str__(self):
-        return f"{self.student.first_name} {self.student.last_name} - {self.term}: {self.total_marks} (Avg: {self.average_marks:.2f})"
+        return f"{self.student} - {self.subject} ({self.term_exam}): {self.percentage}%"

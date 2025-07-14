@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Student Mark Summary Report{% endblock %}
+{% block breadcrumb %}Mark Summaries{% endblock %}
+{% block academicsSetActive %}active{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Student Mark Summary Report</h2>
+
+    <form method="get" class="mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label for="term_exam" class="block text-sm font-medium text-gray-700 mb-1">Term Exam</label>
+                <select name="term_exam" id="term_exam" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-700 focus:border-primary-700">
+                    <option value="">All Terms</option>
+                    {% for exam in term_exams %}
+                    <option value="{{ exam.id }}" {% if exam.id == selected_term_exam %}selected{% endif %}>
+                        {{ exam }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                <select name="grade" id="grade" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-700 focus:border-primary-700">
+                    <option value="">All Grades</option>
+                    {% for grade in grades %}
+                    <option value="{{ grade.id }}" {% if grade.id == selected_grade %}selected{% endif %}>
+                        {{ grade.grade_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                <select name="subject" id="subject" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-700 focus:border-primary-700">
+                    <option value="">All Subjects</option>
+                    {% for subject in subjects %}
+                    <option value="{{ subject.id }}" {% if subject.id == selected_subject %}selected{% endif %}>
+                        {{ subject.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-end space-x-2">
+                <button type="submit" class="px-4 py-2 bg-primary-700 text-white rounded-md hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-700">
+                    Filter
+                </button>
+                <a href="?export=csv&{{ request.GET.urlencode }}" class="px-4 py-2 bg-secondary-700 text-white rounded-md hover:bg-secondary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-700">
+                    Export CSV
+                </a>
+            </div>
+        </div>
+    </form>
+
+    {% if aggregates %}
+    <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+        <h5 class="text-lg font-medium text-gray-800 mb-3">Summary Statistics</h5>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-3 rounded-md shadow-xs">
+                <p class="text-sm text-gray-500">Average Percentage</p>
+                <p class="text-xl font-semibold text-primary-700">{{ aggregates.avg_percentage|floatformat:2 }}%</p>
+            </div>
+            <div class="bg-white p-3 rounded-md shadow-xs">
+                <p class="text-sm text-gray-500">Highest Percentage</p>
+                <p class="text-xl font-semibold text-green-600">{{ aggregates.max_percentage|floatformat:2 }}%</p>
+            </div>
+            <div class="bg-white p-3 rounded-md shadow-xs">
+                <p class="text-sm text-gray-500">Lowest Percentage</p>
+                <p class="text-xl font-semibold text-red-600">{{ aggregates.min_percentage|floatformat:2 }}%</p>
+            </div>
+            <div class="bg-white p-3 rounded-md shadow-xs">
+                <p class="text-sm text-gray-500">Total Students</p>
+                <p class="text-xl font-semibold text-gray-800">{{ aggregates.total_students }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term Exam</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Avg</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for summary in summaries %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900">{{ summary.student.last_name }}, {{ summary.student.first_name }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ summary.grade.grade_name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ summary.term_exam }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ summary.subject.name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ summary.total_score }}/{{ summary.max_possible }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if summary.percentage >= 70 %}text-green-600 font-medium{% elif summary.percentage < 50 %}text-red-600 font-medium{% else %}text-gray-500{% endif %}">
+                        {{ summary.percentage }}%
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ summary.subject_position|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ summary.class_average|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="{% url 'mark_summary_detail' summary.id %}" class="text-primary-700 hover:text-primary-900">Details</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">No records found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,52 +1,105 @@
-{% extends "base.html" %}{% block content %}
-<form method="POST" id="bulk-entry-form">
-  {% csrf_token %}
-  <label>Grade:</label>
-  <select id="grade-select" name="grade" class="form-control" required>
-    <option value="">Select Grade</option>
-    {% for grade in grades %}
-    <option value="{{ grade.id }}">{{ grade.grade_name }}</option>
-    {% endfor %}
-  </select>
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-md">
+  <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Bulk Results Entry
+      </h2>
+    </div>
 
-  <label>Subject:</label>
-  <select name="subject" id="subject-select" class="form-control mb-2">
-    <option value="">Select a grade first</option>
-  </select>
+    <form method="POST" id="bulk-entry-form" class="p-6 space-y-4">
+      {% csrf_token %}
+      
+      <div>
+        <label for="grade-select" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+        <select id="grade-select" name="grade" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-600 focus:border-blue-600" required>
+          <option value="">Select Grade</option>
+          {% for grade in grades %}
+          <option value="{{ grade.id }}">{{ grade.grade_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-  <label>Exam:</label>
-  <select name="exam" class="form-control mb-2">
-    {% for exam in exams %}
-    <option value="{{ exam.id }}">{{ exam.term_name }}</option>
-    {% endfor %}
-  </select>
+      <div>
+        <label for="subject-select" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+        <select name="subject" id="subject-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-600 focus:border-blue-600">
+          <option value="">Select a grade first</option>
+        </select>
+      </div>
 
-  <button type="submit" class="btn btn-primary">Proceed to Entry</button>
-</form>
+      <div>
+        <label for="exam-select" class="block text-sm font-medium text-gray-700 mb-1">Exam</label>
+        <select name="exam" id="exam-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-600 focus:border-blue-600">
+          {% for exam in exams %}
+          <option value="{{ exam.id }}">{{ exam.term_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" class="w-full flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+          Proceed to Entry
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const gradeSelect = document.getElementById("grade-select");
-    const subjectSelect = document.getElementById("subject-select");
+document.addEventListener("DOMContentLoaded", function () {
+  const gradeSelect = document.getElementById("grade-select");
+  const subjectSelect = document.getElementById("subject-select");
+  const form = document.getElementById("bulk-entry-form");
 
-    gradeSelect.addEventListener("change", function () {
-      const gradeId = this.value;
-
-      if (!gradeId) {
-        subjectSelect.innerHTML = `<option value="">Select a grade first</option>`;
-        return;
-      }
-
-      fetch(`/assessment/bget-subjects/?grade_id=${gradeId}`)
-        .then((response) => response.json())
-        .then((data) => {
-          subjectSelect.innerHTML = `<option value="">Select Subject</option>`;
-          data.forEach((subject) => {
-            subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
-          });
-        });
-    });
+  // Add loading state to form submission
+  form.addEventListener("submit", function() {
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = `
+      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      Processing...
+    `;
   });
-</script>
 
+  gradeSelect.addEventListener("change", function () {
+    const gradeId = this.value;
+    subjectSelect.disabled = true;
+
+    if (!gradeId) {
+      subjectSelect.innerHTML = `<option value="">Select a grade first</option>`;
+      subjectSelect.disabled = false;
+      return;
+    }
+
+    // Add loading state to subject select
+    const currentSubjectSelect = subjectSelect.innerHTML;
+    subjectSelect.innerHTML = `<option value="">Loading subjects...</option>`;
+
+    fetch(`/assessment/bget-subjects/?grade_id=${gradeId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        subjectSelect.innerHTML = `<option value="">Select Subject</option>`;
+        data.forEach((subject) => {
+          subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
+        });
+        subjectSelect.disabled = false;
+      })
+      .catch((error) => {
+        console.error("Error fetching subjects:", error);
+        subjectSelect.innerHTML = currentSubjectSelect;
+        subjectSelect.disabled = false;
+      });
+  });
+});
+</script>
 {% endblock %}
