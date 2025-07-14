@@ -1,25 +1,27 @@
+import csv
+from datetime import datetime
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.urls import reverse
 from django.views import generic
-from django.views.generic.list import ListView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.db.models import Q
-from collections import defaultdict
-from typing import Dict, Any
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
-from reportlab.lib import colors
-from django.db.models import Sum, Avg
-from .models import Grade, Subject, Curriculum, Topic, Exam, Notes, StudentMark, TermExamSession
-from .forms import GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm, StudentMarksForm
-from students.models import Student
-from management.models import GeneralInformation
+from django.db.models import Avg, Count, Max, Min
+from django.utils import timezone
+
+from .models import (
+    Grade, Subject, Curriculum, Topic, Exam, Notes,
+    TermExamSession, StudentMarkSummary
+)
+from .forms import (
+    GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm
+)
 from accounts.mixins import RoleRequiredMixin
 from accounts.decorators import role_required
+from assessment.models import ExamResult
+from students.models import Student
 
 
 @role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
@@ -158,227 +160,465 @@ class UploadNotesView(generic.CreateView, RoleRequiredMixin):
     def form_valid(self, form):
         form.instance.created_by = self.request.user 
         return super().form_valid(form)
-    
-class RegisterStudentMarksView(RoleRequiredMixin, generic.CreateView):
-    model = StudentMark
-    form_class = StudentMarksForm
-    template_name = "registerStudentMarks.html"
-    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
-    def form_valid(self, form):
-        """Assign the logged-in teacher before saving."""
-        form.instance.teacher = self.request.user.teacher  # Ensure `Teacher` is linked to `User`
-        self.object = form.save()
-        return JsonResponse({"message": "Marks recorded successfully!"}, status=200)
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Avg, Max, Min, Count
+from .models import StudentMarkSummary, TermExamSession, Grade, Subject
+from students.models import Student
+from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+import csv
+from django.http import HttpResponse
 
-    def form_invalid(self, form):
-        """Return JSON response for invalid form submission."""
-        return JsonResponse(
-            {"error": "Failed to save marks. Please check the form data."}, 
-            status=400
-        )
-    
 
-@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
-def studentMarks(request):
-    # Get search parameters
-    search_query = request.GET.get('search', '').strip()
-    term_filter = request.GET.get('term', '')
+@login_required
+def mark_summary_report(request):
+    # Get filter parameters from request
+    term_exam_id = request.GET.get('term_exam')
+    grade_id = request.GET.get('grade')
+    subject_id = request.GET.get('subject')
     
+    # Get all active term exams for filter dropdown
+    term_exams = TermExamSession.objects.all().order_by('-year', 'term_name')
     
-    # Build base queryset
-    queryset = StudentMark.objects.select_related(
-        'student',
-        'subject',
-        'term'
-    ).order_by('-term__year', 'term__term_name', 'student__registration_id')
+    # Base queryset
+    summaries = StudentMarkSummary.objects.select_related(
+        'student', 'term_exam', 'grade', 'subject'
+    ).order_by('student__last_name', 'student__first_name')
     
-    # Apply filters
-    if search_query:
-        queryset = queryset.filter(
-            Q(student__first_name__icontains=search_query) |
-            Q(student__last_name__icontains=search_query) |
-            Q(student__registration_id__icontains=search_query)
-        )
+    # Apply filters if provided
+    if term_exam_id:
+        summaries = summaries.filter(term_exam_id=term_exam_id)
+    if grade_id:
+        summaries = summaries.filter(grade_id=grade_id)
+    if subject_id:
+        summaries = summaries.filter(subject_id=subject_id)
     
-    if term_filter:
-        queryset = queryset.filter(term__id=term_filter)
-    
-    # Process student data
-    student_data = defaultdict(lambda: {
-        'reg_id': '',
-        'name': '',
-        'term': '',
-        'marks': {},
-        'total': 0,
-        'count': 0
-    })
-    
-    print("Printing Queryset: ", queryset)
-
-    for mark in queryset:
-        student_key = f"{mark.student.registration_id}_{mark.term.id}"
-        data = student_data[student_key]
-        
-        data['reg_id'] = mark.student.registration_id
-        data['name'] = f"{mark.student.first_name} {mark.student.last_name}"
-        data['term'] = str(mark.term)
-        data['marks'][mark.subject.name] = mark.marks
-        data['total'] += mark.marks
-        data['count'] += 1
-        
-        if data['count'] > 0:
-            data['average'] = round(data['total'] / data['count'], 2)
-            data['grade'] = mark.get_grade()  # Get grade for the average
-
-    # Convert to list and calculate statistics
-    final_data = list(student_data.values())
-    total_students = len(final_data)
-    
-    if total_students > 0:
-        average_score = round(sum(s['average'] for s in final_data) / total_students, 2)
-        passing_rate = round(sum(1 for s in final_data if s['average'] >= 40) / total_students * 100, 2)
-    else:
-        average_score = passing_rate = 0
-    
-    # Pagination
-    paginator = Paginator(final_data, 10)
-    page_obj = paginator.get_page(request.GET.get('page', 1))
+    # Calculate aggregates for the filtered results
+    aggregates = summaries.aggregate(
+        avg_percentage=Avg('percentage'),
+        max_percentage=Max('percentage'),
+        min_percentage=Min('percentage'),
+        total_students=Count('student', distinct=True)
+    )
     
     context = {
-        'page_obj': page_obj,
-        'terms': TermExamSession.objects.all().order_by('-year', 'term_name'),
-        'subjects': Subject.objects.all().order_by('name'),
-        'total_students': total_students,
-        'average_score': average_score,
-        'passing_rate': passing_rate,
-        'current_term': term_filter,
-        'search_query': search_query,
+        'summaries': summaries,
+        'term_exams': term_exams,
+        'grades': Grade.objects.all(),
+        'subjects': Subject.objects.all(),
+        'selected_term_exam': int(term_exam_id) if term_exam_id else None,
+        'selected_grade': int(grade_id) if grade_id else None,
+        'selected_subject': int(subject_id) if subject_id else None,
+        'aggregates': aggregates,
     }
     
-    return render(request, 'studentsMarks.html', context)
+    return render(request, 'reports/mark_summary_report.html', context)
 
-@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
-def studentPerformance(request, id):
-    student = get_object_or_404(Student, id=id)
+
+@login_required
+def export_mark_summary_csv(request):
+    # Get filter parameters from request
+    term_exam_id = request.GET.get('term_exam')
+    grade_id = request.GET.get('grade')
+    subject_id = request.GET.get('subject')
     
-    # Get all marks and print the count for debugging
-    student_marks = StudentMark.objects.filter(student=student).order_by('-term__year', 'term__term_name')
-    print(f"Total marks found: {student_marks.count()}")
-    marks_by_term_and_exam = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    # Create response with CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="student_mark_summary.csv"'
     
-    for mark in student_marks:
-        year = mark.term.year
-        term_name = mark.term.get_term_name_display()
-        exam_type = mark.term.get_exam_type_display()
-        
-        marks_by_term_and_exam[year][term_name][exam_type].append(mark)
-        
-        print(f"Processing mark: Year={year}, Term={term_name}, Exam={exam_type}, Subject={mark.subject.name}")
-
+    writer = csv.writer(response)
     
-    marks_dict = {
-        year: {
-            term: dict(exams) for term, exams in terms.items()
-        } for year, terms in marks_by_term_and_exam.items()
-    }
-
-    print("Final marks structure:", marks_dict)
-
-    context = {
-        'student': student,
-        'marks_by_term_and_exam': marks_dict
-    }
+    # Write header row
+    writer.writerow([
+        'Student ID', 'Student Name', 'Grade', 'Term Exam', 
+        'Subject', 'Total Score', 'Max Possible', 'Percentage',
+        'Subject Position', 'Class Average'
+    ])
     
-    return render(request, "studentPerformance.html", context)
-
-@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
-def studentReport(request, id, term_name, year):
-    # Get student object or 404
-    student = get_object_or_404(Student, id=id)
-    school = GeneralInformation.objects.first()
-
-    # Calculate term averages and total marks
-    all_marks = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year)
-    beginning_of_term = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year, term__exam_type = 'BOT',  )
-    mid_of_term = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year, term__exam_type = 'MOT')
-    end_of_term = StudentMark.objects.filter(student=student, term__term_name=term_name, term__year=year, term__exam_type = 'EOT')
-
-    # Mark Avg Sum and Count
-    term_total = all_marks.aggregate(total=Sum('marks'))['total'] or 0
-    term_average = all_marks.aggregate(avg=Avg('marks'))['avg'] or 0
-    bot_total = beginning_of_term.aggregate(total=Sum('marks'))['total'] or 0
-    bot_average = beginning_of_term.aggregate(avg=Avg('marks'))['avg'] or 0
-    mot_total = mid_of_term.aggregate(total=Sum('marks'))['total'] or 0
-    mot_average = mid_of_term.aggregate(avg=Avg('marks'))['avg'] or 0
-    eot_total = end_of_term.aggregate(total=Sum('marks'))['total'] or 0
-    eot_average = end_of_term.aggregate(avg=Avg('marks'))['avg'] or 0
-    subject_count = all_marks.values('subject').distinct().count()
-    bot_grade = sum(mark.get_grade() for mark in beginning_of_term)
-    bot_of_total = len(beginning_of_term) * 100
-    mot_of_total = len(mid_of_term) * 100
-    eot_of_total = len(end_of_term) * 100
+    # Base queryset
+    summaries = StudentMarkSummary.objects.select_related(
+        'student', 'term_exam', 'grade', 'subject'
+    ).order_by('student__last_name', 'student__first_name')
     
-
-    context = {
-        'student': student,
-        'all_marks': all_marks,
-        'term_total': term_total,
-        'term_average': round(term_average, 1),
-        'subject_count': subject_count,
-        'year': year,
-        'term_name': term_name,
-        'school':school,
-        'beginning_of_term':beginning_of_term,
-        'mid_of_term':mid_of_term,
-        'end_of_term':end_of_term,
-        'bot_total':bot_total,
-        'bot_average':bot_average,
-        'mot_total':mot_total,
-        'mot_average':mot_average,
-        'eot_total':eot_total,
-        'eot_average':eot_average,
-        'bot_of_total':bot_of_total,
-        'mot_of_total':mot_of_total,
-        'eot_of_total':eot_of_total,
-        'bot_grade': bot_grade,
-        'term_display': {
-            'term_1': 'Term One',
-            'term_2': 'Term Two',
-            'term_3': 'Term Three'
-        }.get(term_name, ' ')
-    }
-
-    return render(request, "studentReport.html", context)
-
-
-@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
-def print_term_result(request, student_id, id):
-    student = get_object_or_404(Student, id=student_id)
-    marks = StudentMark.objects.filter(student=student, term__id=id)
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{student.first_name}_{id}_result.pdf"'
-
-    doc = SimpleDocTemplate(response, pagesize=A4)
-    styles = getSampleStyleSheet()
-
-    data = [["Subject", "Teacher", "Marks", "Grade"]]
-    for mark in marks:
-        data.append([mark.subject.name, f"{mark.teacher.first_name} {mark.teacher.last_name}", mark.marks, mark.get_grade()])
-
-    table = Table(data)
-    table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
-
-    elements = [Paragraph(f"Term Result for {student.first_name} - {id}", styles['Title']), table]
-    doc.build(elements)
-
+    # Apply filters if provided
+    if term_exam_id:
+        summaries = summaries.filter(term_exam_id=term_exam_id)
+    if grade_id:
+        summaries = summaries.filter(grade_id=grade_id)
+    if subject_id:
+        summaries = summaries.filter(subject_id=subject_id)
+    
+    # Write data rows
+    for summary in summaries:
+        writer.writerow([
+            summary.student.student_id,
+            f"{summary.student.last_name}, {summary.student.first_name}",
+            summary.grade.grade_name,
+            str(summary.term_exam),
+            summary.subject.name,
+            summary.total_score,
+            summary.max_possible,
+            f"{summary.percentage}%",
+            summary.subject_position or '',
+            summary.class_average or ''
+        ])
+    
     return response
+
+
+class StudentMarkSummaryDetailView(LoginRequiredMixin, DetailView):
+    model = StudentMarkSummary
+    template_name = 'reports/mark_summary_detail.html'
+    context_object_name = 'summary'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        summary = self.object
+        
+        # Get exam results with calculated percentages
+        exam_results = ExamResult.objects.filter(
+            student=summary.student,
+            question__term_exam=summary.term_exam,
+            subject=summary.subject
+        ).select_related('question', 'topic')
+        
+        # Calculate percentage for each result
+        for result in exam_results:
+            result.percentage = (result.score / result.question.max_score) * 100 if result.question.max_score > 0 else 0
+            result.percentage_rounded = round(result.percentage, 1)
+        
+        context['exam_results'] = exam_results
+        
+        # Calculate topic performance for charts
+        topic_performance = {}
+        for result in exam_results:
+            topic_name = result.topic.name
+            if topic_name not in topic_performance:
+                topic_performance[topic_name] = {
+                    'total': result.percentage,
+                    'count': 1
+                }
+            else:
+                topic_performance[topic_name]['total'] += result.percentage
+                topic_performance[topic_name]['count'] += 1
+        
+        # Prepare data for charts
+        context['topic_labels'] = list(topic_performance.keys())
+        context['topic_averages'] = [
+            round(topic['total'] / topic['count']) 
+            for topic in topic_performance.values()
+        ]
+        
+        # Score distribution data
+        context['score_distribution'] = {
+            'correct': summary.total_score,
+            'incorrect': summary.max_possible - summary.total_score,
+            'unattempted': 0  # Assuming all questions were attempted
+        }
+        
+        # Performance comparison
+        if summary.class_average:
+            context['performance_comparison'] = round(summary.percentage - summary.class_average, 1)
+        
+        return context
+
+
+class StudentProgressReportView(LoginRequiredMixin, ListView):
+    template_name = 'reports/student_progress_report.html'
+    context_object_name = 'summaries'
+    
+    def get_queryset(self):
+        student_id = self.kwargs.get('student_id')
+        self.student = get_object_or_404(Student, pk=student_id)
+        
+        return StudentMarkSummary.objects.filter(
+            student=self.student
+        ).select_related('term_exam', 'grade', 'subject').order_by('term_exam__year', 'term_exam__term_name')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['student'] = self.student
+        
+        # Calculate overall performance statistics
+        summaries = context['summaries']
+        if summaries:
+            context['subjects'] = set(s.subject for s in summaries)
+            context['terms'] = set(s.term_exam for s in summaries)
+            
+            # Calculate average percentage per term
+            term_performance = {}
+            for term in context['terms']:
+                term_summaries = [s for s in summaries if s.term_exam == term]
+                avg = sum(s.percentage for s in term_summaries) / len(term_summaries)
+                term_performance[term] = round(avg, 2)
+            
+            context['term_performance'] = term_performance
+            
+            # Calculate performance by subject
+            subject_performance = {}
+            for subject in context['subjects']:
+                subject_summaries = [s for s in summaries if s.subject == subject]
+                percentages = [s.percentage for s in subject_summaries]
+                if percentages:
+                    subject_performance[subject] = {
+                        'average': round(sum(percentages) / len(percentages), 2),
+                        'trend': 'up' if len(percentages) > 1 and percentages[-1] > percentages[0] else 'down'
+                    }
+            
+            context['subject_performance'] = subject_performance
+        
+        return context
+
+
+
+class TermExamListView(LoginRequiredMixin, ListView):
+    model = TermExamSession
+    template_name = 'reports/term_exam_list.html'
+    context_object_name = 'term_exams'
+    paginate_by = 10
+    ordering = ['-year', 'term_name']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by year if provided
+        year = self.request.GET.get('year')
+        if year and year.isdigit():
+            queryset = queryset.filter(year=int(year))
+            
+        # Filter by term if provided
+        term = self.request.GET.get('term')
+        if term in dict(TermExamSession.TermChoices.choices):
+            queryset = queryset.filter(term_name=term)
+            
+        return queryset.select_related('created_by').prefetch_related('mark_summaries')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_tab'] = 'assessment'
+        
+        # Generate year choices for filter dropdown (last 5 years and next year)
+        current_year = timezone.now().year
+        context['year_choices'] = range(current_year - 5, current_year + 2)
+        
+        # Get filter values to maintain form state
+        context['selected_year'] = self.request.GET.get('year', '')
+        context['selected_term'] = self.request.GET.get('term', '')
+        
+        # Calculate pagination values
+        page_obj = context['page_obj']
+        context['total_results'] = page_obj.paginator.count
+        context['showing_start'] = page_obj.start_index()
+        context['showing_end'] = page_obj.end_index()
+        
+        # Add term choices for filter
+        context['term_choices'] = TermExamSession.TermChoices.choices
+        
+        return context
+
+
+class TermExamDetailView(LoginRequiredMixin, DetailView):
+    model = TermExamSession
+    template_name = 'reports/term_exam_detail.html'
+    context_object_name = 'term_exam'
+    
+    def get_queryset(self):
+        return super().get_queryset().select_related('created_by').prefetch_related(
+            'mark_summaries__student',
+            'mark_summaries__subject',
+            'mark_summaries__grade'
+        )
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_tab'] = 'assessment'
+        
+        # Get aggregated data for performance metrics
+        summaries = self.object.mark_summaries.all()
+        
+        # Calculate overall statistics
+        if summaries.exists():
+            # Get top performing student
+            top_student = summaries.order_by('-percentage').first()
+            context['top_student'] = {
+                'name': top_student.student.get_full_name(),
+                'grade': top_student.grade.grade_name,
+                'score': top_student.percentage,
+                'subject': top_student.subject.name
+            }
+            
+            # Calculate class averages
+            context['class_averages'] = {
+                'overall': summaries.aggregate(avg=Avg('percentage'))['avg'],
+                'by_subject': summaries.values('subject__name').annotate(
+                    avg_score=Avg('percentage'),
+                    max_score=Max('percentage')
+                ).order_by('-avg_score')
+            }
+            
+            # Count of unique subjects and students
+            context['stats'] = {
+                'subject_count': summaries.values('subject').distinct().count(),
+                'student_count': summaries.values('student').distinct().count(),
+                'grade_count': summaries.values('grade').distinct().count()
+            }
+            
+            # Performance distribution data for charts
+            context['performance_distribution'] = self.get_performance_distribution(summaries)
+            
+        return context
+    
+    def get_performance_distribution(self, summaries):
+        """Generate data for performance distribution charts"""
+        distribution = {
+            'ranges': ['90-100%', '80-89%', '70-79%', '60-69%', '50-59%', 'Below 50%'],
+            'counts': [0, 0, 0, 0, 0, 0]
+        }
+        
+        for summary in summaries:
+            percentage = summary.percentage
+            if percentage >= 90:
+                distribution['counts'][0] += 1
+            elif percentage >= 80:
+                distribution['counts'][1] += 1
+            elif percentage >= 70:
+                distribution['counts'][2] += 1
+            elif percentage >= 60:
+                distribution['counts'][3] += 1
+            elif percentage >= 50:
+                distribution['counts'][4] += 1
+            else:
+                distribution['counts'][5] += 1
+                
+        return distribution
+
+
+class StudentTermReportView(LoginRequiredMixin, DetailView):
+    model = StudentMarkSummary
+    template_name = 'reports/student_term_report.html'
+    context_object_name = 'mark_summary'
+    pk_url_kwarg = 'summary_id'
+    
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            'student', 'subject', 'grade', 'term_exam'
+        )
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_tab'] = 'assessment'
+        
+        # Get all subjects for this student in this term exam
+        summaries = StudentMarkSummary.objects.filter(
+            student=self.object.student,
+            term_exam=self.object.term_exam
+        ).select_related('subject').order_by('-percentage')
+        
+        context['all_subjects'] = summaries
+        context['subject_count'] = summaries.count()
+        
+        # Calculate overall performance metrics
+        context['overall_performance'] = summaries.aggregate(
+            avg_score=Avg('percentage'),
+            highest_score=Max('percentage'),
+            lowest_score=Min('percentage')
+        )
+        
+        # Generate historical performance data
+        context['performance_history'] = self.get_performance_history()
+        
+        # Generate teacher comments
+        context['comments'] = self.generate_comments()
+        
+        return context
+    
+    def get_performance_history(self):
+        """Get student's performance across all terms for charts"""
+        history = StudentMarkSummary.objects.filter(
+            student=self.object.student
+        ).values(
+            'term_exam__term_name',
+            'term_exam__year',
+            'term_exam__exam_type'
+        ).annotate(
+            avg_percentage=Avg('percentage'),
+            subject_count=Count('subject')
+        ).order_by('term_exam__year', 'term_exam__term_name')
+        
+        # Format data for chart
+        labels = []
+        values = []
+        
+        for entry in history:
+            label = f"{entry['term_exam__year']} {entry['term_exam__term_name']} {entry['term_exam__exam_type']}"
+            labels.append(label)
+            values.append(float(entry['avg_percentage']))
+            
+        return {
+            'labels': labels,
+            'values': values,
+            'subject_counts': [entry['subject_count'] for entry in history]
+        }
+    
+    def generate_comments(self):
+        """Generate dynamic teacher comments based on performance"""
+        summary = self.object
+        percentage = summary.percentage
+        
+        if percentage >= 85:
+            return {
+                'class_teacher': (
+                    f"{summary.student.get_full_name()} has demonstrated outstanding performance this term. "
+                    "The consistent excellence across all subjects is commendable. "
+                    "Keep up the excellent work!"
+                ),
+                'head_teacher': (
+                    "Exceptional performance that sets a great example for other students. "
+                    "We encourage you to continue challenging yourself with advanced materials."
+                )
+            }
+        elif percentage >= 70:
+            return {
+                'class_teacher': (
+                    f"{summary.student.get_full_name()} has shown very good understanding of the subjects. "
+                    "With a little more effort in certain areas, even better results can be achieved."
+                ),
+                'head_teacher': (
+                    "Solid performance across the board. "
+                    "We're pleased with the progress and expect continued improvement next term."
+                )
+            }
+        elif percentage >= 50:
+            return {
+                'class_teacher': (
+                    f"{summary.student.get_full_name()} has met the basic requirements. "
+                    "There is room for improvement with more consistent effort and focus."
+                ),
+                'head_teacher': (
+                    "Satisfactory performance with potential for better results. "
+                    "We recommend utilizing the school's tutoring resources for additional support."
+                )
+            }
+        else:
+            return {
+                'class_teacher': (
+                    f"{summary.student.get_full_name()} needs to significantly improve effort and focus. "
+                    "Regular study habits and completing all assignments would help improve results."
+                ),
+                'head_teacher': (
+                    "We're concerned about these results and recommend a meeting with parents "
+                    "to discuss strategies for improvement. Additional support will be provided."
+                )
+            }
+
+
+class StudentTermReportPDFView(StudentTermReportView):
+    """PDF version of the student term report"""
+    template_name = 'reports/student_term_report_pdf.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pdf_mode'] = True
+        return context

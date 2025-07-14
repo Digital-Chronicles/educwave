@@ -4,190 +4,198 @@
 {% block dashboardSetActive %}active{% endblock dashboardSetActive %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-warning text-center">
-                            <i class="fa fa-users"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>All Students Count</p>
-                            {{students_count}}
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <div class="stats">
-                        <i class="ti-reload"></i> Updated now
-                    </div>
-                </div>
-            </div>
+<div class="container mx-auto px-4 py-6">
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Students Count Card -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+            <i class="fas fa-users text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">All Students Count</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{students_count}}</h3>
+          </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-success text-center">
-                            <i class="ti-text"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>All Teachers Count</p>
-                            {{teachers_count}}
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <div class="stats">
-                        <i class="ti-reload"></i> Updated now
-                    </div>
-                </div>
-            </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <div class="flex items-center text-sm text-gray-500">
+          <i class="fas fa-sync-alt mr-1"></i>
+          <span>Updated now</span>
         </div>
+      </div>
     </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-danger text-center">
-                            <i class="ti-pulse"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>Active Students</p>
-                            {{active_student_count}}
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <div class="stats">
-                        <i class="ti-timer"></i> In the last hour
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-info text-center">
-                            <i class="ti-na"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>Inactive Student</p>
-                            {{inactive_student_count}}
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <div class="stats">
-                        <i class="ti-reload"></i> Updated now
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="m-2">
-    <h5>Student Bio Data Analytics</h5>
-</div>
-<div class="row" style="display: flex; justify-content: center; align-items: center;">
-    <div class="col-md-6 col-lg-6 my-2 card mx-4 p-3" style="display: flex; justify-content: center; align-items: center; height: 320px;">
-        <canvas id="studentStatusChart" style="max-width: 100%; height: 100%;"></canvas>
-    </div>
-    <div class="col-md-6 col-lg-6 my-2 card mx-4 p-3" style="display: flex; justify-content: center; align-items: center; height: 320px;">
-        <canvas id="studentGenderChart" style="max-width: 100%; height: 100%;"></canvas>
-    </div>
-</div>
 
+    <!-- Teachers Count Card -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+            <i class="fas fa-chalkboard-teacher text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">All Teachers Count</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{teachers_count}}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <div class="flex items-center text-sm text-gray-500">
+          <i class="fas fa-sync-alt mr-1"></i>
+          <span>Updated now</span>
+        </div>
+      </div>
+    </div>
 
+    <!-- Active Students Card -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+            <i class="fas fa-running text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">Active Students</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{active_student_count}}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <div class="flex items-center text-sm text-gray-500">
+          <i class="fas fa-clock mr-1"></i>
+          <span>In the last hour</span>
+        </div>
+      </div>
+    </div>
 
+    <!-- Inactive Students Card -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-red-100 text-red-600 mr-4">
+            <i class="fas fa-user-slash text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">Inactive Students</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{inactive_student_count}}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <div class="flex items-center text-sm text-gray-500">
+          <i class="fas fa-sync-alt mr-1"></i>
+          <span>Updated now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="mb-6">
+    <h5 class="text-xl font-semibold text-gray-800 mb-4">Student Bio Data Analytics</h5>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Status Chart -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <canvas id="studentStatusChart" class="w-full h-80"></canvas>
+      </div>
+      
+      <!-- Gender Chart -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <canvas id="studentGenderChart" class="w-full h-80"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-    const ctx = document.getElementById('studentStatusChart');
+  // Student Status Chart
+  const ctx = document.getElementById('studentStatusChart');
+  const studentStatusData = {{ student_status_data | safe }};
+  const labels = Object.keys(studentStatusData);
+  const data = Object.values(studentStatusData);
 
-    // Access the student status data passed from the Django view
-    const studentStatusData = {{ student_status_data | safe }};
-
-    // Extract the labels and data from the studentStatusData
-    const labels = Object.keys(studentStatusData);
-    const data = Object.values(studentStatusData);
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Number of Students by Status',
-                data: data,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Number of Students by Status',
+        data: data,
+        backgroundColor: [
+          'rgba(56, 178, 172, 0.7)',  // primary
+          'rgba(236, 201, 75, 0.7)',   // secondary
+          'rgba(66, 153, 225, 0.7)',   // accent
+          'rgba(244, 63, 94, 0.7)'     // red for contrast
+        ],
+        borderColor: [
+          'rgba(56, 178, 172, 1)',
+          'rgba(236, 201, 75, 1)',
+          'rgba(66, 153, 225, 1)',
+          'rgba(244, 63, 94, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
         }
-    });
-</script>
-
-<script>
-    const ctxGender = document.getElementById('studentGenderChart');
-
-    // Access the student gender data passed from the Django view
-    const studentGenderData = {{ student_gender_data | safe }};
-
-    // Extract the labels and data from the studentGenderData
-    const labelsGender = Object.keys(studentGenderData);
-    const dataGender = Object.values(studentGenderData);
-
-    new Chart(ctxGender, {
-        type: 'pie',  // Change to pie chart for gender distribution
-        data: {
-            labels: labelsGender,
-            datasets: [{
-                label: 'Gender Distribution',
-                data: dataGender,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (tooltipItem) {
-                            return tooltipItem.label + ': ' + tooltipItem.raw;
-                        }
-                    }
-                }
-            }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
         }
-    });
+      }
+    }
+  });
+
+  // Student Gender Chart
+  const ctxGender = document.getElementById('studentGenderChart');
+  const studentGenderData = {{ student_gender_data | safe }};
+  const labelsGender = Object.keys(studentGenderData);
+  const dataGender = Object.values(studentGenderData);
+
+  new Chart(ctxGender, {
+    type: 'pie',
+    data: {
+      labels: labelsGender,
+      datasets: [{
+        label: 'Gender Distribution',
+        data: dataGender,
+        backgroundColor: [
+          'rgba(56, 178, 172, 0.7)',  // primary
+          'rgba(236, 201, 75, 0.7)',   // secondary
+          'rgba(66, 153, 225, 0.7)'    // accent
+        ],
+        borderColor: [
+          'rgba(56, 178, 172, 1)',
+          'rgba(236, 201, 75, 1)',
+          'rgba(66, 153, 225, 1)'
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function (tooltipItem) {
+              return tooltipItem.label + ': ' + tooltipItem.raw;
+            }
+          }
+        }
+      }
+    }
+  });
 </script>
-
-
 {% endblock content %}

@@ -1,29 +1,54 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card">
-    <div class="m-2 p-5 my-2">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 25%; background-color: #991b1b;"
-                 aria-valuenow="100"
-                 aria-valuemin="0" aria-valuemax="100"></div>
+<div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden my-6">
+    <div class="p-6">
+       
+        
+        <!-- Form header -->
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Student CareTaker Information</h2>
         </div>
-        <div>
-            <h5 class="">Student CareTaker Information</h5>
-        </div>
-        <div>
-            <form  method="POST" action="">
-                {% csrf_token %}
-                {{form.as_p}}
-                <div class="row">
-                    <div class="col-md-2 col-sm-3 m-1">
-                        <button class="btn btn-danger">Cancel</button>
-                    </div>
-                    <div class="col-md-2 col-sm-3 m-1">
-                        <button type="submit" class="btn btn-primary">Continue</button>
-                    </div>
+        
+        <!-- Form -->
+        <form method="POST" action="">
+            {% csrf_token %}
+            
+            <!-- Form fields -->
+            <div class="space-y-4 mb-6">
+                {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <p class="mt-1 text-sm text-gray-500">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                    {% endfor %}
                 </div>
-            </form>
-        </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Form buttons -->
+            <div class="flex flex-wrap gap-4">
+                <button type="button" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Continue
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+
+<style>
+    /* Ensure form inputs have proper Tailwind styling */
+    input, select, textarea {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500;
+    }
+</style>
 {% endblock content %}

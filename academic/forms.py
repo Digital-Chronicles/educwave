@@ -1,5 +1,5 @@
 from django import forms
-from .models import Grade, Subject, Curriculum, Topic, Exam, Notes, StudentMark
+from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
 from django.core.exceptions import ValidationError
 from django_ckeditor_5.widgets import CKEditor5Widget
 
@@ -150,15 +150,3 @@ class NotesForm(forms.ModelForm):
                 raise ValidationError('Only PDF, DOCX, or PPTX files are allowed.')
         return notes_file
     
-
-class StudentMarksForm(forms.ModelForm):
-    class Meta:
-        model = StudentMark
-        fields = ['student', 'subject', 'teacher', "term", 'marks']
-        widgets = {
-            'student': forms.Select(attrs={'class': 'form-control border-input'}),
-            'subject': forms.Select(attrs={'class': 'form-control border-input'}),
-            'teacher': forms.Select(attrs={'class': 'form-control border-input'}),
-            'term': forms.Select(attrs={'class': 'form-control border-input'}),
-            'marks': forms.NumberInput(attrs={'class': 'form-control border-input'}),
-        }

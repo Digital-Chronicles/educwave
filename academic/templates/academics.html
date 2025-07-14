@@ -4,232 +4,244 @@
 {% block academicsSetActive %}active{% endblock academicsSetActive %}
 
 {% block content %}
-<div class="row">
+<div class="container mx-auto px-4 py-6">
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <!-- Grades Card -->
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-warning text-center">
-                            <i class="ti-server"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>Marks</p>
-                            <span id="gradesCount">{{ grades_count }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <a href="/academics/marks/" class="stats">
-                        <i class="ti-pencil-alt"></i> Manage
-                    </a>
-                </div>
-            </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+            <i class="fas fa-server text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">Marks</p>
+            <h3 class="text-2xl font-bold text-gray-800" id="gradesCount">{{ grades_count }}</h3>
+          </div>
         </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <a href="/academics/reports/mark-summary/" class="text-blue-600 hover:text-blue-800 text-sm flex items-center">
+          <i class="fas fa-pencil-alt mr-1"></i>
+          <span>Manage</span>
+        </a>
+      </div>
     </div>
 
     <!-- Subjects Card -->
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-success text-center">
-                            <i class="ti-ruler"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>Subjects</p>
-                            <span id="subjectsCount">{{ subjects_count }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <a href="/academics/subjects/" class="stats">
-                        <i class="ti-pencil-alt"></i> Manage
-                    </a>
-                </div>
-            </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4">
+            <i class="fas fa-ruler text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">Subjects</p>
+            <h3 class="text-2xl font-bold text-gray-800" id="subjectsCount">{{ subjects_count }}</h3>
+          </div>
         </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <a href="/academics/subjects/" class="text-green-600 hover:text-green-800 text-sm flex items-center">
+          <i class="fas fa-pencil-alt mr-1"></i>
+          <span>Manage</span>
+        </a>
+      </div>
     </div>
 
     <!-- Exams Card -->
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-danger text-center">
-                            <i class="ti-book"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>Exams</p>
-                            <span id="examsCount">{{ exams_count }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <a href="/academics/exams/" class="stats">
-                        <i class="ti-pencil-alt"></i> Manage
-                    </a>
-                </div>
-            </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
+            <i class="fas fa-book text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">Exams</p>
+            <h3 class="text-2xl font-bold text-gray-800" id="examsCount">{{ exams_count }}</h3>
+          </div>
         </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <a href="/academics/exams/" class="text-yellow-600 hover:text-yellow-800 text-sm flex items-center">
+          <i class="fas fa-pencil-alt mr-1"></i>
+          <span>Manage</span>
+        </a>
+      </div>
     </div>
 
     <!-- Topics Card -->
-    <div class="col-lg-3 col-sm-6">
-        <div class="card">
-            <div class="content">
-                <div class="row">
-                    <div class="col-xs-5">
-                        <div class="icon-big icon-info text-center">
-                            <i class="ti-menu"></i>
-                        </div>
-                    </div>
-                    <div class="col-xs-7">
-                        <div class="numbers">
-                            <p>Topics</p>
-                            <span id="topicsCount">{{ topics_count }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <hr />
-                    <a href="/academics/topics/" class="stats">
-                        <i class="ti-pencil-alt"></i> Manage
-                    </a>
-                </div>
-            </div>
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center">
+          <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+            <i class="fas fa-bars text-xl"></i>
+          </div>
+          <div>
+            <p class="text-gray-500 text-sm">Topics</p>
+            <h3 class="text-2xl font-bold text-gray-800" id="topicsCount">{{ topics_count }}</h3>
+          </div>
         </div>
+      </div>
+      <div class="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <a href="/academics/topics/" class="text-blue-600 hover:text-blue-800 text-sm flex items-center">
+          <i class="fas fa-pencil-alt mr-1"></i>
+          <span>Manage</span>
+        </a>
+      </div>
     </div>
-</div>
+  </div>
 
-<div class="card">
-    <div class="p-2">
-        <div class="row align-items-center mr-3">
-            <div class="col-md-8">
-                <div class="header">
-                    <h4 class="title">Past Papers</h4>
-                    <p class="category">General Past Papers</p>
-                </div>
-            </div>
-            <div class="col-md-4 text-right p-3">
-                <button id="refreshExams" class="btn btn-primary mb-3" class="btn btn-primary btn-sm ">Refresh Exam List</button>
-            </div>
-        </div>
-        <div class="content table-responsive table-full-width">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th class="text-primary fw-semo">Subject</th>
-                        <th class="text-primary fw-semo">Date</th>
-                        <th class="text-primary fw-semo">Grade</th>
-                        <th class="text-primary fw-semo">Description</th>
-                        <th class="text-primary fw-semo">Created</th>
-                        <th class="text-primary fw-semo">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="examList">
-                    <!-- Dynamic content will be inserted here -->
-                </tbody>
-            </table>
-            <div id="paginationControls" class="text-center mt-3">
-                <button id="prevPage" class="btn btn-secondary" disabled>Previous</button>
-                <span id="currentPage">1</span>
-                <button id="nextPage" class="btn btn-secondary" disabled>Next</button>
-            </div>
-        </div>
+  <!-- Past Papers Card -->
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Card Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4 border-b border-gray-200">
+      <div class="mb-4 md:mb-0">
+        <h4 class="text-xl font-semibold text-gray-800">Past Papers</h4>
+        <p class="text-gray-600">General Past Papers</p>
+      </div>
+      <div>
+        <button id="refreshExams" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+          <i class="fas fa-sync-alt mr-2"></i>
+          Refresh Exam List
+        </button>
+      </div>
     </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Subject</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Date</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Grade</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Description</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Created</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="examList" class="bg-white divide-y divide-gray-200">
+          <!-- Dynamic content will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div id="paginationControls" class="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+      <button id="prevPage" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+        Previous
+      </button>
+      <span id="currentPage" class="text-gray-700">1</span>
+      <button id="nextPage" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+        Next
+      </button>
+    </div>
+  </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const examList = document.getElementById("examList");
-        const prevPage = document.getElementById("prevPage");
-        const nextPage = document.getElementById("nextPage");
-        const currentPage = document.getElementById("currentPage");
+  document.addEventListener("DOMContentLoaded", () => {
+    const examList = document.getElementById("examList");
+    const prevPage = document.getElementById("prevPage");
+    const nextPage = document.getElementById("nextPage");
+    const currentPage = document.getElementById("currentPage");
+    const refreshExams = document.getElementById("refreshExams");
 
-        // Define default query parameters
-        let currentParams = {
-            page: 1,
-            search: "", // Add this if you want to integrate a search feature later
-        };
+    // Define default query parameters
+    let currentParams = {
+      page: 1,
+      search: "",
+    };
 
-        const loadExams = () => {
-            const params = new URLSearchParams(currentParams).toString();
+    const loadExams = () => {
+      const params = new URLSearchParams(currentParams).toString();
 
-            // Fetch data from the server
-            fetch(`?${params}`, {
-                headers: {
-                    "x-requested-with": "XMLHttpRequest",
-                },
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch data");
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    // Render the table rows
-                    if (data.exams.length === 0) {
-                        examList.innerHTML = `<tr><td colspan="6" class="text-center text-primary fw-bold">No exams found.</td></tr>`;
-                    } else {
-                        examList.innerHTML = data.exams
-                            .map(
-                                (exam) => `
-                                <tr>
-                                    <td>${exam.subject__name}</td>
-                                    <td>${exam.date}</td>
-                                    <td>${exam.grade || "-"}</td>
-                                    <td>${exam.description || ""}</td>
-                                    <td>${exam.created}</td>
-                                    <td>
-                                        <a href="/academics/exams/${exam.id}/" class="btn btn-info btn-sm">View</a>
-                                        ${exam.file
-                                        ? `<a href="${exam.file}" target="_blank" class="btn btn-success btn-sm">Download PDF</a>`
-                                        : ""
-                                    }
-                                    </td>
-                                </tr>`
-                            )
-                            .join("");
-                    }
-                    // Update pagination buttons
-                    prevPage.disabled = !data.has_previous;
-                    nextPage.disabled = !data.has_next;
-                    currentPage.textContent = data.current_page;
-                })
-                .catch((error) => {
-                    console.error("Error loading exams:", error);
-                });
-        };
-
-        // Pagination controls
-        prevPage.addEventListener("click", () => {
-            if (currentParams.page > 1) {
-                currentParams.page--;
-                loadExams();
-            }
+      // Fetch data from the server
+      fetch(`?${params}`, {
+        headers: {
+          "x-requested-with": "XMLHttpRequest",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch data");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          // Render the table rows
+          if (data.exams.length === 0) {
+            examList.innerHTML = `
+              <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-blue-600 font-medium">
+                  No exams found.
+                </td>
+              </tr>`;
+          } else {
+            examList.innerHTML = data.exams
+              .map(
+                (exam) => `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${exam.subject__name}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${exam.date}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${exam.grade || "-"}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">${exam.description || ""}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${exam.created}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div class="flex space-x-2">
+                      <a href="/academics/exams/${exam.id}/" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-md text-sm font-medium">
+                        View
+                      </a>
+                      ${exam.file
+                        ? `<a href="${exam.file}" target="_blank" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md text-sm font-medium">
+                            Download PDF
+                          </a>`
+                        : ""
+                      }
+                    </div>
+                  </td>
+                </tr>`
+              )
+              .join("");
+          }
+          // Update pagination buttons
+          prevPage.disabled = !data.has_previous;
+          nextPage.disabled = !data.has_next;
+          currentPage.textContent = data.current_page;
+        })
+        .catch((error) => {
+          console.error("Error loading exams:", error);
+          examList.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-red-500 font-medium">
+                Error loading exam data. Please try again.
+              </td>
+            </tr>`;
         });
+    };
 
-        nextPage.addEventListener("click", () => {
-            currentParams.page++;
-            loadExams();
-        });
-
-        // Initial load
+    // Pagination controls
+    prevPage.addEventListener("click", () => {
+      if (currentParams.page > 1) {
+        currentParams.page--;
         loadExams();
+      }
     });
+
+    nextPage.addEventListener("click", () => {
+      currentParams.page++;
+      loadExams();
+    });
+
+    // Refresh button
+    refreshExams.addEventListener("click", () => {
+      currentParams.page = 1;
+      loadExams();
+    });
+
+    // Initial load
+    loadExams();
+  });
 </script>
 {% endblock content %}

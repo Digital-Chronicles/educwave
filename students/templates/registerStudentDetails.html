@@ -1,106 +1,111 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card">
-    <div class="m-2 p-5 my-2">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 25%; background-color: #991b1b;"
-                 aria-valuenow="100"
-                 aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
-        <div>
-            <h5 class="">Student Details</h5>
-        </div>
-        <div>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
-                        {{ form.first_name }}
-                    </div>
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
-                        {{ form.last_name }}
-                    </div>
+<div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="p-6"> 
+        <!-- Form title -->
+        <h5 class="text-xl font-semibold text-gray-800 mb-6">Student Details</h5>
+        
+        <!-- Form -->
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- First row - First Name & Last Name -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    {{ form.first_name }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-3 col-sm-12 mb-3">
-                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
-                        {{ form.date_of_birth }}
-                    </div>
-                    <div class="col-md-3 col-sm-12 mb-3">
-                        <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Gender</label>
-                        {{ form.gender }}
-                    </div>
-                    <div class="col-md-3 col-sm-12 mb-3">
-                        <label for="{{ form.current_status.id_for_label }}" class="form-label">Current Status</label>
-                        {{ form.current_status }}
-                    </div>
-                    <div class="col-md-3 col-sm-12 mb-3">
-                        <label for="{{ form.year_of_entry.id_for_label }}" class="form-label">Year of Entry</label>
-                        {{ form.year_of_entry }}
-                    </div>
+                <div>
+                    <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    {{ form.last_name }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.guardian_name.id_for_label }}" class="form-label">Guardian Name</label>
-                        {{ form.guardian_name }}
-                    </div>
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.guardian_phone.id_for_label }}" class="form-label">Guardian Phone</label>
-                        {{ form.guardian_phone }}
-                    </div>
+            </div>
+            
+            <!-- Second row - DOB, Gender, Status, Year -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                    {{ form.date_of_birth }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.father_name.id_for_label }}" class="form-label">Father's Name</label>
-                        {{ form.father_name }}
-                    </div>
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.father_phone.id_for_label }}" class="form-label">Father's Phone</label>
-                        {{ form.father_phone }}
-                    </div>
+                <div>
+                    <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                    {{ form.gender }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.mother_name.id_for_label }}" class="form-label">Mother's Name</label>
-                        {{ form.mother_name }}
-                    </div>
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.mother_phone.id_for_label }}" class="form-label">Mother's Phone</label>
-                        {{ form.mother_phone }}
-                    </div>
+                <div>
+                    <label for="{{ form.current_status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Current Status</label>
+                    {{ form.current_status }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
-                        {{ form.profile_picture }}
-                    </div>
+                <div>
+                    <label for="{{ form.year_of_entry.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Year of Entry</label>
+                    {{ form.year_of_entry }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6 col-sm-12 mb-3">
-                        <label for="{{ form.school.id_for_label }}" class="form-label">School</label>
-                        {{ form.school }}
-                    </div>
+            </div>
+            
+            <!-- Third row - Guardian info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.guardian_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Guardian Name</label>
+                    {{ form.guardian_name }}
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-2 col-sm-3 m-1">
-                        <button class="btn btn-danger">Cancel</button>
-                    </div>
-                    <div class="col-md-2 col-sm-3 m-1">
-                        <button type="submit" class="btn btn-primary">Continue</button>
-                    </div>
+                <div>
+                    <label for="{{ form.guardian_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Guardian Phone</label>
+                    {{ form.guardian_phone }}
                 </div>
-            </form>
-        </div>
+            </div>
+            
+            <!-- Fourth row - Father info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.father_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Father's Name</label>
+                    {{ form.father_name }}
+                </div>
+                <div>
+                    <label for="{{ form.father_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Father's Phone</label>
+                    {{ form.father_phone }}
+                </div>
+            </div>
+            
+            <!-- Fifth row - Mother info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.mother_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Mother's Name</label>
+                    {{ form.mother_name }}
+                </div>
+                <div>
+                    <label for="{{ form.mother_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Mother's Phone</label>
+                    {{ form.mother_phone }}
+                </div>
+            </div>
+            
+            <!-- Sixth row - Profile picture -->
+            <div>
+                <label for="{{ form.profile_picture.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+                {{ form.profile_picture }}
+            </div>
+            
+            <!-- Seventh row - School -->
+            <div class="md:w-1/2">
+                <label for="{{ form.school.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">School</label>
+                {{ form.school }}
+            </div>
+            
+            <!-- Button row -->
+            <div class="flex space-x-4 pt-4">
+                <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Continue</button>
+            </div>
+        </form>
     </div>
 </div>
+
+<!-- Add some basic styling to form inputs -->
+<style>
+    input, select {
+        @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500;
+    }
+    
+    input[type="file"] {
+        @apply block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100;
+    }
+</style>
 {% endblock content %}

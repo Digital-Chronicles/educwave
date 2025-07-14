@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block page_title %}Student Term Report{% endblock %}
+{% block breadcrumb %}Assessment / Reports / {{ mark_summary.student.get_full_name }}{% endblock %}
+{% block assessmentSetActive %}active{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+  <!-- Report Header -->
+  <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-800">Term Performance Report</h2>
+      <p class="mt-1 text-sm text-gray-600">
+        {{ mark_summary.term_exam.get_term_name_display }} {{ mark_summary.term_exam.year }} - {{ mark_summary.term_exam.get_exam_type_display }}
+      </p>
+    </div>
+    <div class="mt-3 sm:mt-0">
+      <button onclick="window.print()" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        <i class="fas fa-print mr-2"></i> Print Report
+      </button>
+    </div>
+  </div>
+
+  <!-- Student Information Section -->
+  <div class="px-6 py-4 border-b border-gray-200">
+    <div class="flex flex-col md:flex-row md:items-center md:space-x-6">
+      <div class="flex-shrink-0 mb-4 md:mb-0">
+        {% if mark_summary.student.profile_picture %}
+        <img class="h-24 w-24 rounded-full object-cover" src="{{ mark_summary.student.profile_picture.url }}" alt="{{ mark_summary.student.get_full_name }}">
+        {% else %}
+        <div class="h-24 w-24 rounded-full bg-primary-100 flex items-center justify-center text-primary-800 text-2xl font-bold">
+          {{ mark_summary.student.get_initials }}
+        </div>
+        {% endif %}
+      </div>
+      <div class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <p class="text-sm font-medium text-gray-500">Student Name</p>
+          <p class="mt-1 text-sm text-gray-900">{{ mark_summary.student.get_full_name }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Registration ID</p>
+          <p class="mt-1 text-sm text-gray-900">{{ mark_summary.student.registration_id }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Class</p>
+          <p class="mt-1 text-sm text-gray-900">{{ mark_summary.grade.grade_name }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Term</p>
+          <p class="mt-1 text-sm text-gray-900">{{ mark_summary.term_exam.get_term_name_display }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Exam Type</p>
+          <p class="mt-1 text-sm text-gray-900">{{ mark_summary.term_exam.get_exam_type_display }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-500">Academic Year</p>
+          <p class="mt-1 text-sm text-gray-900">{{ mark_summary.term_exam.year }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Summary -->
+  <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+    <h3 class="text-base font-medium text-gray-800">Performance Summary</h3>
+  </div>
+  <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-primary-50 rounded-lg p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-primary-100 text-primary-700 mr-4">
+          <i class="fas fa-star"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Overall Percentage</p>
+          <p class="text-2xl font-semibold text-gray-800">{{ mark_summary.percentage }}%</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-green-50 rounded-lg p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-green-100 text-green-700 mr-4">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Subject Position</p>
+          <p class="text-2xl font-semibold text-gray-800">
+            {% if mark_summary.subject_position %}
+            {% else %}
+              N/A
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-blue-50 rounded-lg p-4">
+      <div class="flex items-center">
+        <div class="p-3 rounded-full bg-blue-100 text-blue-700 mr-4">
+          <i class="fas fa-chart-bar"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Class Average</p>
+          <p class="text-2xl font-semibold text-gray-800">
+            {% if mark_summary.class_average %}
+              {{ mark_summary.class_average }}%
+            {% else %}
+              N/A
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subject Performance -->
+  <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+    <h3 class="text-base font-medium text-gray-800">Subject Performance</h3>
+  </div>
+  <div class="px-6 py-4">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for subject in all_subjects %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ subject.subject.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ subject.total_score }}/{{ subject.max_possible }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ subject.percentage }}%</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {% if subject.subject_position %}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if subject.percentage >= 80 %}
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                A
+              </span>
+              {% elif subject.percentage >= 70 %}
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                B
+              </span>
+              {% elif subject.percentage >= 60 %}
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                C
+              </span>
+              {% elif subject.percentage >= 50 %}
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                D
+              </span>
+              {% else %}
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                E
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Performance Chart -->
+  <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+    <h3 class="text-base font-medium text-gray-800">Performance Trend</h3>
+  </div>
+  <div class="px-6 py-4">
+    <canvas id="performanceChart" class="w-full h-64"></canvas>
+  </div>
+
+  <!-- Teacher Comments -->
+  <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+    <h3 class="text-base font-medium text-gray-800">Teacher Comments</h3>
+  </div>
+  <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center mb-3">
+        <div class="p-2 rounded-full bg-primary-100 text-primary-700 mr-3">
+          <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+        <h4 class="text-sm font-medium text-gray-700">Class Teacher's Comment</h4>
+      </div>
+      <p class="text-sm text-gray-600">
+        {{ comments.class_teacher|default:"No comment provided." }}
+      </p>
+    </div>
+    <div class="border border-gray-200 rounded-lg p-4">
+      <div class="flex items-center mb-3">
+        <div class="p-2 rounded-full bg-secondary-100 text-secondary-700 mr-3">
+          <i class="fas fa-user-tie"></i>
+        </div>
+        <h4 class="text-sm font-medium text-gray-700">Head Teacher's Comment</h4>
+      </div>
+      <p class="text-sm text-gray-600">
+        {{ comments.head_teacher|default:"No comment provided." }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="px-6 py-4 bg-gray-50 text-center">
+    <p class="text-xs text-gray-500">
+      Report generated on {% now "F j, Y" %} at {% now "g:i A" %}
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Performance Trend Chart
+  const ctx = document.getElementById('performanceChart').getContext('2d');
+  const performanceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ performance_history.labels|safe }},
+      datasets: [{
+        label: 'Average Percentage',
+        data: {{ performance_history.values|safe }},
+        borderColor: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `${context.dataset.label}: ${context.raw}%`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          min: 0,
+          max: 100,
+          ticks: {
+            callback: function(value) {
+              return value + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Print styles
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .bg-white, .bg-white * {
+        visibility: visible;
+      }
+      .bg-white {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+{% endblock %}

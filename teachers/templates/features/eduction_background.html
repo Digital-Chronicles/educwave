@@ -1,29 +1,125 @@
+<!-- Education Background Section -->
+<div class="mb-8">
+  {% if education_background %}
+    <div class="flex items-center mb-4">
+      <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+        <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
+          <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+        </svg>
+        Education Background
+      </h3>
+    </div>
 
-<!-- Education Background Table -->
-{% if education_background %}
-    <h3>Education Background</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Education Award</th>
-                <th>Institution</th>
-                <th>Graduation Year</th>
-                <th>Result Obtained</th>
-                <th>Additional Certifications</th>
-            </tr>
+    <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div class="flex items-center">
+                <svg class="h-4 w-4 mr-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                Award
+              </div>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div class="flex items-center">
+                <svg class="h-4 w-4 mr-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                Institution
+              </div>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div class="flex items-center">
+                <svg class="h-4 w-4 mr-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Graduation Year
+              </div>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div class="flex items-center">
+                <svg class="h-4 w-4 mr-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Result
+              </div>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <div class="flex items-center">
+                <svg class="h-4 w-4 mr-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Certifications
+              </div>
+            </th>
+          </tr>
         </thead>
-        <tbody>
-        {% for education in education_background %}
-            <tr>
-                <td>{{ education.education_award | default:'Not Provided' }}</td>
-                <td>{{ education.institution | default:'Not Provided' }}</td>
-                <td>{{ education.graduation_year | default:'Not Provided' }}</td>
-                <td>{{ education.result_obtained | default:'Not Provided' }}</td>
-                <td>{{ education.additional_certifications | default:'Not Provided' }}</td>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for education in education_background %}
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                  {{ education.education_award|default:"<span class='text-gray-400'>Not Provided</span>" }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                  {{ education.institution|default:"<span class='text-gray-400'>Not Provided</span>" }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% if education.graduation_year %}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    {{ education.graduation_year }}
+                  </span>
+                {% else %}
+                  <span class="text-gray-400 text-sm">Not Provided</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% if education.result_obtained %}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {{ education.result_obtained }}
+                  </span>
+                {% else %}
+                  <span class="text-gray-400 text-sm">Not Provided</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-normal">
+                {% if education.additional_certifications %}
+                  <div class="text-sm text-gray-900">
+                    {{ education.additional_certifications }}
+                  </div>
+                {% else %}
+                  <span class="text-gray-400 text-sm">Not Provided</span>
+                {% endif %}
+              </td>
             </tr>
-        {% endfor %}
+          {% endfor %}
         </tbody>
-    </table>
-{% else %}
-    <p class="text-center m-5">No education background available.</p>
-{% endif %}
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center p-8 bg-gray-50 rounded-lg border border-gray-200">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
+        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+      </svg>
+      <h3 class="mt-2 text-lg font-medium text-gray-900">No education records</h3>
+      <p class="mt-1 text-gray-500">This teacher doesn't have education background information yet.</p>
+      <div class="mt-6">
+        <a href="/teachers/register/teacher/education_background/{{ teacher.id }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Add Education Background
+        </a>
+      </div>
+    </div>
+  {% endif %}
+</div>

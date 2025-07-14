@@ -69,6 +69,10 @@ class Student(models.Model):
         db_table_comment = "This includes Students data"
         ordering = ["first_name"]
 
+    def get_full_name(self):
+        """Return the full name of the student"""
+        return f"{self.first_name} {self.last_name}".strip()
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} "
 

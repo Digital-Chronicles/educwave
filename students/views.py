@@ -21,7 +21,7 @@ from accounts.decorators import role_required
 class StudentList(RoleRequiredMixin, ListView):
     template_name = "students.html"
     paginate_by = 10
-    allowed_roles = ['TEACHER', 'ADMIN']
+    allowed_roles = ['TEACHER', 'ADMIN', "STUDENT"]
 
     def get_queryset(self):
         queryset = Student.objects.all()

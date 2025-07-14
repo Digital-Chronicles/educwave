@@ -17,7 +17,6 @@ class Topics(models.Model):
     
 class Question (models.Model):
     term_exam = models.ForeignKey(TermExamSession, on_delete=models.CASCADE)
-    # text= models.TextField (null=True)
     question_number = models.CharField(max_length=100, default="41a")
     topic = models.ForeignKey(Topics, on_delete=models.CASCADE, related_name="questions")
     grade = models.ForeignKey(Grade, on_delete=models.DO_NOTHING,

@@ -70,15 +70,6 @@ class NotesAdmin(admin.ModelAdmin):
         }
 
 
-@admin.register(StudentMark)
-class StudentMarksAdmin(admin.ModelAdmin):
-    list_display = ('student', 'subject', 'teacher', 'marks', 'created', 'updated')
-    list_filter = ('subject', 'teacher', 'created')
-    search_fields = ('student__name', 'subject__name', 'teacher__name')
-    date_hierarchy = 'created'
-    ordering = ('-created',)
-
-
 @admin.register(TermExamSession)
 class TermsAdmin(admin.ModelAdmin):
     list_display = ('term_name', 'start_date', 'end_date', 'created_by', 'created', 'updated')
@@ -86,3 +77,6 @@ class TermsAdmin(admin.ModelAdmin):
     search_fields = ('term_name', 'created_by__name')
     date_hierarchy = 'start_date'
     ordering = ['term_name']
+
+
+admin.site.register(StudentMarkSummary)
