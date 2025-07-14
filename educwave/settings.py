@@ -101,7 +101,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'educwave',
         'USER': 'postgres',
-        'PASSWORD': 'educwave123',
+        'PASSWORD': 'atwanzire',
         'HOST': 'localhost',
         'PORT': '5432',
     }
