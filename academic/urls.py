@@ -21,5 +21,7 @@ urlpatterns = [
     path('reports/student-progress/<int:student_id>/', views.StudentProgressReportView.as_view(), name='student_progress_report'),
     path('term-exams/', views.TermExamListView.as_view(), name='term_exam_list'),
     path('term-exams/<int:pk>/', views.TermExamDetailView.as_view(), name='term_exam_detail'),
-    path('student-reports/<int:summary_id>/', views.StudentTermReportView.as_view(), name='student_term_report'),
+
+    # Report URL
+    path('reports/student-term-report/<int:student_id>/', views.student_term_report, name='student_term_report'),
 ]

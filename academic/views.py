@@ -495,130 +495,34 @@ class TermExamDetailView(LoginRequiredMixin, DetailView):
         return distribution
 
 
-class StudentTermReportView(LoginRequiredMixin, DetailView):
-    model = StudentMarkSummary
-    template_name = 'reports/student_term_report.html'
-    context_object_name = 'mark_summary'
-    pk_url_kwarg = 'summary_id'
+@login_required
+def student_term_report(request, student_id):
+    marks = StudentMarkSummary.objects.filter(student_id=student_id) \
+        .select_related('term_exam', 'subject', 'grade') \
+        .order_by('term_exam__year', 'term_exam__term_name')
     
-    def get_queryset(self):
-        return super().get_queryset().select_related(
-            'student', 'subject', 'grade', 'term_exam'
-        )
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['active_tab'] = 'assessment'
-        
-        # Get all subjects for this student in this term exam
-        summaries = StudentMarkSummary.objects.filter(
-            student=self.object.student,
-            term_exam=self.object.term_exam
-        ).select_related('subject').order_by('-percentage')
-        
-        context['all_subjects'] = summaries
-        context['subject_count'] = summaries.count()
-        
-        # Calculate overall performance metrics
-        context['overall_performance'] = summaries.aggregate(
-            avg_score=Avg('percentage'),
-            highest_score=Max('percentage'),
-            lowest_score=Min('percentage')
-        )
-        
-        # Generate historical performance data
-        context['performance_history'] = self.get_performance_history()
-        
-        # Generate teacher comments
-        context['comments'] = self.generate_comments()
-        
-        return context
-    
-    def get_performance_history(self):
-        """Get student's performance across all terms for charts"""
-        history = StudentMarkSummary.objects.filter(
-            student=self.object.student
-        ).values(
-            'term_exam__term_name',
-            'term_exam__year',
-            'term_exam__exam_type'
-        ).annotate(
-            avg_percentage=Avg('percentage'),
-            subject_count=Count('subject')
-        ).order_by('term_exam__year', 'term_exam__term_name')
-        
-        # Format data for chart
-        labels = []
-        values = []
-        
-        for entry in history:
-            label = f"{entry['term_exam__year']} {entry['term_exam__term_name']} {entry['term_exam__exam_type']}"
-            labels.append(label)
-            values.append(float(entry['avg_percentage']))
-            
-        return {
-            'labels': labels,
-            'values': values,
-            'subject_counts': [entry['subject_count'] for entry in history]
-        }
-    
-    def generate_comments(self):
-        """Generate dynamic teacher comments based on performance"""
-        summary = self.object
-        percentage = summary.percentage
-        
-        if percentage >= 85:
-            return {
-                'class_teacher': (
-                    f"{summary.student.get_full_name()} has demonstrated outstanding performance this term. "
-                    "The consistent excellence across all subjects is commendable. "
-                    "Keep up the excellent work!"
-                ),
-                'head_teacher': (
-                    "Exceptional performance that sets a great example for other students. "
-                    "We encourage you to continue challenging yourself with advanced materials."
-                )
+    terms = {}
+    for mark in marks:
+        term_key = f"{mark.term_exam.get_term_name_display()} {mark.term_exam.year}"
+        if term_key not in terms:
+            terms[term_key] = {
+                'term_obj': mark.term_exam,
+                'marks': [],
+                'total_percentage': 0,
+                'subject_count': 0
             }
-        elif percentage >= 70:
-            return {
-                'class_teacher': (
-                    f"{summary.student.get_full_name()} has shown very good understanding of the subjects. "
-                    "With a little more effort in certain areas, even better results can be achieved."
-                ),
-                'head_teacher': (
-                    "Solid performance across the board. "
-                    "We're pleased with the progress and expect continued improvement next term."
-                )
-            }
-        elif percentage >= 50:
-            return {
-                'class_teacher': (
-                    f"{summary.student.get_full_name()} has met the basic requirements. "
-                    "There is room for improvement with more consistent effort and focus."
-                ),
-                'head_teacher': (
-                    "Satisfactory performance with potential for better results. "
-                    "We recommend utilizing the school's tutoring resources for additional support."
-                )
-            }
+        terms[term_key]['marks'].append(mark)
+        terms[term_key]['total_percentage'] += mark.percentage
+        terms[term_key]['subject_count'] += 1
+    
+    # Calculate average for each term
+    for term_data in terms.values():
+        if term_data['subject_count'] > 0:
+            term_data['average_percentage'] = term_data['total_percentage'] / term_data['subject_count']
         else:
-            return {
-                'class_teacher': (
-                    f"{summary.student.get_full_name()} needs to significantly improve effort and focus. "
-                    "Regular study habits and completing all assignments would help improve results."
-                ),
-                'head_teacher': (
-                    "We're concerned about these results and recommend a meeting with parents "
-                    "to discuss strategies for improvement. Additional support will be provided."
-                )
-            }
-
-
-class StudentTermReportPDFView(StudentTermReportView):
-    """PDF version of the student term report"""
-    template_name = 'reports/student_term_report_pdf.html'
+            term_data['average_percentage'] = 0
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['pdf_mode'] = True
-        return context
+    return render(request, 'reports/student_term_report.html', {
+        'terms': terms,
+        'student': marks[0].student if marks else None 
+    })

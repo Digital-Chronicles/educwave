@@ -217,3 +217,7 @@ class StudentMarkSummary(models.Model):
     
     def __str__(self):
         return f"{self.student} - {self.subject} ({self.term_exam}): {self.percentage}%"
+    
+
+
+    
