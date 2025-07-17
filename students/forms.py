@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django import forms
 from .models import Student, StudentAddress, CareTaker, StudentGrade
 
@@ -18,7 +19,6 @@ class StudentForm(forms.ModelForm):
             'mother_name', 
             'mother_phone', 
             'profile_picture',
-            'school',
         ]
 
         widgets = {
@@ -39,9 +39,6 @@ class StudentForm(forms.ModelForm):
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
             }),
             'grade_of_entry': forms.Select(attrs={
-                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
-            }),
-            'school': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
             }),
             'guardian_name': forms.TextInput(attrs={
@@ -120,7 +117,7 @@ class StudentGradeForm(forms.ModelForm):
     class Meta:
         model = StudentGrade
         fields = ['class_assigned', 'assigned_date']
-
+        
         widgets = {
             'class_assigned': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
@@ -130,3 +127,7 @@ class StudentGradeForm(forms.ModelForm):
                 'type': 'date'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['assigned_date'].initial = timezone.now().date()

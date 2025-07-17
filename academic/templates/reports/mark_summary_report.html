@@ -54,83 +54,96 @@
         </div>
     </form>
 
-    {% if aggregates %}
-    <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-        <h5 class="text-lg font-medium text-gray-800 mb-3">Summary Statistics</h5>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-3 rounded-md shadow-xs">
-                <p class="text-sm text-gray-500">Average Percentage</p>
-                <p class="text-xl font-semibold text-primary-700">{{ aggregates.avg_percentage|floatformat:2 }}%</p>
+    {% if not summaries %}
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                </svg>
             </div>
-            <div class="bg-white p-3 rounded-md shadow-xs">
-                <p class="text-sm text-gray-500">Highest Percentage</p>
-                <p class="text-xl font-semibold text-green-600">{{ aggregates.max_percentage|floatformat:2 }}%</p>
-            </div>
-            <div class="bg-white p-3 rounded-md shadow-xs">
-                <p class="text-sm text-gray-500">Lowest Percentage</p>
-                <p class="text-xl font-semibold text-red-600">{{ aggregates.min_percentage|floatformat:2 }}%</p>
-            </div>
-            <div class="bg-white p-3 rounded-md shadow-xs">
-                <p class="text-sm text-gray-500">Total Students</p>
-                <p class="text-xl font-semibold text-gray-800">{{ aggregates.total_students }}</p>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    No mark summary records found for the selected filters. Please try different filter criteria or check back later.
+                </p>
             </div>
         </div>
     </div>
-    {% endif %}
+    {% else %}
+        {% if aggregates %}
+        <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+            <h5 class="text-lg font-medium text-gray-800 mb-3">Summary Statistics</h5>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-3 rounded-md shadow-xs">
+                    <p class="text-sm text-gray-500">Average Percentage</p>
+                    <p class="text-xl font-semibold text-primary-700">{{ aggregates.avg_percentage|floatformat:2 }}%</p>
+                </div>
+                <div class="bg-white p-3 rounded-md shadow-xs">
+                    <p class="text-sm text-gray-500">Highest Percentage</p>
+                    <p class="text-xl font-semibold text-green-600">{{ aggregates.max_percentage|floatformat:2 }}%</p>
+                </div>
+                <div class="bg-white p-3 rounded-md shadow-xs">
+                    <p class="text-sm text-gray-500">Lowest Percentage</p>
+                    <p class="text-xl font-semibold text-red-600">{{ aggregates.min_percentage|floatformat:2 }}%</p>
+                </div>
+                <div class="bg-white p-3 rounded-md shadow-xs">
+                    <p class="text-sm text-gray-500">Total Students</p>
+                    <p class="text-xl font-semibold text-gray-800">{{ aggregates.total_students }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term Exam</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Avg</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for summary in summaries %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="font-medium text-gray-900">{{ summary.student.last_name }}, {{ summary.student.first_name }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ summary.grade.grade_name }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ summary.term_exam }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ summary.subject.name }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ summary.total_score }}/{{ summary.max_possible }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm {% if summary.percentage >= 70 %}text-green-600 font-medium{% elif summary.percentage < 50 %}text-red-600 font-medium{% else %}text-gray-500{% endif %}">
-                        {{ summary.percentage }}%
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ summary.subject_position|default:"-" }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ summary.class_average|default:"-" }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{% url 'mark_summary_detail' summary.id %}" class="text-primary-700 hover:text-primary-900">Details</a>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">No records found</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term Exam</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class Avg</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for summary in summaries %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900">{{ summary.student.last_name }}, {{ summary.student.first_name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ summary.grade.grade_name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ summary.term_exam }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ summary.subject.name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ summary.total_score }}/{{ summary.max_possible }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if summary.percentage >= 70 %}text-green-600 font-medium{% elif summary.percentage < 50 %}text-red-600 font-medium{% else %}text-gray-500{% endif %}">
+                            {{ summary.percentage }}%
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ summary.subject_position|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ summary.class_average|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'mark_summary_detail' summary.id %}" class="text-primary-700 hover:text-primary-900">Details</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
