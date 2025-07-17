@@ -17,6 +17,8 @@ db.sqlite3
 *.pyc
 *.pyo
 *.so
+*/migrations/*.pyc
+*/migrations/*.py
 
 # Virtual Environment
 venv/
