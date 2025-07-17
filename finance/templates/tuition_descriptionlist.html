@@ -1,19 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="card">
-  <div class="header">
-    <h4 class="title">Student Tuition Description</h4>
+<div class="max-w-6xl mx-auto bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+  <!-- Header -->
+  <div class="bg-gray-100 px-6 py-4">
+    <h4 class="text-xl font-semibold text-blue-800">Student Tuition Description</h4>
   </div>
 
-  <div class="container-fluid">
-    <h5>Student Tuition</h5>
+  <div class="p-6 bg-gray-50">
+    <h5 class="text-lg font-medium text-gray-900 mb-4">Student Tuition</h5>
 
     <!-- Grade Selection Row -->
-    <div class="d-flex mb-3">
+    <div class="flex flex-wrap gap-2 mb-6">
         {% for grade in grades %}
-            <a href="?grade_id={{ grade.id }}" class="btn btn-primary btn-sm mx-1 
-               {% if selected_grade == grade.id|stringformat:"s" %} active {% endif %}">
+            <a href="?grade_id={{ grade.id }}" 
+               class="px-4 py-2 text-sm rounded-md transition-colors border
+                      {% if selected_grade == grade.id|stringformat:"s" %} 
+                        bg-blue-600 text-white border-blue-700
+                      {% else %} 
+                        bg-white text-gray-900 border-gray-300 hover:bg-gray-100
+                      {% endif %}">
                 {{ grade.grade_name }}
             </a>
         {% endfor %}
@@ -21,39 +27,48 @@
 
     <!-- Tuition Table -->
     {% if tuitions %}
-    <table class="table table-striped table-bordered table-sm">
-      <thead>
-        <tr>
-          <th style="width: 5%; max-width: 30px">ID</th>
-          <th style="width: 10%; max-width: 50px">Student</th>
-          <th style="width: 10%; max-width: 50px">Tuition Fee</th>
-          <th style="width: 10%; max-width: 50px">Hostel Fee</th>
-          <th style="width: 10%; max-width: 50px">Breakfast</th>
-          <th style="width: 5%; max-width: 30px">Lunch</th>
-          <th style="width: 5%; max-width: 30px">Total Fee</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for tuition in tuitions %}
-        <tr>
-          <td>{{ forloop.counter }}</td>
-          <td>{{ tuition.student.first_name }} {{ tuition.student.last_name }}</td>
-          <td>{{ tuition.tuition }}</td>
-          <td>{{ tuition.hostel }}</td>
-          <td>{{ tuition.breakfast }}</td>
-          <td>{{ tuition.lunch }}</td>
-          <td>{{ tuition.total_fee }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-100">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">ID</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Student</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Tuition Fee</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Hostel Fee</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Breakfast</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Lunch</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-900 uppercase tracking-wider">Total Fee</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for tuition in tuitions %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ forloop.counter }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              {{ tuition.student.first_name }} {{ tuition.student.last_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tuition.tuition }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tuition.hostel }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tuition.breakfast }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ tuition.lunch }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ tuition.total_fee }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% else %}
-        <p class="text-center mt-3">No tuition details available for the selected grade.</p>
+      <div class="text-center py-8 bg-white rounded-lg border border-gray-200">
+        <p class="text-gray-900">No tuition details available for the selected grade.</p>
+      </div>
     {% endif %}
 
-    <a href="/assessment/" class="btn btn-secondary mt-4">Back to Assessment</a>
+    <div class="mt-6">
+      <a href="/assessment/" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-900 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        Back to Assessment
+      </a>
+    </div>
   </div>
 </div>
 
 {% endblock %}
-

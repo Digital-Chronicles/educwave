@@ -1,25 +1,46 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="card">
-    <div class="m-2 p-5 my-2">
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 25%; background-color: #991b1b;"
-                 aria-valuenow="100"
-                 aria-valuemin="0" aria-valuemax="100"></div>
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="bg-white shadow-md rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h4 class="text-xl font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-file-invoice-dollar text-blue-600 mr-2"></i>
+                    Student Tuition Description
+                </h4>
+            </div>
         </div>
-        <div>
-            <h5 class="">Student Tuition Description</h5>
-        </div>
-        <div>
-            <form  method="POST" action="">
+
+        <div class="px-6 py-6">
+            <form method="POST" action="" class="space-y-6">
                 {% csrf_token %}
-                {{form.as_p}}
-                <div class="row">
-                    <div class="col-md-2 col-sm-3 m-1">
-                        <button type="submit"class="btn btn-danger">Submit</button>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-600 mb-1">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-blue-600">*</span>
+                            {% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="text-sm text-gray-400 mt-1">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% if field.errors %}
+                            <p class="text-sm text-blue-600 mt-1">{{ field.errors|join:", " }}</p>
+                        {% endif %}
                     </div>
- 
+                    {% endfor %}
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-red-700 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Submit
+                    </button>
                 </div>
             </form>
         </div>
@@ -27,4 +48,3 @@
 </div>
 
 {% endblock %}
-

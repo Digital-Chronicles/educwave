@@ -2,44 +2,69 @@
 
 {% block page_title %}Grades{% endblock page_title %}
 {% block academicsSetActive %}active{% endblock academicsSetActive %}
+
 {% block content %}
-<div class="my-2">
-    <a href="{% url 'register_subject' %}" class="btn btn-default">Add New Subject</a>
-</div>
-
-<div class="card">
-    <div class="header">
-        <h4 class="title">Subject List</h4>
-        <p class="category">General Subject List</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Header with action button -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900">Subject List</h2>
+      <p class="text-sm text-gray-500">General Subject List</p>
     </div>
-    <div class="content table-responsive table-full-width">
-        {% if subject_list %}
-            <table class="table table-striped">
-                <thead>
-                    <th class="text-primary fw-semo">Name</th>
-                    <th class="text-primary fw-bold">Description</th>
-                    <th class="text-primary fw-bold">Curriculum</th>
+    <a href="{% url 'register_subject' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+      <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+      </svg>
+      Add New Subject
+    </a>
+  </div>
 
-                    <th class="text-primary fw-bold">Actions</th>
-                </thead>
-                <tbody>
-                    {% for subject in subject_list %}
-                    <tr>
-                        <td>{{subject.name}}</td>
-                        <td>{{subject.description}}</td>
-                        <td>{{subject.curriculum}}</td>
-                        
-                        <td><a href="/students/student-details/{{student.id}}" class="btn btn-danger btn-sm">MANAGE</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="container">
-                <p class="text-primary fw-bold">No Grades found.</p>
-            </div>
-        {% endif %}
-    </div>
+  <!-- Subject Table -->
+  <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    {% if subject_list %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curriculum</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for subject in subject_list %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ subject.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ subject.description|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ subject.curriculum|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="/students/student-details/{{student.id}}" class="text-blue-600 hover:text-blue-900 mr-4">View</a>
+                <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                <a href="#" class="text-red-600 hover:text-red-900">Delete</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No subjects found</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by adding a new subject.</p>
+        <div class="mt-6">
+          <a href="{% url 'register_subject' %}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            New Subject
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
 </div>
-
 {% endblock content %}

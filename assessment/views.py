@@ -185,7 +185,7 @@ def Exam_Results(request):
         'selected_subject': selected_subject_id,
         'best_done_topics': best_done_topics,
         'worst_done_topics': worst_done_topics,
-        'topic_top_bottom_students': topic_top_bottom_students,  # Add this to pass the data
+        'topic_top_bottom_students': topic_top_bottom_students,
     })
 
 

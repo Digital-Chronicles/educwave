@@ -1,22 +1,14 @@
-from django.shortcuts import redirect, render
-from django.views import generic
-from finance.forms import StudentTuitionDescriptionForm
-from finance.models import StudentTuitionDescription
-from .models import Student, StudentAddress, CareTaker, StudentGrade
-from .forms import StudentForm, StudentAddressForm, CareTakerForm, StudentGradeForm
-from django.urls import reverse_lazy
-from django.shortcuts import render, get_object_or_404
-from .models import Student
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, Http404
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView
+from django.views.generic import ListView, CreateView
+from django.contrib import messages
+from management.models import GeneralInformation
+from .models import Student, StudentAddress, CareTaker, StudentGrade
+from academic.models import Grade
+from .forms import StudentForm, StudentAddressForm, CareTakerForm, StudentGradeForm
 from accounts.mixins import RoleRequiredMixin
-from accounts.decorators import role_required
-
 
 class StudentList(RoleRequiredMixin, ListView):
     template_name = "students.html"
@@ -61,91 +53,101 @@ class RegisterStudentDetails(RoleRequiredMixin, CreateView):
     model = Student
     template_name = "registerStudentDetails.html"
     form_class = StudentForm
+    success_url = '/students/'
     allowed_roles = ['TEACHER', 'ADMIN']
-
+    
     def form_valid(self, form):
-        student = form.save()
-        return redirect(f'/students/register/student-address/{student.pk}/')
-
-
-class RegisterStudentAddress(RoleRequiredMixin, CreateView):
-    model = StudentAddress
-    template_name = "registerStudentAddress.html"
-    form_class = StudentAddressForm
-    allowed_roles = ['TEACHER', 'ADMIN']
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        student_id = self.kwargs['pk']
-        student = get_object_or_404(Student, pk=student_id)
-        context['student'] = student
-        return context
-
-    def form_valid(self, form):
-        student_id = self.kwargs['pk']
-        student = get_object_or_404(Student, pk=student_id)
-        form.instance.student = student
+        school = GeneralInformation.objects.first()
+        if not school:
+            raise Http404("No school information found")
+        form.instance.school = school
+        form.instance.registered_by = self.request.user
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return f'/students/register/student-caretaker/{self.object.student.pk}/'
 
-
-class CareTakerCreateView(RoleRequiredMixin, CreateView):
-    model = CareTaker
-    form_class = CareTakerForm
-    template_name = 'registerStudentCaretaker.html'
-    allowed_roles = ['TEACHER', 'ADMIN']
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        student_id = self.kwargs.get('student_pk')
-        context['student_id'] = student_id
-        return context
-
-    def form_valid(self, form):
-        student_id = self.kwargs.get('student_pk')
-        student = get_object_or_404(Student, pk=student_id)
-        form.instance.student = student
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return f'/students/register/student-grade/{self.object.student.pk}/'
-
-
-class StudentGradeCreateView(RoleRequiredMixin, CreateView):
-    model = StudentGrade
-    form_class = StudentGradeForm
-    template_name = 'registerStudentGrade.html'
-    allowed_roles = ['TEACHER', 'ADMIN']
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        student_id = self.kwargs.get('student_pk')
-        context['student_id'] = student_id
-        return context
-
-    def form_valid(self, form):
-        student_id = self.kwargs.get('student_pk')
-        student = get_object_or_404(Student, pk=student_id)
-        form.instance.student = student
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return "/students/"
-
-# Student Detail View
-@role_required(allowed_roles=['ADMIN', 'TEACHER'])
 def studentDetail(request, id):
     student = get_object_or_404(Student, id=id)
-    student_address = student.studentaddress if hasattr(
-        student, 'studentaddress') else None
-    caretakers = student.caretaker_set.all()
+    student_address = StudentAddress.objects.filter(student=student).first()
+    caretakers = CareTaker.objects.filter(student=student)
+    student_grades = StudentGrade.objects.filter(student=student).order_by('-assigned_date')
+    grades = Grade.objects.all()
 
-    return render(request, "studentDetail.html", {
-        "student": student,
-        "student_address": student_address,
-        "caretakers": caretakers,
-      
-    })
-  
+    if request.method == 'POST':
+        form_type = request.POST.get('form_type')
+        
+        if form_type == 'student':
+            form = StudentForm(request.POST, request.FILES, instance=student)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Student information updated successfully!')
+                return redirect('StudentDetail', id=id)
+        
+        elif form_type == 'address':
+            if student_address:
+                form = StudentAddressForm(request.POST, instance=student_address)
+            else:
+                form = StudentAddressForm(request.POST)
+            
+            if form.is_valid():
+                address = form.save(commit=False)
+                address.student = student
+                address.save()
+                messages.success(request, 'Address updated successfully!')
+                return redirect('StudentDetail', id=id)
+        
+        elif form_type == 'caretaker':
+            caretaker_id = request.POST.get('caretaker_id')
+            if caretaker_id:
+                caretaker = get_object_or_404(CareTaker, id=caretaker_id, student=student)
+                form = CareTakerForm(request.POST, instance=caretaker)
+            else:
+                form = CareTakerForm(request.POST)
+            
+            if form.is_valid():
+                caretaker = form.save(commit=False)
+                caretaker.student = student
+                caretaker.save()
+                action = 'updated' if caretaker_id else 'added'
+                messages.success(request, f'Caretaker {action} successfully!')
+                return redirect('StudentDetail', id=id)
+        
+        elif form_type == 'grade':
+            grade_id = request.POST.get('grade_id')
+            if grade_id:
+                # Updating existing grade record
+                grade_record = get_object_or_404(StudentGrade, id=grade_id, student=student)
+                form = StudentGradeForm(request.POST, instance=grade_record)
+            else:
+                # Creating new grade record
+                form = StudentGradeForm(request.POST)
+            
+            if form.is_valid():
+                grade_record = form.save(commit=False)
+                grade_record.student = student
+                grade_record.save()
+                
+                # Update student's current grade only if this is the most recent assignment
+                latest_grade = StudentGrade.objects.filter(student=student).order_by('-assigned_date').first()
+                if latest_grade and latest_grade.id == grade_record.id:
+                    student.current_grade = grade_record.class_assigned
+                    student.save()
+                
+                messages.success(request, 'Academic record updated successfully!')
+                return redirect('StudentDetail', id=id)
+
+        
+        elif form_type == 'delete_caretaker':
+            caretaker_id = request.POST.get('caretaker_id')
+            caretaker = get_object_or_404(CareTaker, id=caretaker_id, student=student)
+            caretaker.delete()
+            messages.success(request, 'Caretaker deleted successfully!')
+            return redirect('StudentDetail', id=id)
+
+    context = {
+        'student': student,
+        'student_address': student_address,
+        'caretakers': caretakers,
+        'student_grades': student_grades,
+        'grades': grades,
+    }
+    return render(request, 'studentDetail.html', context)

@@ -150,7 +150,7 @@ class CareTaker(models.Model):
 
 # Student Class Assignment Table
 class StudentGrade(models.Model):
-    student = models.OneToOneField(Student, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     class_assigned = models.ForeignKey(Grade, on_delete=models.CASCADE)
     assigned_date = models.DateField()
     created = models.DateField(auto_now_add=True)
