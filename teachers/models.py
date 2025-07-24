@@ -38,22 +38,28 @@ class Teacher(models.Model):
     def save(self, *args, **kwargs):
         if not self.registration_id:
             if self.year_of_entry and self.school:
-                # Get the abbreviation of the school
                 school_abbr = self.school.get_abbr()
-
-                # Count existing students for the same year and school
-                count = Teacher.objects.filter(
+                
+                # Find the highest existing count for the same year and school
+                last_teacher = Teacher.objects.filter(
                     year_of_entry=self.year_of_entry,
                     school=self.school
-                ).count() + 1
+                ).order_by('-registration_id').first()
 
-                # Generate the registration ID
-                self.registration_id = f"{school_abbr}/{count:03d}"
+                if last_teacher:
+                    # Extract the numeric part and increment
+                    last_number = int(last_teacher.registration_id.split('/')[-1])
+                    new_number = last_number + 1
+                else:
+                    new_number = 1
+
+                self.registration_id = f"{school_abbr}/{new_number:03d}"
             else:
                 raise ValueError("Year of entry and school are required to generate a registration ID.")
 
         super().save(*args, **kwargs)
-    
+
+      
 # Payroll Information Table
 class PayrollInformation(models.Model):
     teacher = models.OneToOneField(Teacher, on_delete=models.CASCADE, related_name="payroll_information")
