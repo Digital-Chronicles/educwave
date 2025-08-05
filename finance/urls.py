@@ -1,21 +1,26 @@
 from django.urls import path
-
 from .views import *
+from . import views
 
 urlpatterns = [
-    path("", finance, name="finance"),
-    path('schoolfees/', Schoolfees, name='schoolfees'),
-    path("register/schoolfees/", RegisterSchoolfees.as_view(), name='register_schoolfees'),
-    path('grades/summary/', grade_fee_summary, name='grade_fee_summary'),
-    path('otherpayment/', OtherSchoolPayment, name='otherpayments'),
-    path("register/otherschool/payments/", RegisterOtherSchoolPayments.as_view(), name='register_otherpayments'),
-    path("register/transport/", RegisterTransport.as_view(), name='register_transport'),
-    path('tuition/description/', Student_TuitionDescription, name='tuition_description'),
-    path("register/tuition/description/<int:student_id>/", RegisterStudentTuitionDescription, name='register_tuition_description'),
-    path('fee/transaction/', Fee_Transaction_list, name='feetransaction'),
-    path('student/<int:id>/transactions/', student_transactions, name='student_transactions'),
-    path('get-students/', get_students_by_grade, name='get_students_by_grade'),
-    path("register/fee/transaction", RegisterFeeTransaction.as_view(), name='register_schoolfees'),
-
-
+    path("", finance_dashboard, name="finance-dashboard"),
+    
+    # Tuition Description URLs
+    path('tuition-descriptions/', views.TuitionDescriptionListView.as_view(), name='tuition_description_list'),
+    path('tuition-descriptions/add/', views.TuitionDescriptionCreateView.as_view(), name='add_tuition_description'),
+    path('tuition-descriptions/<int:pk>/edit/', views.TuitionDescriptionUpdateView.as_view(), name='edit_tuition_description'),
+    path('tuition-descriptions/<int:pk>/delete/', views.TuitionDescriptionDeleteView.as_view(), name='delete_tuition_description'),
+    
+    # Transaction URLs
+    path('transactions/', views.TransactionListView.as_view(), name='transaction_list'),
+    path('transactions/add/', views.TransactionCreateView.as_view(), name='add_transaction'),
+    path('transactions/<int:pk>/edit/', views.TransactionUpdateView.as_view(), name='edit_transaction'),
+    path('transactions/<int:pk>/delete/', views.TransactionDeleteView.as_view(), name='delete_transaction'),
+    
+    # School Fees Management
+    path('manage-fees/', views.SchoolFeesListView.as_view(), name='manage_school_fees'),
+    path('manage-fees/<int:pk>/edit/', views.SchoolFeesUpdateView.as_view(), name='edit_grade_fee'),
+    path('manage-fees/<int:pk>/', views.SchoolFeesDetailView.as_view(), name='grade_fee_details'),
 ]
+
+

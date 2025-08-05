@@ -1,148 +1,226 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-  <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-    <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-      <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        Record New Question
-      </h3>
+<div class="flex flex-col lg:flex-row gap-6">
+    <!-- Form Section -->
+    <div class="lg:w-1/2">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Create New Question</h2>
+            
+            <form method="post" id="question-form">
+                {% csrf_token %}
+                
+                <!-- Term Exam -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.term_exam.id_for_label }}">
+                        {{ form.term_exam.label }}
+                    </label>
+                    {{ form.term_exam }}
+                    {% if form.term_exam.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.term_exam.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Grade -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.grade.id_for_label }}">
+                        {{ form.grade.label }}
+                    </label>
+                    {{ form.grade }}
+                    {% if form.grade.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.grade.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Subject -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.subject.id_for_label }}">
+                        {{ form.subject.label }}
+                    </label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.subject.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Topic -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.topic.id_for_label }}">
+                        {{ form.topic.label }}
+                    </label>
+                    {{ form.topic }}
+                    {% if form.topic.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.topic.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Question Number -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.question_number.id_for_label }}">
+                        {{ form.question_number.label }}
+                    </label>
+                    {{ form.question_number }}
+                    {% if form.question_number.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.question_number.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Max Score -->
+                <div class="mb-4">
+                    <label class="block text-gray_700 text-sm font-bold mb-2" for="{{ form.max_score.id_for_label }}">
+                        {{ form.max_score.label }}
+                    </label>
+                    {{ form.max_score }}
+                    {% if form.max_score.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.max_score.errors.as_text }}</p>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Save Question
+                </button>
+            </form>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4">Filter Questions</h3>
+            <form method="get" id="filter-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="grade_id">
+                            Grade
+                        </label>
+                        <select name="grade_id" id="grade_id" class="w-full p-2 border rounded">
+                            <option value="">All Grades</option>
+                            {% for grade in grades %}
+                                <option value="{{ grade.id }}" {% if grade.id == selected_grade %}selected{% endif %}>
+                                    {{ grade.grade_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="subject_id">
+                            Subject
+                        </label>
+                        <select name="subject_id" id="subject_id" class="w-full p-2 border rounded">
+                            <option value="">All Subjects</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if subject.id == selected_subject %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                    Filter
+                </button>
+            </form>
+        </div>
     </div>
     
-    <div class="p-6">
-      <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Exam Selection -->
-          <div>
-            <label for="term_exam" class="block text-sm font-medium text-gray-700 mb-1">Exam</label>
-            <div class="mt-1">
-              {{ form.term_exam }}
-            </div>
-          </div>
-          
-          <!-- Grade Selection -->
-          <div>
-            <label for="grade-select" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-            <select
-              id="grade-select"
-              name="grade"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-600 focus:border-blue-600"
-            >
-              {% for choice in form.grade.field.choices %}
-              <option value="{{ choice.0 }}">{{ choice.1 }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          
-          <!-- Subject Selection -->
-          <div>
-            <label for="subject-select" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-            <select
-              id="subject-select"
-              name="subject"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-600 focus:border-blue-600"
-            >
-              <option value="">Select a grade first</option>
-            </select>
-          </div>
-          
-          <!-- Topic Selection -->
-          <div>
-            <label for="topic-select" class="block text-sm font-medium text-gray-700 mb-1">Topic</label>
-            <select
-              id="topic-select"
-              name="topic"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-600 focus:border-blue-600"
-            >
-              <option value="">Select a subject first</option>
-            </select>
-          </div>
-          
-          <!-- Question Number -->
-          <div>
-            <label for="question_number" class="block text-sm font-medium text-gray-700 mb-1">Question Number</label>
-            <div class="mt-1">
-              {{ form.question_number }}
-            </div>
-          </div>
-          
-          <!-- Max Score -->
-          <div>
-            <label for="max_score" class="block text-sm font-medium text-gray-700 mb-1">Max Score</label>
-            <div class="mt-1">
-              {{ form.max_score }}
-            </div>
-          </div>
+    <!-- Questions List Section -->
+    <div class="lg:w-1/2">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Recent Questions</h2>
+            
+            {% if questions %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max Score</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for question in questions %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ question.question_number }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ question.topic.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ question.subject.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ question.grade.grade_name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ question.max_score }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-gray-500">No questions found.</p>
+            {% endif %}
         </div>
-        
-        <div class="pt-4 flex justify-end">
-          <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            Save Question
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const gradeSelect = document.getElementById("grade-select");
-    const subjectSelect = document.getElementById("subject-select");
-    const topicSelect = document.getElementById("topic-select");
-
-    function clearOptions(select, defaultText) {
-        select.innerHTML = `<option value="">${defaultText}</option>`;
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const gradeSelect = document.getElementById('id_grade');
+    const subjectSelect = document.getElementById('id_subject');
+    const topicSelect = document.getElementById('id_topic');
+    
+    // Function to fetch and populate topics
+    async function populateTopics() {
+        const gradeId = gradeSelect.value;
+        const subjectId = subjectSelect.value;
+        
+        if (!gradeId || !subjectId) {
+            // Clear topics if either grade or subject is not selected
+            while (topicSelect.options.length > 1) {
+                topicSelect.remove(1);
+            }
+            return;
+        }
+        
+        try {
+            const response = await fetch(
+                "{% url 'assessment:get_topics' %}?" + 
+                new URLSearchParams({
+                    grade_id: gradeId,
+                    subject_id: subjectId
+                })
+            );
+            const data = await response.json();
+            
+            // Clear existing options except the first one
+            while (topicSelect.options.length > 1) {
+                topicSelect.remove(1);
+            }
+            
+            // Add new options
+            data.forEach(item => {
+                const option = new Option(item.name, item.id);
+                topicSelect.add(option);
+            });
+        } catch (error) {
+            console.error('Error fetching topics:', error);
+        }
     }
-
-    // Grade -> Subjects
-    gradeSelect.addEventListener("change", function () {
-        const gradeId = this.value;
-
-        if (!gradeId) {
-            clearOptions(subjectSelect, "Select a grade first");
-            clearOptions(topicSelect, "Select a subject first");
-            return;
-        }
-
-        fetch(`/assessment/qget-subjects/?grade_id=${gradeId}`)
-            .then(response => response.json())
-            .then(data => {
-                clearOptions(subjectSelect, "Select Subject");
-                data.forEach(subject => {
-                    subjectSelect.innerHTML += `<option value="${subject.id}">${subject.name}</option>`;
-                });
-            });
-
-        clearOptions(topicSelect, "Select a subject first");
-    });
-
-    // Subject -> Topics
-    subjectSelect.addEventListener("change", function () {
-        const subjectId = this.value;
-
-        if (!subjectId) {
-            clearOptions(topicSelect, "Select a subject first");
-            return;
-        }
-
-        fetch(`/assessment/qget-topics-by-subject/?subject_id=${subjectId}`)
-            .then(response => response.json())
-            .then(data => {
-                clearOptions(topicSelect, "Select Topic");
-                data.forEach(topic => {
-                    topicSelect.innerHTML += `<option value="${topic.id}">${topic.name}</option>`;
-                });
-            });
-    });
+    
+    // Grade change handler - just update topics if subject is already selected
+    if (gradeSelect) {
+        gradeSelect.addEventListener('change', function() {
+            if (subjectSelect.value) {
+                populateTopics();
+            }
+        });
+    }
+    
+    // Subject change handler - always update topics
+    if (subjectSelect) {
+        subjectSelect.addEventListener('change', populateTopics);
+    }
+    
+    // Initialize topics if values are already selected
+    if (gradeSelect.value && subjectSelect.value) {
+        populateTopics();
+    }
 });
 </script>
-
-{% endblock content %}
+{% endblock %}

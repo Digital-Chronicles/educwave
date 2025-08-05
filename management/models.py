@@ -2,7 +2,7 @@ from django.db import models
 from accounts.models import CustomUser
 from teachers.models import Teacher
 from students.models import Student, Grade
-from academic.models import Subject, Topic
+from academic.models import Subject, Topics
 from django.core.validators import RegexValidator
 from datetime import date
 from django.core.exceptions import ValidationError
@@ -67,7 +67,7 @@ class Lesson(models.Model):
     class_assigned = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="lesson")
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="lesson")
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="lesson")
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name="lesson")
+    topic = models.ForeignKey(Topics, on_delete=models.CASCADE, related_name="lesson")
     lesson_date = models.DateField()
     duration_minutes = models.PositiveIntegerField()
     created = models.DateField(auto_now_add=True)

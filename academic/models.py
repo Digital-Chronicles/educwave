@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.core.exceptions import ValidationError
 import datetime
+from assessment.models import Topics
 
 #Grade
 class Grade(models.Model):
@@ -26,25 +27,6 @@ class Grade(models.Model):
     def __str__(self):
         return self.grade_name
 
-# Subjects Table
-class Subject(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    grade = models.ForeignKey(
-        Grade, blank=True, on_delete=models.DO_NOTHING, related_name="subject_grade")
-    curriculum = models.ForeignKey(
-        'Curriculum', on_delete=models.CASCADE, related_name="subjects")
-    created = models.DateField(auto_now_add=True)
-    updated = models.DateField(auto_now=True)
-
-    class Meta:
-        db_table = "subject"
-        db_table_comment = "This includes Subject data"
-        ordering = ["name"]
-
-    def __str__(self):
-        return f'{self.name}-{self.grade} '
-
 # Curriculum Table
 class Curriculum(models.Model):
     name = models.CharField(max_length=150)
@@ -61,24 +43,24 @@ class Curriculum(models.Model):
     def __str__(self):
         return self.name
 
-
-# Topics Table
-class Topic(models.Model):
-    subject = models.ForeignKey(
-        Subject, on_delete=models.CASCADE, related_name="topics")
-    name = models.CharField(max_length=255)
-    description = models.TextField(null=True, blank=True)
-    order = models.PositiveIntegerField()
+# Subjects Table
+class Subject(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=50, blank=True, null=True)
+    description = models.TextField()
+    curriculum = models.ForeignKey(
+        'Curriculum', on_delete=models.CASCADE, related_name="subjects")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
     class Meta:
-        db_table = "topic"
-        db_table_comment = "This includes topic data"
+        db_table = "subject"
+        db_table_comment = "This includes Subject data"
         ordering = ["name"]
 
     def __str__(self):
-        return f"{self.name} - {self.subject.name}"
+        return f'{self.name}  -  {self.code}  -  {self.curriculum}'
+    
 
 # Exams Table
 class Exam(models.Model):
@@ -114,7 +96,7 @@ class Exam(models.Model):
 class Notes(models.Model):
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="notes")
-    topics = models.ManyToManyField(Topic, related_name="notes")
+    topics = models.ManyToManyField(Topics, related_name="notes")
     notes_file = models.FileField(
         upload_to='notes_uploads/',
         blank=True,

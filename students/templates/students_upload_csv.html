@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="bg-white shadow rounded-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Upload Students CSV</h2>
+        
+        <div class="mb-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Before You Upload</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p class="mb-2">For best results:</p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li><a href="/students/student-download-csv-template/" class="text-blue-600 hover:text-blue-800 underline">Download our CSV template</a> and fill in your student data</li>
+                            <li>Keep the header row exactly as provided</li>
+                            <li>Fill in required fields: first_name, last_name, date_of_birth</li>
+                            <li>Save your completed file as a CSV</li>
+                            <li>Upload using the form below</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="{{ form.csv_file.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        CSV File
+                    </label>
+                    <div class="mt-1 flex items-center">
+                        <input type="file" name="csv_file" required id="id_csv_file" 
+                               class="block w-full text-sm text-gray-500
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-blue-50 file:text-blue-700
+                                      hover:file:bg-blue-100">
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500">Only CSV files accepted</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-4">
+                <a href="{% url 'students' %}" class="text-gray-600 hover:text-gray-800 text-sm font-medium">
+                    ← Back to Students
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Upload CSV
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">Important Notes</h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Date format must be YYYY-MM-DD (e.g., 2015-05-15)</li>
+                        <li>For gender, use either "Male" or "Female"</li>
+                        <li>For status, use "active", "graduated", or "dropped out"</li>
+                        <li>Grade options: {% for grade in GRADE_CHOICES %}{{ grade.1 }}{% if not forloop.last %}, {% endif %}{% endfor %}</li>
+                        <li>Phone numbers should include country code (e.g., +1234567890)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -131,3 +131,17 @@ class StudentGradeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['assigned_date'].initial = timezone.now().date()
+
+
+# Student Data Upload Throught CSV
+class StudentCSVUploadForm(forms.Form):
+    csv_file = forms.FileField(
+        label='Select a CSV file',
+        help_text='Max. 42 megabytes'
+    )
+
+    def clean_csv_file(self):
+        csv_file = self.cleaned_data.get('csv_file')
+        if not csv_file.name.endswith('.csv'):
+            raise forms.ValidationError('File is not CSV type')
+        return csv_file

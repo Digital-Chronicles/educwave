@@ -19,9 +19,9 @@ class GradeAdmin(admin.ModelAdmin):
 # Subject Model
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'grade', 'created', )
-    search_fields = ('name', 'description', 'grade')
-    list_filter = ('name', 'grade')
+    list_display = ('name', 'description', 'curriculum', 'created', )
+    search_fields = ('name', 'description', 'curriculum')
+    list_filter = ('name', 'curriculum')
     ordering = ['name']
     readonly_fields = ('created', 'updated')
 
@@ -34,14 +34,6 @@ class CurriculumAdmin(admin.ModelAdmin):
     ordering = ['name']
     readonly_fields = ('created', 'updated')
 
-# Topic Model
-@admin.register(Topic)
-class TopicAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'name', 'order', 'created', 'updated')
-    search_fields = ('name', 'subject__name')
-    list_filter = ('subject', 'order')
-    ordering = ['subject', 'order']
-    readonly_fields = ('created', 'updated')
 
 # Exam Model
 @admin.register(Exam)
