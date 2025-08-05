@@ -38,12 +38,9 @@ class OtherSchoolPayments(models.Model):
     FEES_TYPE = (
         ("development", "development"),
         ("sports", "sports"),
-        ("tuition", "tuition"),
         ("library", "library"),
         ("laboratory", "laboratory"),
         ("uniform", "uniform"),
-        ("transport", "transport"),
-        ("hostel", "hostel"),
         ("examination", "examination"),
         ("medical", "medical"),
         ("maintenance", "maintenance"),
@@ -96,11 +93,8 @@ class StudentTuitionDescription(models.Model):
     total_fee = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'), editable=False)
 
     def calculate_total_fee(self):
-
-        
         """
         Calculate the total fee based on tuition and selected options.
-        
         """
         # Add optional fees if selected
         base_fee = Decimal(str(self.tuition.tuitionfee))

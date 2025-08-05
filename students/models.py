@@ -112,6 +112,8 @@ class Student(models.Model):
 
         super().save(*args, **kwargs)
 
+
+
 # Student Address Table
 class StudentAddress(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, unique=True)

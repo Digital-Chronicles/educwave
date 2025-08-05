@@ -10,18 +10,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Max, Min
 from django.utils import timezone
-
 from .models import (
-    Grade, Subject, Curriculum, Topic, Exam, Notes,
+    Grade, Subject, Curriculum, Exam, Notes,
     TermExamSession, StudentMarkSummary
 )
 from .forms import (
-    GradeForm, SubjectForm, CurriculumForm, TopicForm, ExamForm, NotesForm
+    GradeForm, SubjectForm, CurriculumForm, ExamForm, NotesForm
 )
 from accounts.mixins import RoleRequiredMixin
 from accounts.decorators import role_required
 from assessment.models import ExamResult
 from students.models import Student
+from assessment.models import Topics
 
 
 @role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
@@ -37,7 +37,7 @@ def academics(request):
             'subjects_count': Subject.objects.all().count(),
             'exams_count': Exam.objects.all().count(),
             'curriculum_count': Curriculum.objects.all().count(),
-            'topics_count': Topic.objects.all().count(),
+            'topics_count': Topics.objects.all().count(),
             'exams': exams,
         }
         return JsonResponse(data)
@@ -52,7 +52,7 @@ def academics(request):
     subjects_count = Subject.objects.all().count()
     exams_count = Exam.objects.all().count()
     curriculum_count = Curriculum.objects.all().count()
-    topics_count = Topic.objects.all().count()
+    topics_count = Topics.objects.all().count()
 
     context = {
         'page_obj': page_obj,
@@ -100,10 +100,12 @@ def exam_delete(request, pk):
         return HttpResponseRedirect(reverse('exam_list'))
     return render(request, 'exams/exam_confirm_delete.html', {'exam': exam})
 
+
 @role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def grades(requests):
     grades_list = Grade.objects.all()
     return render(requests, "grades.html", {"grades_list": grades_list})
+
 
 @role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def subjects(requests):
@@ -122,7 +124,7 @@ class RegisterSubject(generic.CreateView, RoleRequiredMixin):
     model = Subject
     template_name = "registerSubject.html"
     form_class = SubjectForm
-    success_url = "/"
+    success_url = "/academics/subjects/"
     allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
 class RegisterCurriculum(generic.CreateView, RoleRequiredMixin):
@@ -132,12 +134,6 @@ class RegisterCurriculum(generic.CreateView, RoleRequiredMixin):
     success_url = '/'
     allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
-class RegisterTopic(generic.CreateView, RoleRequiredMixin):
-    model = Topic
-    template_name = "registerTopic.html"
-    form_class = TopicForm
-    success_url = '/'
-    allowed_roles = ['TEACHER', 'ADMIN', 'FINANCE']
 
 class UploadExamView(generic.CreateView, RoleRequiredMixin):
     model = Exam
@@ -160,16 +156,6 @@ class UploadNotesView(generic.CreateView, RoleRequiredMixin):
     def form_valid(self, form):
         form.instance.created_by = self.request.user 
         return super().form_valid(form)
-
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Avg, Max, Min, Count
-from .models import StudentMarkSummary, TermExamSession, Grade, Subject
-from students.models import Student
-from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
-import csv
-from django.http import HttpResponse
 
 
 @login_required

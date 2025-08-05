@@ -1,268 +1,427 @@
-
-from django.db.models import Avg
-from django.db.models import Sum
 from collections import defaultdict
-from django.core.exceptions import ValidationError
-from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.shortcuts import render
-from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.db.models import Prefetch, Sum, Avg, Count
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
-from .models import *
-from .forms import *
-from academic.models import *
-from students.models import *
-# Create your views here.
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_http_methods
+from .forms import TopicsForm, QuestionForm
+from .models import Topics, Question, ExamResult
+from students.models import Student
+from academic.models import Grade, Subject
+from academic.models import TermExamSession
 
 
-def Assessment(request):
-    grading = Grade.objects.all()
-    return render(request, "assess.html", {"grading": grading})
+# -------------------------
+# Helper Functions
+# -------------------------
+
+def get_grade_context(grade_id=None):
+    return {
+        'grades': Grade.objects.all(),
+        'selected_grade': grade_id
+    }
 
 
-# RECORD TOPIC
+def handle_topic_form(request, form):
+    if form.is_valid():
+        try:
+            form.save()
+            messages.success(request, "Topic saved successfully!")
+            return True
+        except Exception as e:
+            messages.error(request, f"Error saving topic: {str(e)}")
+    return False
 
-def get_Tsubjects_by_grade(request):
+
+def handle_question_form(request, form):
+    if form.is_valid():
+        try:
+            form.save()
+            messages.success(request, "Question saved successfully!")
+            return True
+        except Exception as e:
+            messages.error(request, f"Error saving question: {str(e)}")
+    return False
+
+
+# -------------------------
+# Dashboard / Home View
+# -------------------------
+@login_required
+@require_http_methods(["GET"])
+def assessment_home(request):
+    """Home dashboard for assessment system with comprehensive statistics"""
+    context = get_grade_context()
+    
+    grades = Grade.objects.all().order_by('grade_name')
+    subjects = Subject.objects.all().order_by('name')
+    topics = Topics.objects.select_related('subject', 'grade')
+    questions = Question.objects.select_related('term_exam', 'topic', 'grade', 'subject')
+    results = ExamResult.objects.select_related('student', 'question', 'grade', 'subject', 'topic')
+    
+    context.update({
+        'total_grades': grades.count(),
+        'total_subjects': subjects.count(),
+        'total_topics': topics.count(),
+        'total_questions': questions.count(),
+        'total_results': results.count(),
+        'performance_data_exists': results.exists(),
+    })
+    
+    if results.exists():
+        overall_stats = results.aggregate(
+            avg_score=Avg('score'),
+            total_possible=Sum('question__max_score'),
+            total_achieved=Sum('score'),
+        )
+        
+        total_possible = overall_stats['total_possible'] or 0
+        total_achieved = overall_stats['total_achieved'] or 0
+        overall_stats['percentage'] = round((total_achieved / total_possible * 100), 2) if total_possible else 0
+        circumference = 283
+        overall_stats['dashoffset'] = circumference - (circumference * overall_stats['percentage'] / 100)
+
+        context['overall_stats'] = overall_stats
+        
+        # Grade-level statistics
+        context['grade_stats'] = grades.annotate(
+            total_students=Count('student', distinct=True),
+            total_questions=Count('grade_questions', distinct=True),
+            avg_score=Avg('grade_exam_result__score'),
+        )
+
+        # Subject-level statistics
+        context['subject_stats'] = subjects.annotate(
+            total_topics=Count('assessment_topics', distinct=True),
+            total_questions=Count('subject_question', distinct=True),
+            avg_score=Avg('subject_xamrsults__score'),
+        )
+
+        context['recent_results'] = results.order_by('-id')[:5]
+
+        context['chart_data'] = {
+            'grade_labels': [g.grade_name for g in grades],
+            'grade_avg_scores': [
+                results.filter(grade=g).aggregate(avg=Avg('score'))['avg'] or 0 
+                for g in grades
+            ],
+            'subject_labels': [s.name for s in subjects][:10],
+            'subject_avg_scores': [
+                results.filter(subject=s).aggregate(avg=Avg('score'))['avg'] or 0 
+                for s in subjects
+            ][:10],
+        }
+
+    return render(request, "assess.html", context)
+
+
+# -------------------------
+# Topic Views
+# -------------------------
+
+@require_http_methods(["GET"])
+def topic_lists(request):
     grade_id = request.GET.get('grade_id')
-    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
-    return JsonResponse(list(subjects), safe=False)
+    topics = Topics.objects.all()
+    if grade_id:
+        topics = topics.filter(grade_id=grade_id).select_related('subject', 'grade')
+    
+    context = get_grade_context(grade_id)
+    context['topics'] = topics
+    return render(request, "all_topics.html", context)
 
 
-def RecordTopic(request):
+@require_http_methods(["GET", "POST"])
+def record_topic(request):
     if request.method == 'POST':
         form = TopicsForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('all_topics')
+        if handle_topic_form(request, form):
+            return redirect('assessment:topic_list')
     else:
         form = TopicsForm()
-    return render(request, "all_topics.html", {'form': form})
+    
+    context = get_grade_context()
+    context['form'] = form
+    return render(request, "record_topic.html", context)
 
 
-def topic_lists(request):
-    grades = Grade.objects.all()
-    selected_grade = request.GET.get('grade_id')
-
-    topics = Topics.objects.all()
-    if selected_grade:
-        topics = topics.filter(grade_id=selected_grade)
-
-    return render(request, "all_topics.html", {
-        'grades': grades,
-        'topics': topics,
-        'selected_grade': selected_grade
-    })
-
-# RECORD QUESTIONS
-def get_Qsubjects_by_grade(request):
+@require_http_methods(["GET"])
+def get_topics(request):
     grade_id = request.GET.get('grade_id')
-    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
-    return JsonResponse(list(subjects), safe=False)
-
-
-def get_Qtopics_by_subject(request):
     subject_id = request.GET.get('subject_id')
-    topics = Topics.objects.filter(subject_id=subject_id).values('id', 'name')
-    return JsonResponse(list(topics), safe=False)
+    
+    if grade_id and subject_id:
+        topics = Topics.objects.filter(grade_id=grade_id, subject_id=subject_id)
+    else:
+        topics = Topics.objects.none()
+        
+    data = [{'id': topic.id, 'name': topic.name} for topic in topics]
+    return JsonResponse(data, safe=False)
 
 
-def RecordQuestion(request):
-    if request.method == "POST":
+# -------------------------
+# Question Views
+# -------------------------
+
+@require_http_methods(["GET", "POST"])
+def record_question(request):
+    if request.method == 'POST':
         form = QuestionForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('assess')
+        if handle_question_form(request, form):
+            return redirect('assessment:question_list')
     else:
         form = QuestionForm()
-    return render(request, "record_question.html", {'form': form})
+    
+    grade_id = request.GET.get('grade_id')
+    subject_id = request.GET.get('subject_id')
+    
+    questions = Question.objects.select_related(
+        'term_exam', 'grade', 'subject', 'topic'
+    ).order_by('-id')[:15]
+    
+    if grade_id:
+        questions = questions.filter(grade_id=grade_id)
+    if subject_id:
+        questions = questions.filter(subject_id=subject_id)
+    
+    context = {
+        'form': form,
+        'questions': questions,
+        'grades': Grade.objects.all(),
+        'subjects': Subject.objects.all(),
+        'selected_grade': grade_id,
+        'selected_subject': subject_id,
+    }
+    
+    return render(request, "record_question.html", context)
 
 
-#RESULTS
+@require_http_methods(["GET"])
+def get_topics_by_subject(request):
+    subject_id = request.GET.get('subject_id')
+    if not subject_id:
+        return JsonResponse({'error': 'Subject ID required'}, status=400)
+    
+    try:
+        topics = Topics.objects.filter(subject_id=subject_id).values('id', 'name')
+        return JsonResponse(list(topics), safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
-def Exam_Results(request):
-    grades = Grade.objects.all()
-    selected_grade_id = request.GET.get('grade_id')
-    selected_subject_id = request.GET.get('subject_id')
+# -------------------------
+# Results Views
+# -------------------------
 
-    subjects = Subject.objects.filter(
-        grade_id=selected_grade_id) if selected_grade_id else []
-    students = []
-    questions = []
-    results_matrix = {}
-    student_totals = {}
-    topic_scores = defaultdict(
-        lambda: {'total_score': 0, 'max_score': 0, 'count': 0})
-    topic_students = defaultdict(list)
+def prepare_results_data(grade_id, subject_id):
+    if not (grade_id and subject_id):
+        return None
 
-    if selected_grade_id and selected_subject_id:
-        students = Student.objects.filter(current_grade_id=selected_grade_id)
-        questions = Question.objects.filter(subject_id=selected_subject_id).select_related(
-            'topic').order_by('topic__name', 'question_number')
+    questions = Question.objects.filter(
+        subject_id=subject_id
+    ).select_related('topic').order_by('topic__name', 'question_number')
+    
+    students = Student.objects.filter(
+        current_grade_id=grade_id
+    ).prefetch_related(
+        Prefetch(
+            'examresult_set',
+            queryset=ExamResult.objects.filter(
+                grade_id=grade_id,
+                subject_id=subject_id,
+                question__in=questions
+            ).select_related('question', 'question__topic'),
+            to_attr='filtered_results'
+        )
+    )
+    
+    if not questions.exists() or not students.exists():
+        return None
+    
+    results_data = {
+        'questions': questions,
+        'students': students,
+        'results_matrix': defaultdict(dict),
+        'student_totals': defaultdict(lambda: {'total_score': 0, 'total_possible': 0}),
+        'topic_data': defaultdict(lambda: {
+            'total_score': 0, 
+            'max_score': 0, 
+            'count': 0,
+            'students': []
+        })
+    }
 
-        results = ExamResult.objects.filter(
-            grade_id=selected_grade_id,
-            subject_id=selected_subject_id,
-            question__in=questions
-        ).select_related('student', 'question', 'question__topic')
-
-        # Initialize results matrix and totals
-        for student in students:
-            results_matrix[student.id] = {}
-            student_totals[student.id] = {
-                'total_score': 0, 'total_possible': 0}
-
-            for question in questions:
-                results_matrix[student.id][question.id] = None
-                student_totals[student.id]['total_possible'] += question.max_score
-
-        for result in results:
-            percentage = (result.score / result.question.max_score) * \
-                100 if result.question.max_score else 0
-            results_matrix[result.student.id][result.question.id] = {
+    for student in students:
+        for result in student.filtered_results:
+            question = result.question
+            percentage = (result.score / question.max_score * 100) if question.max_score else 0
+            results_data['results_matrix'][student.id][question.id] = {
                 'score': result.score,
                 'percentage': percentage
             }
-
-            student_totals[result.student.id]['total_score'] += result.score
-
-            topic = result.question.topic.name
-            topic_scores[topic]['total_score'] += result.score
-            topic_scores[topic]['max_score'] += result.question.max_score
-            topic_scores[topic]['count'] += 1
-
-            # Add student performance for each topic
-            topic_students[topic].append({
-                'student': result.student,
+            results_data['student_totals'][student.id]['total_score'] += result.score
+            results_data['student_totals'][student.id]['total_possible'] += question.max_score
+            topic_data = results_data['topic_data'][question.topic.name]
+            topic_data['total_score'] += result.score
+            topic_data['max_score'] += question.max_score
+            topic_data['count'] += 1
+            topic_data['students'].append({
+                'student': student,
                 'score': result.score,
                 'percentage': percentage,
             })
-
-        # Select top 3 and bottom 3 students per topic
-        topic_top_bottom_students = {}
-        for topic, students_data in topic_students.items():
-            # Sort students based on their percentage for each topic
-            sorted_students = sorted(
-                students_data, key=lambda x: x['percentage'], reverse=True)
-
-            top_students = sorted_students[:3]  # Top 3
-            bottom_students = sorted_students[-3:]  # Bottom 3
-
-            topic_top_bottom_students[topic] = {
-                'top': top_students,
-                'bottom': bottom_students
-            }
-
-        # Compute topic performance percentages
-        topic_performance = []
-        for topic, data in topic_scores.items():
-            percentage = (data['total_score'] / data['max_score']
-                          ) * 100 if data['max_score'] else 0
-            topic_performance.append(
-                {'topic': topic, 'percentage': percentage})
-
-        # Sort topics by performance
-        topic_performance_sorted = sorted(
-            topic_performance, key=lambda x: x['percentage'], reverse=True)
-        best_done_topics = topic_performance_sorted[:2]
-        worst_done_topics = topic_performance_sorted[-2:]
-
-    else:
-        best_done_topics = []
-        worst_done_topics = []
-        student_totals = {}
-        topic_top_bottom_students = {}
-
-    return render(request, 'results.html', {
-        'grades': grades,
-        'subjects': subjects,
-        'questions': questions,
-        'students': students,
-        'results_matrix': results_matrix,
-        'student_totals': student_totals,
-        'selected_grade': selected_grade_id,
-        'selected_subject': selected_subject_id,
-        'best_done_topics': best_done_topics,
-        'worst_done_topics': worst_done_topics,
-        'topic_top_bottom_students': topic_top_bottom_students,
-    })
+    
+    return results_data
 
 
-# BULK RECORDS
-def bget_subjects_by_grade(request):
-    grade_id = request.GET.get('grade_id')
-    subjects = Subject.objects.filter(grade_id=grade_id).values('id', 'name')
-    return JsonResponse(list(subjects), safe=False)
+def analyze_topic_performance(topic_data):
+    topic_performance = []
+    topic_student_analysis = {}
 
-
-def bulk_exam_entry(request):
-    if request.method == "POST":
-        grade_id = request.POST.get('grade')
-        subject_id = request.POST.get('subject')
-        exam_id = request.POST.get('exam')
-
-        if not grade_id or not subject_id or not exam_id:
-            messages.error(request, "All selections are required.")
-            return redirect('bulk-items')  # Replace with your URL name
-
-        try:
-            grade = Grade.objects.get(id=grade_id)
-            subject = Subject.objects.get(id=subject_id)
-            exam = TermExamSession.objects.get(id=exam_id)
-        except (Grade.DoesNotExist, Subject.DoesNotExist, TermExamSession.DoesNotExist):
-            messages.error(request, "Invalid grade, subject, or exam.")
-            return redirect('bulk-items')
-
-        students = Student.objects.filter(current_grade=grade)
-        questions = Question.objects.filter(subject=subject, term_exam=exam)
-
-        if 'save' in request.POST:  # Check if the save button was pressed
-            for student in students:
-                for question in questions:
-                    # Get the score from the form data using the student and question IDs
-                    score_key = f'student_{student.id}_question_{question.id}'
-                    score = request.POST.get(score_key)
-
-                    if score:  # If there's a score entered, save it
-                        try:
-                            score = int(score)
-                            # Create an ExamResult entry
-                            exam_result = ExamResult(
-                                student=student,
-                                grade=grade,
-                                subject=subject,
-                                question=question,
-                                topic=question.topic,  # Assuming Topic is a field in Question
-                                score=score,
-                            )
-                            exam_result.save()
-                        except ValueError:
-                            messages.error(
-                                request, f"Invalid score for {student.first_name} {student.last_name} on question {question.question_number}")
-                            return redirect('bulk-items')
-                        except ValidationError as e:
-                            messages.error(
-                                request, f"Validation error for {student.first_name} {student.last_name}: {e.message}")
-                            return redirect('bulk-items')
-
-            messages.success(request, "Scores saved successfully!")
-            return redirect('bulk-items')  # Redirect after saving
-
-        context = {
-            'grade': grade,
-            'subject': subject,
-            'exam': exam,
-            'students': students,
-            'questions': questions,
+    for topic_name, data in topic_data.items():
+        percentage = (data['total_score'] / data['max_score'] * 100) if data['max_score'] else 0
+        topic_performance.append({'topic': topic_name, 'percentage': percentage})
+        sorted_students = sorted(data['students'], key=lambda x: x['percentage'], reverse=True)
+        topic_student_analysis[topic_name] = {
+            'top': sorted_students[:3],
+            'bottom': sorted_students[-3:]
         }
 
-        return render(request, 'bulk_entry_table.html', context)
+    topic_performance_sorted = sorted(topic_performance, key=lambda x: x['percentage'], reverse=True)
 
-    # GET request (render the selection form)
-    grades = Grade.objects.all()
-    exams = TermExamSession.objects.all()
-    return render(request, 'bulk_entry_select.html', {
+    return {
+        'best_topics': topic_performance_sorted[:2],
+        'worst_topics': topic_performance_sorted[-2:],
+        'topic_student_analysis': topic_student_analysis
+    }
+
+
+@require_http_methods(["GET"])
+def exam_results(request):
+    grade_id = request.GET.get('grade_id')
+    subject_id = request.GET.get('subject_id')
+    term_exam_id = request.GET.get('term_exam_id')
+    
+    # Get all available filters for the template
+    grades = Grade.objects.all().order_by('grade_name')
+    subjects = Subject.objects.all().order_by('name')
+    term_exams = TermExamSession.objects.all().order_by('-year', 'term_name')
+    
+    context = {
         'grades': grades,
-        'exams': exams
-    })
+        'subjects': subjects,
+        'term_exams': term_exams,
+        'selected_grade': grade_id,
+        'selected_subject': subject_id,
+        'selected_term_exam': term_exam_id,
+    }
+    
+    # Only proceed with analysis if we have both grade and subject selected
+    if grade_id and subject_id:
+        # Prepare base queryset with filters
+        results_queryset = ExamResult.objects.filter(
+            grade_id=grade_id,
+            subject_id=subject_id
+        ).select_related(
+            'student', 'question', 'question__topic'
+        )
+        
+        # Apply term exam filter if selected
+        if term_exam_id:
+            results_queryset = results_queryset.filter(question__term_exam_id=term_exam_id)
+        
+        # Check if we have any results
+        if not results_queryset.exists():
+            messages.info(request, "No results found for the selected criteria.")
+            return render(request, 'results.html', context)
+        
+        # Get all questions for the selected criteria
+        questions = Question.objects.filter(
+            grade_id=grade_id,
+            subject_id=subject_id
+        )
+        if term_exam_id:
+            questions = questions.filter(term_exam_id=term_exam_id)
+        
+        questions = questions.select_related('topic').order_by('topic__name', 'question_number')
+        
+        # Get all students in the grade
+        students = Student.objects.filter(
+            current_grade_id=grade_id
+        ).order_by('first_name', 'last_name')
+        
+        # Prepare data structures for the template
+        results_matrix = defaultdict(dict)
+        student_totals = defaultdict(lambda: {'total_score': 0, 'total_possible': 0})
+        topic_data = defaultdict(lambda: {
+            'total_score': 0, 
+            'max_score': 0, 
+            'count': 0,
+            'students': []
+        })
+        
+        # Populate the data structures
+        for student in students:
+            student_results = results_queryset.filter(student=student)
+            
+            for result in student_results:
+                question = result.question
+                percentage = (result.score / question.max_score * 100) if question.max_score else 0
+                
+                # Add to results matrix
+                results_matrix[student.id][question.id] = {
+                    'score': result.score,
+                    'percentage': percentage,
+                    'result_id': result.id
+                }
+                
+                # Update student totals
+                student_totals[student.id]['total_score'] += result.score
+                student_totals[student.id]['total_possible'] += question.max_score
+                
+                # Update topic data
+                topic = question.topic
+                topic_data[topic.name]['total_score'] += result.score
+                topic_data[topic.name]['max_score'] += question.max_score
+                topic_data[topic.name]['count'] += 1
+                topic_data[topic.name]['students'].append({
+                    'student': student,
+                    'score': result.score,
+                    'percentage': percentage,
+                    'question': question
+                })
+        
+        # Calculate percentages for student totals
+        for student_id, totals in student_totals.items():
+            if totals['total_possible'] > 0:
+                totals['percentage'] = (totals['total_score'] / totals['total_possible']) * 100
+            else:
+                totals['percentage'] = 0
+        
+        # Sort students by percentage (high to low)
+        sorted_students = sorted(
+            students,
+            key=lambda s: -student_totals[s.id]['percentage']
+        )
+        
+        # Analyze topic performance
+        topic_analysis = analyze_topic_performance(topic_data)
+        
+        # Update context with all the prepared data
+        context.update({
+            'questions': questions,
+            'students': sorted_students,
+            'results_matrix': results_matrix,
+            'student_totals': student_totals,
+            'topic_data': topic_data,
+            'best_topics': topic_analysis['best_topics'],
+            'worst_topics': topic_analysis['worst_topics'],
+            'topic_student_analysis': topic_analysis['topic_student_analysis'],
+            'class_average': sum(
+                student_totals[s.id]['percentage'] for s in sorted_students
+            ) / len(sorted_students) if sorted_students else 0,
+            'has_data': True
+        })
+    
+    return render(request, 'results.html', context)

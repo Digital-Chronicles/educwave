@@ -1,109 +1,175 @@
-from .models import FeeTransaction, StudentTuitionDescription
 from django import forms
-from .models import *
+from django_select2 import forms as s2forms
+from .models import StudentTuitionDescription, FeeTransaction, SchoolFees
+from academic.models import Grade
+from students.models import Student
 
-class SchoolfeesForm(forms.ModelForm):
-    class Meta:
-        model = SchoolFees
-        fields = ['grade', 'tuitionfee', 'hostelfee', 'breakfastfee', 'lunchfee', 'description']
-        widgets = {
-            'grade': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500'}),
-            'tuitionfee': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500'}),
-            'hostelfee': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500'}),
-            'breakfastfee': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500'}),
-            'lunchfee': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500'}),
-            'description': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500'}),
-        }
+# Custom Widgets
+class StudentWidget(s2forms.ModelSelect2Widget):
+    model = Student
+    search_fields = [
+        "first_name__icontains",
+        "last_name__icontains",
+        "registration_id__icontains",
+        "admission_number__icontains"
+    ]
 
+class GradeWidget(s2forms.ModelSelect2Widget):
+    model = Grade
+    search_fields = ["name__icontains", "code__icontains"]
 
-class OtherSchoolPaymentForm(forms.ModelForm):
-    class Meta:
-        model = OtherSchoolPayments
-        fields = ['grade', 'fees_type', 'amount', 'unique_code', 'description']
-        widgets = {
-            'grade': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'fees_type': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'amount': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'unique_code': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'description': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-        }
-     
-    
-class TransportForm(forms.ModelForm):
-    class Meta:
-        model = TransportFee
-        fields = ['location', 'amount']
-        widgets = {
-            'location': forms.TextInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'amount': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-        }      
+class SchoolFeesWidget(s2forms.ModelSelect2Widget):
+    model = SchoolFees
+    search_fields = [
+        "grade__name__icontains",
+        "description__icontains",
+        "grade__code__icontains"
+    ]
 
- 
-class StudentTuitionDescriptionForm(forms.ModelForm):
+class StudentTuitionWidget(s2forms.ModelSelect2Widget):
+    model = StudentTuitionDescription
+    search_fields = [
+        "student__first_name__icontains",
+        "student__last_name__icontains",
+        "student__registration_id__icontains"
+    ]
+
+# Payment Choices
+PAYMENT_METHOD_CHOICES = (
+    ('', '---------'),
+    ('cash', 'Cash'),
+    ('bank', 'Bank Transfer'),
+    ('card', 'Credit/Debit Card'),
+    ('mobile', 'Mobile Money'),
+)
+
+STATUS_CHOICES = (
+    ('', '---------'),
+    ('pending', 'Pending'),
+    ('paid', 'Paid'),
+    ('partial', 'Partial Payment'),
+    ('overdue', 'Overdue'),
+)
+
+# Base Form Styling
+class BaseForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if not isinstance(field.widget, (s2forms.Select2Widget, s2forms.Select2MultipleWidget)):
+                field.widget.attrs.update({
+                    'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                    'autocomplete': 'off'
+                })
+
+# Forms
+class TuitionDescriptionForm(BaseForm):
     class Meta:
         model = StudentTuitionDescription
-        fields = ['hostel', 'lunch', 'breakfast']
+        fields = ['student', 'tuition', 'hostel', 'lunch', 'breakfast']
         widgets = {
-            'hostel': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'}),
-            'lunch': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'}),
-            'breakfast': forms.CheckboxInput(attrs={'class': 'form-checkbox h-5 w-5 text-blue-600'}),
-        }
-
-
-# # class FeeTransactionForm(forms.ModelForm):
-#     class Meta:
-#         model = FeeTransaction
-#         fields = [
-#             'student','amount_paid', 'payment_method', 'due_date',
-#             'status', 'last_payment_date', 'payment_reference', 'receipt_url', 'remarks'
-#         ]
-#         widgets = {
-#             'student': forms.Select(attrs={'class': 'form-control border-input'}),
-           
-#             'amount_paid': forms.NumberInput(attrs={'class': 'form-control border-input', 'step': '0.01'}),
-#             'payment_method': forms.Select(attrs={'class': 'form-control border-input'}),
-#             'due_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
-#             'status': forms.Select(attrs={'class': 'form-control border-input'}),
-#             'last_payment_date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
-#             'payment_reference': forms.TextInput(attrs={'class': 'form-control border-input'}),
-#             'receipt_url': forms.URLInput(attrs={'class': 'form-control border-input'}),
-#             'remarks': forms.Textarea(attrs={'class': 'form-control border-input', 'rows': 3}),
-#         }
-
-class FeeTransactionForm(forms.ModelForm):
-    class Meta:
-        model = FeeTransaction
-        fields = [
-            'grade', 'student', 'amount_paid', 'payment_method', 'due_date',
-            'status', 'last_payment_date', 'payment_reference', 'receipt_url', 'remarks'
-        ]
-        widgets = {
-            'grade': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'student': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'amount_paid': forms.NumberInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md', 'step': '0.01'}),
-            'payment_method': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'due_date': forms.DateInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md', 'type': 'date'}),
-            'status': forms.Select(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'last_payment_date': forms.DateInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md', 'type': 'date'}),
-            'payment_reference': forms.TextInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'receipt_url': forms.URLInput(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md'}),
-            'remarks': forms.Textarea(attrs={'class': 'w-full px-4 py-2 border border-gray-300 rounded-md', 'rows': 3}),
+            'student': StudentWidget(attrs={
+                'data-placeholder': 'Search student by name or ID'
+            }),
+            'tuition': SchoolFeesWidget(attrs={
+                'data-placeholder': 'Select fee structure'
+            }),
+            'hostel': forms.CheckboxInput(attrs={
+                'class': 'h-5 w-5 text-blue-600 rounded focus:ring-blue-500'
+            }),
+            'lunch': forms.CheckboxInput(attrs={
+                'class': 'h-5 w-5 text-blue-600 rounded focus:ring-blue-500'
+            }),
+            'breakfast': forms.CheckboxInput(attrs={
+                'class': 'h-5 w-5 text-blue-600 rounded focus:ring-blue-500'
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['tuition'].queryset = SchoolFees.objects.select_related('grade')
+        self.fields['student'].label = "Student"
+        self.fields['tuition'].label = "Fee Structure"
 
-        self.fields['student'].queryset = StudentTuitionDescription.objects.none()
+class TransactionForm(BaseForm):
+    amount_paid = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={
+            'step': '0.01',
+            'placeholder': '0.00'
+        })
+    )
 
-        if 'grade' in self.data:
-            try:
-                grade_id = int(self.data.get('grade'))
-                self.fields['student'].queryset = StudentTuitionDescription.objects.filter(
-                    student__current_grade=grade_id
-                ).select_related('student')
-            except (ValueError, TypeError):
-                pass
-        elif self.instance.pk:
-            self.fields['student'].queryset = StudentTuitionDescription.objects.filter(
-                student=self.instance.student.student
+    class Meta:
+        model = FeeTransaction
+        fields = ['student', 'amount_paid', 'payment_method', 'due_date', 'status', 'payment_reference', 'remarks']
+        widgets = {
+            'student': StudentTuitionWidget(attrs={
+                'data-placeholder': 'Search student fee record'
+            }),
+            'payment_method': s2forms.Select2Widget(choices=PAYMENT_METHOD_CHOICES),
+            'status': s2forms.Select2Widget(choices=STATUS_CHOICES),
+            'due_date': forms.DateInput(attrs={'type': 'date'}),
+            'payment_reference': forms.TextInput(attrs={
+                'placeholder': 'Transaction reference number'
+            }),
+            'remarks': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Additional notes...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'student' in self.initial:
+            student = self.initial['student']
+            self.fields['amount_due'] = forms.DecimalField(
+                initial=student.total_fee,
+                disabled=True,
+                required=False,
+                widget=forms.NumberInput(attrs={
+                    'class': 'w-full px-4 py-2 border rounded-lg bg-gray-100'
+                })
             )
+            self.fields['amount_due'].label = "Total Fee Due"
+
+class SchoolFeesForm(BaseForm):
+    class Meta:
+        model = SchoolFees
+        fields = ['grade', 'tuitionfee', 'hostelfee', 'breakfastfee', 'lunchfee', 'description']
+        widgets = {
+            'grade': GradeWidget(attrs={
+                'data-placeholder': 'Select grade level'
+            }),
+            'tuitionfee': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': '0.00',
+                'min': '0'
+            }),
+            'hostelfee': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': '0.00',
+                'min': '0'
+            }),
+            'breakfastfee': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': '0.00',
+                'min': '0'
+            }),
+            'lunchfee': forms.NumberInput(attrs={
+                'step': '0.01',
+                'placeholder': '0.00',
+                'min': '0'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Fee description...'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in ['tuitionfee', 'hostelfee', 'breakfastfee', 'lunchfee']:
+            self.fields[field].label = f"{self.fields[field].label} (₦)"
+            self.fields[field].widget.attrs['min'] = '0'

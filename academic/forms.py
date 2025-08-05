@@ -1,7 +1,8 @@
 from django import forms
-from .models import Grade, Subject, Curriculum, Topic, Exam, Notes
+from .models import Grade, Subject, Curriculum, Exam, Notes
 from django.core.exceptions import ValidationError
 from django_ckeditor_5.widgets import CKEditor5Widget
+from assessment.models import Topics
 
 # Form for Grade model
 class GradeForm(forms.ModelForm):
@@ -13,8 +14,13 @@ class GradeForm(forms.ModelForm):
             'class_teacher': 'Class Teacher'
         }
         widgets = {
-            'grade_name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter grade name'}),
-            'class_teacher': forms.Select(attrs={'class': 'form-control border-input'}),
+            'grade_name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter grade name'
+            }),
+            'class_teacher': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
         }
         help_texts = {
             'class_teacher': 'Assign a teacher to this grade (optional).'
@@ -24,16 +30,30 @@ class GradeForm(forms.ModelForm):
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['name', 'description', 'curriculum']
+        fields = ['name', 'code', 'description', 'curriculum']
         labels = {
             'name': 'Subject Name',
+            'code': 'Code',
             'description': 'Description',
             'curriculum': 'Curriculum'
         }
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter subject name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide a brief description', 'rows': 4}),
-            'curriculum': forms.Select(attrs={'class': 'form-control border-input'}),
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter subject name'
+            }),
+            'code': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter subject code'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Provide a brief description',
+                'rows': 4
+            }),
+            'curriculum': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
         }
 
 # Form for Curriculum model
@@ -47,28 +67,22 @@ class CurriculumForm(forms.ModelForm):
             'learning_outcomes': 'Learning Outcomes'
         }
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter curriculum name'}),
-            'objectives': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'List curriculum objectives', 'rows': 4}),
-            'learning_outcomes': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Outline learning outcomes', 'rows': 4}),
+            'name': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter curriculum name'
+            }),
+            'objectives': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'List curriculum objectives',
+                'rows': 4
+            }),
+            'learning_outcomes': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Outline learning outcomes',
+                'rows': 4
+            }),
         }
 
-# Form for Topic model
-class TopicForm(forms.ModelForm):
-    class Meta:
-        model = Topic
-        fields = ['subject', 'name', 'description', 'order']
-        labels = {
-            'subject': 'Related Subject',
-            'name': 'Topic Name',
-            'description': 'Description',
-            'order': 'Order'
-        }
-        widgets = {
-            'subject': forms.Select(attrs={'class': 'form-control border-input'}),
-            'name': forms.TextInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter topic name'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide topic details', 'rows': 4}),
-            'order': forms.NumberInput(attrs={'class': 'form-control border-input'}),
-        }
 
 # Form for Exam model
 class ExamForm(forms.ModelForm):
@@ -84,12 +98,28 @@ class ExamForm(forms.ModelForm):
             'grade': 'Grade',
         }
         widgets = {
-            'subject': forms.Select(attrs={'class': 'form-control border-input'}),
-            'date': forms.DateInput(attrs={'class': 'form-control border-input', 'type': 'date'}),
-            'duration_minutes': forms.NumberInput(attrs={'class': 'form-control border-input', 'placeholder': 'Enter duration in minutes'}),
-            'file': forms.ClearableFileInput(attrs={'class': 'form-control border-input'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide additional details', 'rows': 4}),
-            'grade': forms.Select(attrs={'class': 'form-control border-input'}),
+            'subject': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'date': forms.DateInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'type': 'date'
+            }),
+            'duration_minutes': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Enter duration in minutes'
+            }),
+            'file': forms.ClearableFileInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Provide additional details',
+                'rows': 4
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
         }
         help_texts = {
             'file': 'You can upload PDF, DOCX, or PPTX files.'
@@ -100,16 +130,18 @@ class ExamForm(forms.ModelForm):
 
 # Form for Notes model
 class NotesForm(forms.ModelForm):
-    # Use CKEditorWidget for notes_content
     notes_content = forms.CharField(
-        widget=CKEditor5Widget(attrs={'class': 'form-control border-input'}),
+        widget=CKEditor5Widget(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+        }),
         label='Notes Content',
     )
 
-    # Use ModelMultipleChoiceField for the 'topics' field
     topics = forms.ModelMultipleChoiceField(
-        queryset=Topic.objects.all(),
-        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        queryset=Topics.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'form-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded'
+        }),
         required=True,
         label='Topics'
     )
@@ -127,12 +159,20 @@ class NotesForm(forms.ModelForm):
         }
 
         widgets = {
-            'subject': forms.Select(attrs={'class': 'form-control border-input'}),
-            'topics': forms.SelectMultiple(attrs={'class': 'form-control border-input'}),
-            'notes_file': forms.ClearableFileInput(attrs={'class': 'form-control border-input'}),
-            'description': forms.Textarea(attrs={'class': 'form-control border-input', 'placeholder': 'Provide notes details', 'rows': 4}),
-            'grade': forms.Select(attrs={'class': 'form-control border-input'}),
-            'created_by': forms.Select(attrs={'class': 'form-control border-input'}),
+            'subject': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'notes_file': forms.ClearableFileInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
+                'placeholder': 'Provide notes details',
+                'rows': 4
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
         }
 
         help_texts = {
@@ -140,7 +180,6 @@ class NotesForm(forms.ModelForm):
             'description': 'Provide any additional details or context for the notes.',
         }
 
-    # Custom validation for notes file extension
     def clean_notes_file(self):
         notes_file = self.cleaned_data.get('notes_file')
         if notes_file:
@@ -149,4 +188,3 @@ class NotesForm(forms.ModelForm):
             if file_extension not in allowed_extensions:
                 raise ValidationError('Only PDF, DOCX, or PPTX files are allowed.')
         return notes_file
-    

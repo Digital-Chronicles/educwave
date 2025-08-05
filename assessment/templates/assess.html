@@ -1,27 +1,28 @@
 {% extends "base.html" %}
+{% load humanize %}
+{% load math_filters %}
+{% load assessment_tags %}
 
 {% block title %}Assessment Dashboard{% endblock %}
 
 {% block content %}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header with improved visual hierarchy -->
-        <header class="text-center mb-12">
-            <h5 class="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-3">
-                Assess Our Performance
-            </h6>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 py-6">
+        <!-- Header Section -->
+        <header class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-800 mb-3">
+                Assessment Dashboard
+            </h1>
             <p class="text-base text-gray-600 max-w-2xl mx-auto">
                 Monitor and evaluate performance across all academic areas with our comprehensive assessment tools
             </p>
         </header>
 
-        <!-- Navigation cards with improved hover effects -->
-        <nav class="mb-16" aria-label="Assessment sections">
+        <!-- Navigation Cards -->
+        <nav class="mb-10" aria-label="Assessment sections">
             <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Topics Card -->
                 <li>
-                    <a href="/assessment/all/topics/" 
-                       class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 overflow-hidden"
-                       aria-describedby="topics-desc">
+                    <a href="{% url 'assessment:topic_list' %}" class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 overflow-hidden">
                         <div class="absolute -top-4 -right-4 h-16 w-16 bg-blue-100 rounded-full transition-all duration-300 group-hover:scale-150"></div>
                         <div class="relative z-10 p-4 mb-4 rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors duration-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -30,15 +31,12 @@
                         </div>
                         <h3 class="relative z-10 text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors duration-300">Topics</h3>
                         <p class="relative z-10 text-sm text-gray-500 text-center">View and manage all assessment topics</p>
-                        <span id="topics-desc" class="sr-only">View all assessment topics</span>
                     </a>
                 </li>
 
                 <!-- Questions Card -->
                 <li>
-                    <a href="/assessment/record/question/" 
-                       class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 overflow-hidden"
-                       aria-describedby="questions-desc">
+                    <a href="{% url 'assessment:question_list' %}" class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 overflow-hidden">
                         <div class="absolute -top-4 -right-4 h-16 w-16 bg-green-100 rounded-full transition-all duration-300 group-hover:scale-150"></div>
                         <div class="relative z-10 p-4 mb-4 rounded-full bg-green-50 text-green-600 group-hover:bg-green-100 group-hover:text-green-700 transition-colors duration-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,15 +45,12 @@
                         </div>
                         <h3 class="relative z-10 text-xl font-semibold text-gray-800 mb-2 group-hover:text-green-700 transition-colors duration-300">Questions</h3>
                         <p class="relative z-10 text-sm text-gray-500 text-center">Record and manage assessment questions</p>
-                        <span id="questions-desc" class="sr-only">Record new questions</span>
                     </a>
                 </li>
 
                 <!-- Results Card -->
                 <li>
-                    <a href="/assessment/results" 
-                       class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50 overflow-hidden"
-                       aria-describedby="results-desc">
+                    <a href="{% url 'assessment:result_list' %}" class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50 overflow-hidden">
                         <div class="absolute -top-4 -right-4 h-16 w-16 bg-yellow-100 rounded-full transition-all duration-300 group-hover:scale-150"></div>
                         <div class="relative z-10 p-4 mb-4 rounded-full bg-yellow-50 text-yellow-600 group-hover:bg-yellow-100 group-hover:text-yellow-700 transition-colors duration-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,114 +59,223 @@
                         </div>
                         <h3 class="relative z-10 text-xl font-semibold text-gray-800 mb-2 group-hover:text-yellow-700 transition-colors duration-300">Results</h3>
                         <p class="relative z-10 text-sm text-gray-500 text-center">Analyze and view assessment results</p>
-                        <span id="results-desc" class="sr-only">View assessment results</span>
                     </a>
                 </li>
 
                 <!-- Bulk Operations Card -->
                 <li>
-                    <a href="/assessment/bulk" 
-                       class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 overflow-hidden"
-                       aria-describedby="bulk-desc">
-                        <div class="absolute -top-4 -right-4 h-16 w-16 bg-blue-100 rounded-full transition-all duration-300 group-hover:scale-150"></div>
-                        <div class="relative z-10 p-4 mb-4 rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors duration-300">
+                    <a href="{% url 'assessment:exam_results' %}" class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 overflow-hidden">
+                        <div class="absolute -top-4 -right-4 h-16 w-16 bg-purple-100 rounded-full transition-all duration-300 group-hover:scale-150"></div>
+                        <div class="relative z-10 p-4 mb-4 rounded-full bg-purple-50 text-purple-600 group-hover:bg-purple-100 group-hover:text-purple-700 transition-colors duration-300">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                         </div>
-                        <h3 class="relative z-10 text-xl font-semibold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors duration-300">Bulk Operations</h3>
+                        <h3 class="relative z-10 text-xl font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-colors duration-300">Bulk Operations</h3>
                         <p class="relative z-10 text-sm text-gray-500 text-center">Perform bulk assessment operations</p>
-                        <span id="bulk-desc" class="sr-only">Perform bulk operations</span>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Main Content Area with Stats Preview -->
-        <main class="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
-            <div class="text-center">
-                <h4 class="text-2xl font-semibold text-gray-800 mb-4">Welcome to the Assessment Dashboard</h4>
-                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
-                    Get started by selecting one of the assessment sections above or check out the quick stats below.
-                </p>
-                
-                <!-- Quick Stats Section -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                        <div class="flex items-center justify-center space-x-4">
+        <!-- Main Content -->
+        <main class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200">
+            <!-- Summary Stats Section -->
+            <section class="mb-10">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">System Overview</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <!-- Grades Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <div class="flex items-center space-x-4">
                             <div class="p-3 bg-blue-100 rounded-full text-blue-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Active Topics</p>
-                                <p class="text-2xl font-bold text-blue-600">24</p>
+                                <p class="text-sm text-gray-500">Grades</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ total_grades|intcomma }}</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="bg-green-50 p-6 rounded-xl border border-green-100">
-                        <div class="flex items-center justify-center space-x-4">
+                    <!-- Subjects Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <div class="flex items-center space-x-4">
                             <div class="p-3 bg-green-100 rounded-full text-green-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Questions</p>
-                                <p class="text-2xl font-bold text-green-600">156</p>
+                                <p class="text-sm text-gray-500">Subjects</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ total_subjects|intcomma }}</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-100">
-                        <div class="flex items-center justify-center space-x-4">
+                    <!-- Topics Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <div class="flex items-center space-x-4">
                             <div class="p-3 bg-yellow-100 rounded-full text-yellow-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500">Assessments</p>
-                                <p class="text-2xl font-bold text-yellow-600">42</p>
+                                <p class="text-sm text-gray-500">Topics</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ total_topics|intcomma }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Questions Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <div class="flex items-center space-x-4">
+                            <div class="p-3 bg-purple-100 rounded-full text-purple-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Questions</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ total_questions|intcomma }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Results Card -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <div class="flex items-center space-x-4">
+                            <div class="p-3 bg-red-100 rounded-full text-red-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Results</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ total_results|intcomma }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Recent Activity Section -->
-            <div class="mt-10">
-                <h5 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h5>
-                <div class="space-y-4">
-                    <div class="flex items-start p-4 border border-gray-200 rounded-lg">
-                        <div class="p-2 bg-blue-100 rounded-full text-blue-600 mr-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
+            <!-- Performance Overview Section -->
+            {% if performance_data_exists %}
+            <section class="mb-10">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Performance Overview</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Overall Performance -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Overall Performance</h3>
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="relative w-40 h-40">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="8"/>
+                                    <circle cx="50" cy="50" r="45" fill="none" 
+                                            stroke="#3b82f6" stroke-width="8" stroke-linecap="round"
+                                            stroke-dasharray="283" 
+                                            stroke-dashoffset="{% calculate_dashoffset 283 overall_stats.percentage %}"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-3xl font-bold text-blue-600">{{ overall_stats.percentage|floatformat:1 }}%</span>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">New assessment topic created</p>
-                            <p class="text-sm text-gray-500">Mathematics - Algebra by John Doe</p>
-                            <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div>
+                                <p class="text-sm text-gray-500">Total Achieved</p>
+                                <p class="text-lg font-semibold text-gray-800">{{ overall_stats.total_achieved|intcomma }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Total Possible</p>
+                                <p class="text-lg font-semibold text-gray-800">{{ overall_stats.total_possible|intcomma }}</p>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="flex items-start p-4 border border-gray-200 rounded-lg">
-                        <div class="p-2 bg-green-100 rounded-full text-green-600 mr-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                    <!-- Grade Performance -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">By Grade Level</h3>
+                        <div class="space-y-4">
+                            {% for grade in grade_stats %}
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">{{ grade.grade_name }}</span>
+                                    <span class="text-sm text-gray-500">{{ grade.avg_score|floatformat:1|default:"-" }}/5</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ grade.completion_rate|default:0 }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-800">Assessment completed</p>
-                            <p class="text-sm text-gray-500">Grade 10 - English Literature</p>
-                            <p class="text-xs text-gray-400 mt-1">5 hours ago</p>
+                    </div>
+                    
+                    <!-- Subject Performance -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-xs">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">By Subject</h3>
+                        <div class="space-y-4">
+                            {% for subject in subject_stats|slice:":5" %}
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">{{ subject.name }}</span>
+                                    <span class="text-sm text-gray-500">{{ subject.avg_score|floatformat:1|default:"-" }}/5</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: {{ subject.completion_rate|default:0 }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
+            {% endif %}
+
+            <!-- Recent Activity Section -->
+            <section>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Recent Activity</h2>
+                    <a href="{% url 'assessment:result_list' %}" class="text-sm text-blue-600 hover:text-blue-800">View All</a>
+                </div>
+                
+                <div class="space-y-4">
+                    {% if recent_results %}
+                        {% for result in recent_results %}
+                        <div class="flex items-start p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium mr-4">
+                                {{ result.student.first_name|first }}{{ result.student.last_name|first }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800 truncate">
+                                    {{ result.student.get_full_name }} scored {{ result.score }}/{{ result.question.max_score }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{ result.question.subject.name }} • {{ result.question.topic.name }}
+                                </p>
+                                <p class="text-xs text-gray-400 mt-1">
+                                    {{ result.created_at|timesince }} ago
+                                </p>
+                            </div>
+                            <div class="ml-4 flex-shrink-0">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full {{ result.score|score_class:result.question.max_score }}">
+                                    {% widthratio result.score result.question.max_score 100 %}%
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-gray-600">No recent activity found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
         </main>
     </div>
 {% endblock %}

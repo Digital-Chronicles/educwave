@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EduWave Uganda</title>
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3713/3713363.png" type="image/png">
-
+  {{ form.media.css }}
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -49,6 +50,8 @@
   <!-- ChartJS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Select2 CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
   <style>
     /* Custom styles */
     .sidebar {
@@ -106,6 +109,18 @@
       border-radius: 50%;
       background-color: #ef4444;
     }
+
+    /* Select2 custom styles */
+    .select2-container--default .select2-selection--single {
+      height: 42px;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 40px;
+    }
   </style>
 </head>
 
@@ -121,7 +136,8 @@
       <nav class="flex-1 overflow-y-auto py-2">
         <div class="px-3 mb-4">
           <div class="relative">
-            <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-transparent text-sm">
+            <input type="text" placeholder="Search..."
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-transparent text-sm">
             <i class="fas fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
           </div>
         </div>
@@ -137,7 +153,8 @@
             <a href="/students/" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-users mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Students</span>
-              <span class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">1,234</span>
+              <span
+                class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">1,234</span>
             </a>
           </li>
           <li class="nav-item {% block academicsSetActive %}{% endblock %}">
@@ -156,7 +173,8 @@
             <a href="/teachers/" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-chalkboard-teacher mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Teachers</span>
-              <span class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">42</span>
+              <span
+                class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">42</span>
             </a>
           </li>
           <li class="nav-item {% block financeSetActive %}{% endblock %}">
@@ -165,12 +183,12 @@
               <span class="text-gray-700 font-medium">Finance</span>
             </a>
           </li>
-          
+
           <!-- Divider -->
           <li class="px-3 pt-4">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</span>
           </li>
-          
+
           <li class="nav-item">
             <a href="#" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-cog mr-3 text-gray-500"></i>
@@ -189,9 +207,10 @@
       <!-- User profile -->
       <div class="p-4 border-t border-gray-200">
         <div class="flex items-center">
-          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="h-10 w-10 rounded-full mr-3">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="User"
+            class="h-10 w-10 rounded-full mr-3">
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-800 truncate">John Doe</p>
+            <p class="text-sm font-medium text-gray-800 truncate">User</p>
             <p class="text-xs text-gray-500 truncate">Admin</p>
           </div>
           <button class="text-gray-400 hover:text-gray-600">
@@ -224,22 +243,20 @@
               <i class="fas fa-bell"></i>
               <span class="notification-dot"></span>
             </button>
-            
+
             <button class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
               <i class="fas fa-envelope"></i>
               <span class="notification-dot"></span>
             </button>
-            
+
             <div class="relative dropdown">
               <button class="flex items-center space-x-2 focus:outline-none">
-                <div class="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-                  <span class="text-primary-800 font-medium text-sm">JD</span>
-                </div>
-                <span class="hidden md:inline text-sm font-medium text-gray-700">John Doe</span>
+                <span class="hidden md:inline text-sm font-medium text-gray-700">User</span>
                 <i class="fas fa-chevron-down text-xs text-gray-500"></i>
               </button>
-              
-              <div class="dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
+
+              <div
+                class="dropdown-menu absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100">
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                 <div class="border-t border-gray-200"></div>
@@ -277,14 +294,32 @@
   <script>
     // Set current year in footer
     document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Toggle mobile sidebar
-    function toggleSidebar() {
-      const sidebar = document.querySelector('.sidebar');
-      sidebar.classList.toggle('hidden');
-      sidebar.classList.toggle('md:flex');
-    }
   </script>
-</body>
 
+  <!-- jQuery (required for Select2) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  {{ form.media.js }}
+
+  <!-- Initialize Select2 -->
+  <script>
+    $(document).ready(function () {
+      // Initialize all select elements as Select2
+      $('select').not('.django-select2').select2({
+        width: '100%',
+        theme: 'classic',
+        minimumResultsForSearch: 6
+      });
+
+      // Initialize Select2 for django-select2 widgets
+      $('.django-select2').select2({
+        width: '100%',
+        dropdownAutoWidth: true,
+        theme: 'classic'
+      });
+    });
+  </script>
+  
+  {% block extra_js %}
+  {% endblock extra_js %}
+</body>
 </html>

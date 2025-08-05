@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 
     # 3rd Party App
     'ckeditor',
+    'django_select2',
     # 'ckeditor_uploader',
 
     # Apps
@@ -52,6 +54,13 @@ INSTALLED_APPS = [
     'finance',
     'assessment',
 ]
+
+# Add cache configuration for django-select2
+SELECT2_CACHE_BACKEND = 'default'
+
+# If you're using channels or need async support
+SELECT2_JS = ''
+SELECT2_CSS = ''
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
