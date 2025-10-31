@@ -12,6 +12,44 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required 
 from accounts.mixins import RoleRequiredMixin
 from accounts.decorators import role_required
+from django.contrib import messages
+
+
+class RegisterTeacherDetails(RoleRequiredMixin, generic.CreateView):
+    model = Teacher
+    template_name = 'registerteacherdetails.html'
+    form_class = TeacherForm
+    allowed_roles = ['TEACHER', 'FINANCE', 'ADMIN']
+    
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["user_form"] = UserCreateForm()  # <-- add this
+        return ctx
+
+    def form_valid(self, form):
+        teacher = form.save()
+        return redirect(f'/teachers/details/{teacher.pk}/')
+    
+    
+    
+#Creating a user account for the teacher  
+@login_required
+@role_required(allowed_roles=['ADMIN', 'FINANCE'])
+def create_user_account(request):
+    if request.method == "POST":
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = "TEACHER"
+            user.save()
+            messages.success(
+                request, "User account created! You can now register teacher details.")
+            return redirect("teacher_details")   # adjust URL name
+    else:
+        form = UserCreateForm()
+    return render(request, "features/teachers-create_user.html", {"user_form": form})
+
+
 
 class TeacherList(LoginRequiredMixin, ListView):
     template_name = "teachers.html"
@@ -79,15 +117,7 @@ def teacher_details(request, id):
     return render(request, "teachersDetails.html", context)
 
 
-class RegisterTeacherDetails(RoleRequiredMixin, generic.CreateView):
-    model = Teacher
-    template_name = 'registerteacherdetails.html'
-    form_class = TeacherForm
-    allowed_roles = ['TEACHER', 'FINANCE', 'ADMIN']
 
-    def form_valid(self, form):
-        teacher = form.save()
-        return redirect(f'/teachers/details/{teacher.pk}/') 
     
 class Teacher_Payroll(RoleRequiredMixin, generic.CreateView):
     model = PayrollInformation

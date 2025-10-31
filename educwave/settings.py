@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'django_select2',
     # 'ckeditor_uploader',
+    'django_ckeditor_5',
 
     # Apps
     'students',
@@ -98,23 +99,23 @@ WSGI_APPLICATION = 'educwave.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'educwave',
-        'USER': 'postgres',
-        'PASSWORD': 'atwanzire',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'educwave',
+#         'USER': 'postgres',
+#         'PASSWORD': 'atwanzire',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
@@ -151,13 +152,19 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+#production
+
+# STATIC_URL = '/static/'
+
+# # Directory where static files will be collected
+# STATIC_ROOT = BASE_DIR / 'static'
+
+#development
 STATIC_URL = '/static/'
-
-# Directory where static files will be collected
-STATIC_ROOT = BASE_DIR / 'static'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
-# STATICFILES_DIRS = [BASE_DIR / 'static']
+
 
 # Media files (uploads by users)
 MEDIA_URL = '/media/'

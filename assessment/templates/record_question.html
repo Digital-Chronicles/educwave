@@ -20,7 +20,16 @@
                         <p class="text-red-500 text-xs italic">{{ form.term_exam.errors.as_text }}</p>
                     {% endif %}
                 </div>
-                
+                <!--Exam Type -->
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.exam_type.id_for_label }}">
+                        {{ form.exam_type.label }}
+                    </label>
+                    {{ form.exam_type }}
+                    {% if form.exam_type.errors %}
+                        <p class="text-red-500 text-xs italic">{{ form.exam_type.errors.as_text }}</p>
+                    {% endif %}
+                </div>
                 <!-- Grade -->
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="{{ form.grade.id_for_label }}">

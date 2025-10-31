@@ -31,14 +31,23 @@ class Student(models.Model):
         ("grade_3", "Grade 3"),
         ("grade_2", "Grade 2"),
         ("grade_1", "Grade 1"),
+        
     )
+    SCHOOL_TYPE_CHOICES = (
+        ("day", "Day"),
+        ("boarding", "Boarding"),
+        ("bursary", "Bursary"),
+        ("scholarhip", "scholarship"),
+     )
 
     registration_id = models.CharField(max_length=150, unique=True, editable=False)
+    lin_id = models.CharField(max_length=150, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     date_of_birth = models.DateField()
     current_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     gender = models.CharField(max_length=50, choices=GENDER_CHOICES, blank=True, null=True)
+    school_type = models.CharField(max_length=150, choices=SCHOOL_TYPE_CHOICES, blank=True, null=True, default="day")
     grade_of_entry = models.CharField(max_length=150, choices=GRADE_CHOICES, blank=True, null=True)
     year_of_entry = models.CharField(
         max_length=4,
@@ -56,8 +65,10 @@ class Student(models.Model):
     current_grade = models.ForeignKey('academic.Grade', on_delete=models.CASCADE, blank=True, null=True)
     father_name = models.CharField(max_length=150, blank=True, null=True)
     father_phone = models.CharField(max_length=150, blank=True, null=True)
+    father_NIN = models.CharField(max_length=200, null=True, blank=True)
     mother_name = models.CharField(max_length=150, blank=True, null=True)
     mother_phone = models.CharField(max_length=150, blank=True, null=True)
+    mother_NIN = models.CharField(max_length=200, null=True, blank=True)
     profile_picture = models.ImageField(upload_to="", null=True, blank=True)
     school = models.ForeignKey('management.GeneralInformation', on_delete=models.CASCADE, related_name="students")
     registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, blank=True, null=True)

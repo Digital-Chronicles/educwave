@@ -54,7 +54,7 @@
                     </div>
                     <div class="text-center mt-4">
                         <h2 class="text-2xl font-bold text-gray-800">{{ teacher.first_name }} {{ teacher.last_name }}</h2>
-                        <p class="text-blue-600 font-medium">{{ teacher.registration_id }}</p>
+                        <p class="text-blue-600 font-medium">{{ teacher.initials}}-{{ teacher.registration_id }}</p>
                         <div class="mt-2">
                             <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-semibold">
                                 {{ teacher.department|default:'Department' }}

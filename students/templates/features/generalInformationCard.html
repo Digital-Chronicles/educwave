@@ -17,7 +17,9 @@
             <div class="space-y-4">
               <div>
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Registration ID</p>
-                <p class="mt-1 font-medium text-gray-800">{{ student.registration_id|default:'-' }}</p>
+                <p class="mt-1 font-medium text-gray-800">{{ student.registration_id|default:'-' }} </p>
+                                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">LIN ID</p>
+                <p class="mt-1 font-medium text-gray-800">{{student.lin_id}}</p>
               </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</p>
@@ -62,10 +64,12 @@
               <div>
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Father's Name</p>
                 <p class="mt-1 font-medium text-gray-800">{{ student.father_name|default:'-' }}</p>
+                 <p class="mt-1 font-medium text-gray-800">{{ student.father_NIN|default:'-' }}</p>
               </div>
               <div>
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Mother's Name</p>
                 <p class="mt-1 font-medium text-gray-800">{{ student.mother_name|default:'-' }}</p>
+                <p class="mt-1 font-medium text-gray-800">{{ student.mother_NIN|default:'-' }}</p>
               </div>
             </div>
           </div>

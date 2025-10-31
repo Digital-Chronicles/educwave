@@ -27,3 +27,7 @@ def percentage(value, arg):
         return (value / arg) * 100
     except ZeroDivisionError:
         return 0
+    
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key, 0)

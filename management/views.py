@@ -20,9 +20,17 @@ def dashboard(request):
     graduated_student_count = Student.objects.filter(current_status="graduated").count()
     dropped_out_student_count = Student.objects.filter(current_status="dropped out").count()
     inactive_student_count = graduated_student_count + dropped_out_student_count
-    male_count = Student.objects.filter(gender="Male").count()
-    female_count = Student.objects.filter(gender="Female").count()
+    male_count = Student.objects.filter(
+        current_status="active", gender="Male").count()
+    female_count = Student.objects.filter(
+        current_status="active", gender="Female").count()
 
+    school_type_counts = {
+        "Day": Student.objects.filter(current_status="active", school_type="day").count(),
+        "Boarding": Student.objects.filter(current_status="active", school_type="boarding").count(),
+        "Bursary": Student.objects.filter(current_status="active", school_type="bursary").count(),
+        # "Scholarship": Student.objects.filter(current_status="active", school_type="scholarship").count(),
+    }
 
     student_status_data = {
         'Active Students': active_student_count,
@@ -44,6 +52,7 @@ def dashboard(request):
         "inactive_student_count":inactive_student_count,
         "student_status_data":student_status_data,
         "student_gender_data":student_gender_data,
+        "school_type_counts": school_type_counts,
     }
     return render(request, "dashboard.html", context)
 

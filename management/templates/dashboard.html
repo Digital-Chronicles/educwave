@@ -94,7 +94,7 @@
 
   <!-- Charts Section -->
   <div class="mb-6">
-    <h5 class="text-xl font-semibold text-gray-800 mb-4">Student Bio Data Analytics</h5>
+    <h5 class="text-xl font-semibold text-gray-800 mb-4">Day and Boarding Students</h5>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Status Chart -->
       <div class="bg-white rounded-lg shadow-md p-6">
@@ -112,16 +112,16 @@
 <script>
   // Student Status Chart
   const ctx = document.getElementById('studentStatusChart');
-  const studentStatusData = {{ student_status_data | safe }};
-  const labels = Object.keys(studentStatusData);
-  const data = Object.values(studentStatusData);
+  const schoolTypeData = {{ school_type_counts | safe }};
+  const labels = Object.keys(schoolTypeData);
+  const data = Object.values(schoolTypeData);
 
   new Chart(ctx, {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [{
-        label: 'Number of Students by Status',
+        label: 'Boarding vs Day Students',
         data: data,
         backgroundColor: [
           'rgba(56, 178, 172, 0.7)',  // primary

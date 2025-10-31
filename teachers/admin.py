@@ -4,7 +4,7 @@ from .models import *
 # Customizing the display of the Teacher model
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ('registration_id' , 'first_name','last_name','gender')
+    list_display = ('initials','registration_id' , 'first_name','last_name','gender')
     search_fields = ('registration_id','first_name','last_name',)
     list_filter = ('gender','registered_by')
     ordering = ('first_name',)

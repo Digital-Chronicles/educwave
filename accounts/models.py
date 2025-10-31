@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class CustomUser(AbstractUser):
-    name = models.CharField(max_length=150, blank=True)  # Add this line
+    name = models.CharField(max_length=150, blank=True)  
 
     class Role(models.TextChoices):
         ADMIN = 'ADMIN', _('Admin')

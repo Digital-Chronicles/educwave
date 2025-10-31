@@ -12,6 +12,7 @@ class Teacher(models.Model):
     )
 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="teacher")
+    initials = models.CharField(blank=True, null=True, max_length=5, default="NJ")
     registration_id = models.CharField(max_length=100, unique=True)
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)

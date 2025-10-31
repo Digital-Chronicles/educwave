@@ -23,18 +23,12 @@
                 <h2 class="text-xl font-semibold text-gray-700 mb-6">Select Examination Details</h2>
                 
                 <form id="examResultsForm" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <!-- Grade Selection -->
                         <div>
-                            <label for="grade_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                <span class="flex items-center">
-                                    <svg class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                    Grade
-                                </span>
-                            </label>
-                            <select id="grade_id" name="grade_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg transition duration-150 ease-in-out">
+                            <label for="grade_id" class="block text-sm font-medium text-gray-700 mb-2">Grade</label>
+                            <select id="grade_id" name="grade_id"
+                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out">
                                 <option value="">Select Grade</option>
                                 {% for grade in grades %}
                                 <option value="{{ grade.id }}" {% if request.GET.grade_id == grade.id|stringformat:"s" %}selected{% endif %}>
@@ -44,37 +38,40 @@
                             </select>
                         </div>
                         
-                        <!-- Exam Session Selection -->
+                        <!-- Term Selection -->
                         <div>
-                            <label for="exam_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                <span class="flex items-center">
-                                    <svg class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    Exam Session
-                                </span>
-                            </label>
-                            <select id="exam_id" name="exam_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg transition duration-150 ease-in-out">
-                                <option value="">Select Exam</option>
-                                {% for exam in exams %}
-                                <option value="{{ exam.id }}" {% if request.GET.exam_id == exam.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ exam }}
+                            <label for="term_id" class="block text-sm font-medium text-gray-700 mb-2">Term</label>
+                            <select id="term_id" name="term_id"
+                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out"
+                                    onchange="reloadExamTypes()">
+                                <option value="">Select Term</option>
+                                {% for term in terms %}
+                                <option value="{{ term.id }}" {% if request.GET.term_id == term.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ term }}
                                 </option>
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
+                        <!-- Exam Type Selection -->
+                        <div>
+                            <label for="exam_id" class="block text-sm font-medium text-gray-700 mb-2">Exam Type</label>
+                            <select id="exam_id" name="exam_id"
+                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out">
+                                <option value="">Select Exam Type</option>
+                                {% for exam in exam_types %}
+                                <option value="{{ exam.id }}" {% if request.GET.exam_id == exam.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ exam.get_exam_type_display }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <!-- Subject Selection -->
                         <div>
-                            <label for="subject_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                <span class="flex items-center">
-                                    <svg class="h-4 w-4 text-gray-500 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                    </svg>
-                                    Subject
-                                </span>
-                            </label>
-                            <select id="subject_id" name="subject_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg transition duration-150 ease-in-out">
+                            <label for="subject_id" class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                            <select id="subject_id" name="subject_id"
+                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out">
                                 <option value="">Select Subject</option>
                                 {% for subject in subjects %}
                                 <option value="{{ subject.id }}" {% if request.GET.subject_id == subject.id|stringformat:"s" %}selected{% endif %}>
@@ -84,13 +81,10 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="pt-2 flex justify-end">
                         <button type="button" onclick="loadEntryForm()"
                                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-                            </svg>
                             Enter Results
                         </button>
                     </div>
@@ -100,10 +94,7 @@
             <!-- Status Bar -->
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
                 <div class="flex items-center text-sm text-gray-600">
-                    <svg class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Select grade, exam session and subject to enter results
+                    Select grade, term, subject, and exam type to enter results
                 </div>
             </div>
         </div>
@@ -111,90 +102,57 @@
 </div>
 
 <script>
-function loadEntryForm() {
-    const grade = document.getElementById('grade_id').value;
-    const subject = document.getElementById('subject_id').value;
-    const exam = document.getElementById('exam_id').value;
-    
-    if (grade && subject && exam) {
-        window.location.href = `{% url 'assessment:exam_results_entry' %}?grade_id=${grade}&subject_id=${subject}&exam_id=${exam}`;
-    } else {
-        // Use a more elegant alert/notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50 flex items-start';
-        notification.innerHTML = `
-            <svg class="h-6 w-6 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <div>
-                <strong class="font-bold">Required!</strong>
-                <span class="block sm:inline">Please select grade, subject and exam.</span>
-            </div>
-        `;
-        document.body.appendChild(notification);
-        
-        // Remove notification after 5 seconds
-        setTimeout(() => {
-            notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-            setTimeout(() => notification.remove(), 300);
-        }, 5000);
+    // Reload Exam Types when Term changes
+    function reloadExamTypes() {
+        const term = document.getElementById('term_id').value;
+        const currentUrl = new URL(window.location.href);
+        if (term) {
+            currentUrl.searchParams.set('term_id', term);
+        } else {
+            currentUrl.searchParams.delete('term_id');
+        }
+        window.location.href = currentUrl.toString();
     }
-}
 
-// Initialize select elements with better styling if not using Select2
-document.addEventListener('DOMContentLoaded', function() {
-    // If using select2 library
-    if (typeof $ !== 'undefined') {
-        $('#grade_id, #exam_id, #subject_id').select2({
-            width: '100%',
-            placeholder: function(element) {
-                return $(element).find('option:first').text();
-            },
-            minimumResultsForSearch: 5
-        });
-    } else {
-        // Fallback styling for native select elements
-        const selects = document.querySelectorAll('select');
-        selects.forEach(select => {
-            select.addEventListener('focus', () => {
-                select.parentElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
-            });
-            select.addEventListener('blur', () => {
-                select.parentElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
-            });
-        });
+    // Load Results Entry Form
+    function loadEntryForm() {
+        const grade = document.getElementById('grade_id').value;
+        const subject = document.getElementById('subject_id').value;
+        const exam = document.getElementById('exam_id').value;
+        const term = document.getElementById('term_id').value;
+
+        if (grade && subject && exam && term) {
+            window.location.href = `{% url 'assessment:exam_results_entry' %}?grade_id=${grade}&subject_id=${subject}&exam_id=${exam}&term_id=${term}`;
+        } else {
+            alert('Please select grade, term, subject, and exam type before proceeding.');
+        }
     }
-});
+
+    // Reload Subjects dynamically when Grade changes
+    document.getElementById('grade_id')?.addEventListener('change', function () {
+        const gradeId = this.value;
+        const currentUrl = new URL(window.location.href);
+        if (gradeId) {
+            currentUrl.searchParams.set('grade_id', gradeId);
+        } else {
+            currentUrl.searchParams.delete('grade_id');
+        }
+        window.location.href = currentUrl.toString();
+    });
 </script>
 
 <style>
-/* Custom styles for select dropdown arrow */
+/* Custom select arrow */
 select {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.5rem center;
     background-repeat: no-repeat;
     background-size: 1.5em 1.5em;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
     padding-right: 2.5rem;
-    -moz-appearance: none;
-    -webkit-appearance: none;
     appearance: none;
 }
 
 /* Remove default arrow in IE */
-select::-ms-expand {
-    display: none;
-}
-
-/* Animation for notification */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.fixed {
-    animation: fadeIn 0.3s ease-out;
-}
+select::-ms-expand { display: none; }
 </style>
 {% endblock %}

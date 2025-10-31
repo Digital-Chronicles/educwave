@@ -78,3 +78,9 @@ def score_class(score, max_score):
     elif percentage >= 50:
         return "bg-yellow-100 text-yellow-800"
     return "bg-red-100 text-red-800"
+
+
+
+@register.filter
+def dict_get(d, key):
+    return d.get(key, 0)

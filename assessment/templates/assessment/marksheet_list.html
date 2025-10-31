@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto p-6">
+  <h2 class="text-2xl font-semibold mb-6 text-gray-800">Select a Grade</h2>
+
+  <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for grade in grades %}
+    <li>
+<a href="/assessment/marksheet_details/{{ grade.id }}">
+  <div class="block bg-white border border-gray-200 hover:border-green-500 p-6 rounded-xl shadow-sm hover:shadow-md transition">
+    <h3 class="text-lg font-semibold text-gray-800">{{ grade.grade_name }}</h3>
+    <p class="text-sm text-gray-500 mt-2">View Marksheet</p>
+  </div>
+</a>
+    </li>
+    {% empty %}
+    <p>No grades found.</p>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

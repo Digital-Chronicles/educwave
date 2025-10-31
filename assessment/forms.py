@@ -68,9 +68,12 @@ class QuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ["term_exam", 'grade', 'subject', "topic", 'question_number', 'max_score']
+        fields = ["term_exam", "exam_type", 'grade', 'subject', "topic", 'question_number', 'max_score']
         widgets = {
             'term_exam': forms.Select(attrs={
+                'class': "w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            }),
+            'exam_type': forms.Select(attrs={
                 'class': "w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             }),
             'grade': forms.Select(attrs={

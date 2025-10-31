@@ -19,9 +19,13 @@
                     <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                     {{ form.last_name }}
                 </div>
+                <div>
+                    <label for="{{ form.lin_id.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">LIN ID</label>
+                    {{ form.lin_id }}
+                </div>
             </div>
             
-            <!-- Second row - DOB, Gender, Status, Year -->
+            <!-- Second row - DOB, Gender, School type -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                     <label for="{{ form.date_of_birth.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
@@ -31,6 +35,14 @@
                     <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
                     {{ form.gender }}
                 </div>
+                 <div>
+                    <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">School Type</label>
+                    {{ form.school_type }}
+                </div>
+
+            </div>
+                        <!-- Third row -  Status, Year-->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="{{ form.current_status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Current Status</label>
                     {{ form.current_status }}
@@ -41,7 +53,7 @@
                 </div>
             </div>
             
-            <!-- Third row - Guardian info -->
+            <!-- Fourth row - Guardian info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="{{ form.guardian_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Guardian Name</label>
@@ -53,7 +65,7 @@
                 </div>
             </div>
             
-            <!-- Fourth row - Father info -->
+            <!-- Fifth row - Father info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="{{ form.father_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Father's Name</label>
@@ -63,9 +75,13 @@
                     <label for="{{ form.father_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Father's Phone</label>
                     {{ form.father_phone }}
                 </div>
+                 <div>
+                    <label for="{{ form.father_NIN.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Father's NIN</label>
+                    {{ form.father_NIN }}
+                </div>
             </div>
             
-            <!-- Fifth row - Mother info -->
+            <!-- Sixth row - Mother info -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="{{ form.mother_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Mother's Name</label>
@@ -75,15 +91,19 @@
                     <label for="{{ form.mother_phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Mother's Phone</label>
                     {{ form.mother_phone }}
                 </div>
+                <div>
+                    <label for="{{ form.mother_NIN.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Mother's NIN</label>
+                    {{ form.mother_NIN }}
+                </div>
             </div>
             
-            <!-- Sixth row - Profile picture -->
+            <!-- Eighth row - Profile picture -->
             <div>
                 <label for="{{ form.profile_picture.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
                 {{ form.profile_picture }}
             </div>
             
-            <!-- Seventh row - School -->
+            <!-- Nineth row - School -->
             <div class="md:w-1/2">
                 <label for="{{ form.school.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">School</label>
                 {{ form.school }}

@@ -14,6 +14,7 @@ class Topics(models.Model):
     
 class Question (models.Model):
     term_exam = models.ForeignKey("academic.TermExamSession", on_delete=models.CASCADE)
+    exam_type = models.ForeignKey("academic.ExamSession", on_delete=models.DO_NOTHING)
     question_number = models.CharField(max_length=100, default="41a")
     topic = models.ForeignKey(Topics, on_delete=models.CASCADE, related_name="questions")
     grade = models.ForeignKey("academic.Grade", on_delete=models.DO_NOTHING,
@@ -41,6 +42,13 @@ class ExamResult(models.Model):
     
     topic = models.ForeignKey(
         Topics, on_delete=models.CASCADE, related_name="exam_results")
+    exam_session = models.ForeignKey(   # 👈 ADD THIS
+        "academic.ExamSession",
+        on_delete=models.CASCADE,
+        related_name="exam_results",
+        null=True,
+        blank=True
+    )
     score = models.PositiveIntegerField()
 
     def clean(self):

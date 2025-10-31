@@ -1,3 +1,5 @@
+from django.db.models import Sum
+from django.shortcuts import render, get_object_or_404
 from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -177,7 +179,7 @@ def record_question(request):
     subject_id = request.GET.get('subject_id')
     
     questions = Question.objects.select_related(
-        'term_exam', 'grade', 'subject', 'topic'
+        'term_exam', 'exam_type','grade', 'subject', 'topic'
     ).order_by('-id')[:15]
     
     if grade_id:
@@ -195,6 +197,16 @@ def record_question(request):
     }
     
     return render(request, "record_question.html", context)
+
+
+@require_http_methods(["GET"])
+def get_subjects_by_grade(request):
+    grade_id = request.GET.get("grade_id")
+    if not grade_id:
+        return JsonResponse({"error": "Missing grade_id"}, status=400)
+    subjects = Subject.objects.filter(grade_id=grade_id).values("id", "name")
+    return JsonResponse(list(subjects), safe=False)
+
 
 
 @require_http_methods(["GET"])
@@ -425,3 +437,55 @@ def exam_results(request):
         })
     
     return render(request, 'results.html', context)
+
+# Marksheet
+def marksheet_list(request):
+    grades = Grade.objects.all().order_by("grade_name")
+    return render(request, "assessment/marksheet_list.html", {"grades": grades})
+
+
+
+# 2️⃣ View for marksheet of a specific grade 
+def marksheet_detail(request, grade_id):
+    grade = get_object_or_404(Grade, pk=grade_id)
+    students = Student.objects.filter(current_grade=grade).order_by("first_name")
+    subjects = Subject.objects.filter(grade=grade).order_by("name")
+
+    data = []
+    for student in students:
+        row = {"student": student, "subjects": {}, "total": 0, "average": 0}
+        for subject in subjects:
+            total_score = (
+                ExamResult.objects
+                .filter(student=student, subject=subject, grade=grade)
+                .aggregate(sum=Sum("score"))["sum"] or 0
+            )
+            row["subjects"][subject] = total_score
+            row["total"] += total_score
+        # Compute average
+        if subjects.count() > 0:
+            row["average"] = round(row["total"] / subjects.count(), 2)
+        data.append(row)
+
+    # Sort by total descending for ranking
+    data.sort(key=lambda x: x["total"], reverse=True)
+
+    # Assign positions (handle ties)
+    position = 1
+    last_total = None
+    same_rank_count = 0
+    for idx, row in enumerate(data):
+        if row["total"] == last_total:
+            row["position"] = position  # same position for ties
+            same_rank_count += 1
+        else:
+            position = idx + 1
+            row["position"] = position
+            last_total = row["total"]
+            same_rank_count = 1
+
+    return render(
+        request,
+        "assessment/marksheet_detail.html",
+        {"grade": grade, "subjects": subjects, "data": data},
+    )

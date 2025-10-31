@@ -10,6 +10,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import datetime
 from assessment.models import Topics
+from teachers.models import Teacher
 
 #Grade
 class Grade(models.Model):
@@ -48,10 +49,16 @@ class Subject(models.Model):
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=50, blank=True, null=True)
     description = models.TextField()
+    grade = models.ForeignKey(
+        Grade, blank=True, null=True, on_delete=models.CASCADE, related_name="grade_subjects")
     curriculum = models.ForeignKey(
         'Curriculum', on_delete=models.CASCADE, related_name="subjects")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
+    teacher = models.ForeignKey(
+        Teacher, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="subjects"
+    )
 
     class Meta:
         db_table = "subject"
@@ -59,7 +66,7 @@ class Subject(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return f'{self.name}  -  {self.code}  -  {self.curriculum}'
+        return f'{self.name}  -  {self.code} - {self.grade} '
     
 
 # Exams Table
@@ -133,17 +140,12 @@ class TermExamSession(models.Model):
         TERM_2 = "TERM_2", "Term 2"
         TERM_3 = "TERM_3", "Term 3"
 
-    class ExamChoices(models.TextChoices):
-        BOT = "BOT", "Beginning of Term"
-        MOT = "MOT", "Mid of Term"
-        EOT = "EOT", "End of Term"
+
 
     term_name = models.CharField(max_length=10, choices=TermChoices.choices,
                                  verbose_name="Term Name", help_text="Select the term for this exam session")
     year = models.PositiveIntegerField(default=datetime.date.today().year, choices=academic_year_choices,
                                        verbose_name="Academic Year", help_text="Select the academic year for this exam session", db_index=True)
-    exam_type = models.CharField(max_length=3, choices=ExamChoices.choices,
-                                 verbose_name="Exam Type", help_text="Select the type of examination")
     start_date = models.DateField(help_text="Start date of the exam session")
     end_date = models.DateField(help_text="End date of the exam session")
     created_by = models.ForeignKey(Teacher, on_delete=models.PROTECT,
@@ -154,10 +156,10 @@ class TermExamSession(models.Model):
     class Meta:
         db_table = "term_exam_session"
         ordering = ["-year", "term_name"]
-        unique_together = ("term_name", "year", "exam_type")
+        unique_together = ("term_name", "year")
         indexes = [
             models.Index(fields=['-year', 'term_name']),
-            models.Index(fields=['term_name', 'year', 'exam_type']),
+            models.Index(fields=['term_name', 'year']),
         ]
 
     def clean(self):
@@ -168,12 +170,50 @@ class TermExamSession(models.Model):
             })
 
     def __str__(self):
-        return f"{self.get_term_name_display()} - {self.year} ({self.get_exam_type_display()})"
+        return f"{self.get_term_name_display()} - {self.year} "
+    
+
+class ExamSession(models.Model):
+    class ExamChoices(models.TextChoices):
+        BOT = "BOT", "Beginning of Term"
+        MOT = "MOT", "Mid of Term"
+        EOT = "EOT", "End of Term"
+
+    term = models.ForeignKey(
+        TermExamSession,
+        on_delete=models.CASCADE,
+        related_name="exam_sessions"
+    )
+    exam_type = models.CharField(
+        max_length=3,
+        choices=ExamChoices.choices,
+        verbose_name="Exam Type"
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_by = models.ForeignKey(
+        Teacher, blank=True, on_delete=models.DO_NOTHING, related_name="exams_sessions")
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("term", "exam_type")
+        ordering = ["term__year", "term__term_name", "exam_type"]
+        db_table = "exam_session"
+
+    def clean(self):
+        if self.start_date and self.end_date and self.start_date >= self.end_date:
+            raise ValidationError("Start date must be before end date.")
+
+    def __str__(self):
+        return f"{self.term} ({self.get_exam_type_display()})"
+
 
 
 class StudentMarkSummary(models.Model):
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name="mark_summaries")
     term_exam = models.ForeignKey(TermExamSession, on_delete=models.CASCADE, related_name="mark_summaries")
+    exam_type = models.ForeignKey("academic.ExamSession", on_delete=models.DO_NOTHING)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="mark_summaries")
     
     # Subject-level summary

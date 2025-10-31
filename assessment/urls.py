@@ -16,6 +16,7 @@ urlpatterns = [
     # Question Management URLs
     path("questions/", views.record_question, name="question_list"),
     path("questions/create/", views.record_question, name="question_create"),
+    path("get-subjects-by-grade/", views.get_subjects_by_grade, name="get_subjects_by_grade"),
     path("questions/get-topics/", views.get_topics_by_subject, name="question_topic_ajax"),
     
     # Results Management URLs
@@ -26,4 +27,21 @@ urlpatterns = [
     path('exam-results/entry/', ExamResultsEntryView.as_view(), name='exam_results_entry'),
     path('exam-results/download-template/', download_marks_template, name='download_marks_template'),
     path('exam-results/upload-marks/', upload_marks, name='upload_marks'),
+    
+    
+    # Mark Sheet
+    path("marksheet/", views.marksheet_list, name="marksheet_list"),  # list of grades
+    path("marksheet_details/<int:grade_id>/", views.marksheet_detail, name="marksheet_detail"),  
+    
+
+
+
+
+
+
+
+
+   
+   
+
 ]

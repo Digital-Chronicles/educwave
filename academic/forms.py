@@ -30,10 +30,11 @@ class GradeForm(forms.ModelForm):
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['name', 'code', 'description', 'curriculum']
+        fields = ['name', 'code','grade', 'description', 'curriculum']
         labels = {
             'name': 'Subject Name',
             'code': 'Code',
+            'grade' : 'Grade',
             'description': 'Description',
             'curriculum': 'Curriculum'
         }
@@ -45,6 +46,9 @@ class SubjectForm(forms.ModelForm):
             'code': forms.TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
                 'placeholder': 'Enter subject code'
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
             }),
             'description': forms.Textarea(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',

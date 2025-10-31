@@ -19,9 +19,9 @@ class GradeAdmin(admin.ModelAdmin):
 # Subject Model
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description', 'curriculum', 'created', )
+    list_display = ('name', 'code', 'curriculum','grade', 'created', )
     search_fields = ('name', 'description', 'curriculum')
-    list_filter = ('name', 'curriculum')
+    list_filter = ('name', 'curriculum', 'grade')
     ordering = ['name']
     readonly_fields = ('created', 'updated')
 
@@ -64,11 +64,64 @@ class NotesAdmin(admin.ModelAdmin):
 
 @admin.register(TermExamSession)
 class TermsAdmin(admin.ModelAdmin):
-    list_display = ('term_name', 'start_date', 'end_date', 'created_by', 'created', 'updated')
+    list_display = ( 'term_name', 'start_date', 'end_date', 'created_by', 'created', 'updated')
     list_filter = ('start_date', 'end_date', 'created_by')
     search_fields = ('term_name', 'created_by__name')
     date_hierarchy = 'start_date'
     ordering = ['term_name']
 
 
-admin.site.register(StudentMarkSummary)
+@admin.register(ExamSession)
+class ExamSessionAdmin(admin.ModelAdmin):
+    list_display = ( 'exam_type','term', 'start_date', 'end_date', 'created_by', 'created', 'updated')
+    list_filter = ('start_date', 'end_date', 'created_by')
+    search_fields = ('exam_type', 'created_by__name')
+    date_hierarchy = 'start_date'
+    ordering = ['exam_type']
+
+
+
+@admin.register(StudentMarkSummary)
+class StudentMarkSummaryAdmin(admin.ModelAdmin):
+    list_display = (
+        'student', 
+        'grade', 
+        'term_exam', 
+        'exam_type', 
+        'subject', 
+        'total_score', 
+        'max_possible', 
+        'percentage', 
+        'subject_position',
+        'class_average',
+    )
+    list_filter = (
+        'term_exam__year', 
+        'term_exam__term_name', 
+        'exam_type__exam_type',
+        'grade',
+        'subject',
+    )
+    search_fields = (
+        'student__first_name', 
+        'student__last_name', 
+        'subject__name', 
+        'grade__grade_name',
+    )
+    ordering = ('term_exam__year', 'term_exam__term_name', 'exam_type__exam_type', 'grade', 'subject')
+    list_editable = ('total_score', 'max_possible', 'percentage', 'subject_position', 'class_average')
+    readonly_fields = ('created', 'updated')
+    fieldsets = (
+        ('Student Info', {
+            'fields': ('student', 'grade', 'term_exam', 'exam_type')
+        }),
+        ('Subject Info', {
+            'fields': ('subject', 'total_score', 'max_possible', 'percentage')
+        }),
+        ('Metrics', {
+            'fields': ('subject_position', 'class_average')
+        }),
+        ('Timestamps', {
+            'fields': ('created', 'updated')
+        }),
+    )

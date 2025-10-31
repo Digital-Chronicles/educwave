@@ -8,8 +8,10 @@ class StudentForm(forms.ModelForm):
         fields = [
             'first_name', 
             'last_name', 
+            'lin_id',
             'date_of_birth',
             'gender', 
+            'school_type',
             'current_status', 
             'grade_of_entry',
             'guardian_name', 
@@ -28,11 +30,17 @@ class StudentForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
             }),
+            'lin_id': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
             'date_of_birth': forms.DateInput(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500',
                 'type': 'date'
             }),
             'gender': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
+            }),
+            'school_type': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500'
             }),
             'current_status': forms.Select(attrs={

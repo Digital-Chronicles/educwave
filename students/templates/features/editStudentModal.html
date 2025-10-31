@@ -22,6 +22,10 @@
                   <input type="text" name="last_name" id="last_name" value="{{ student.last_name }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
                 <div>
+                  <label for="lin_id" class="block text-sm font-medium text-gray-700">LIN ID</label>
+                  <input type="text" name="lin_id" id="lin_id" value="{{ student.lin_id }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
                   <label for="date_of_birth" class="block text-sm font-medium text-gray-700">Date of Birth</label>
                   <input type="date" name="date_of_birth" id="date_of_birth" value="{{ student.date_of_birth|date:'Y-m-d' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
@@ -30,6 +34,15 @@
                   <select name="gender" id="gender" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                     <option value="Male" {% if student.gender == 'Male' %}selected{% endif %}>Male</option>
                     <option value="Female" {% if student.gender == 'Female' %}selected{% endif %}>Female</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="school_type" class="block text-sm font-medium text-gray-700">School Type</label>
+                  <select name="school_type" id="school_type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <option value="day" {% if student.school_type == 'day' %}selected{% endif %}>Day</option>
+                    <option value="boarding" {% if student.school_type == 'boarding' %}selected{% endif %}>Boarding</option>
+                    <option value="bursary" {% if student.school_type == 'bursary' %}selected{% endif %}>Bursary</option>
+                    <option value="scholarhip" {% if student.school_type == 'scholarhip' %}selected{% endif %}>Scholarship</option>
                   </select>
                 </div>
                 <div>
@@ -61,12 +74,20 @@
                   <input type="text" name="father_phone" id="father_phone" value="{{ student.father_phone|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
                 <div>
+                  <label for="father_NIN" class="block text-sm font-medium text-gray-700">Father's NIN</label>
+                  <input type="text" name="father_NIN" id="father_NIN" value="{{ student.father_NIN|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
                   <label for="mother_name" class="block text-sm font-medium text-gray-700">Mother's Name</label>
                   <input type="text" name="mother_name" id="mother_name" value="{{ student.mother_name|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
                 <div>
                   <label for="mother_phone" class="block text-sm font-medium text-gray-700">Mother's Phone</label>
                   <input type="text" name="mother_phone" id="mother_phone" value="{{ student.mother_phone|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                  <div>
+                  <label for="mother_NIN" class="block text-sm font-medium text-gray-700">Mother's NIN</label>
+                  <input type="text" name="mother_NIN" id="mother_NIN" value="{{ student.mother_NIN|default:'' }}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                 </div>
               </div>
               <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">

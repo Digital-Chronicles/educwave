@@ -37,7 +37,7 @@
             <tr>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curriculum</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
@@ -61,7 +61,7 @@
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  {{ subject.curriculum.name|default:"Not assigned" }}
+                  {{ subject.grade|default:"Not assigned" }}
                 </span>
               </td>
             </tr>

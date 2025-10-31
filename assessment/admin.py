@@ -14,9 +14,9 @@ class TopicsAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class Question(admin.ModelAdmin):
-    list_display = ("question_number", "topic", "term_exam", "max_score")
+    list_display = ('grade',"question_number", "topic", "exam_type","term_exam", "max_score")
     search_fields=("topic","term_exam","grade")
-    list_filter=("question_number","topic")
+    list_filter=('grade',"exam_type","question_number","topic")
 
 @admin.register(ExamResult)
 class ExamResult(admin.ModelAdmin):

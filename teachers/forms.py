@@ -6,6 +6,76 @@ from django.core.validators import RegexValidator
 from django import forms
 from .models import *
 
+from accounts.models import CustomUser
+
+
+class UserCreateForm(forms.ModelForm):
+    username = forms.CharField(
+        label="Username",
+        widget=forms.TextInput(
+            attrs={
+                "class": "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm "
+                         "focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50",
+                "placeholder": "Username",
+            }
+        ),
+    )
+    password1 = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm "
+                         "focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50",
+                "placeholder": "Enter password",
+            }
+        ),
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm "
+                         "focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50",
+                "placeholder": "Confirm password",
+            }
+        ),
+    )
+
+    class Meta:
+        model = CustomUser
+        fields = ["username",  "email", "role"]  # <-- include username
+        widgets = {
+   
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm "
+                             "focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50",
+                    "placeholder": "Email address",
+                }
+            ),
+            "role": forms.Select(
+                attrs={
+                    "class": "block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm "
+                             "focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50",
+                }
+            ),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        p1, p2 = cleaned.get("password1"), cleaned.get("password2")
+        if p1 and p2 and p1 != p2:
+            self.add_error("password2", "Passwords don’t match.")
+        return cleaned
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+
 class TeacherForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,7 +93,7 @@ class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
         fields = [
-            'user', 'year_of_entry', 'first_name', 'last_name', 
+            'user', 'year_of_entry', 'first_name', 'last_name', "initials",
             'gender', 'profile_picture', 'school'
         ]
         widgets = {

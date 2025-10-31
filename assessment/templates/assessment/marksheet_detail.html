@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load assessment_tags %}
+
+{% block content %}
+
+
+<style>
+@media print {
+  body { margin: 0; font-size: 12px; }
+  .no-print { display: none !important; }
+  .page-break { page-break-after: always; }
+}
+</style>
+
+<div class="no-print text-right m-4">
+  <button onclick="printReport()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md">
+    🖨️ Print Marksheet
+  </button>
+</div>
+
+<div id="marksheet-section" class="container mx-auto p-6">
+  <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+    Marksheet - {{ grade.grade_name }}
+  </h2>
+
+  <table class="min-w-full border border-gray-300 divide-y divide-gray-200">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border px-4 py-2 text-left">Student</th>
+        {% for subject in subjects %}
+        <th class="border px-4 py-2 text-center">{{ subject.name }}</th>
+        {% endfor %}
+        <th class="border px-4 py-2 text-center">Total</th>
+        <th class="border px-4 py-2 text-center">Average</th>
+        <th class="border px-4 py-2 text-center">Position</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+      <tr>
+        <td class="border px-4 py-2">{{ row.student.first_name }} {{ row.student.last_name }}</td>
+        {% for subject in subjects %}
+        <td class="border px-4 py-2 text-center">{{ row.subjects|dict_get:subject }}</td>
+        {% endfor %}
+        <td class="border px-4 py-2 text-center font-bold">{{ row.total }}</td>
+        <td class="border px-4 py-2 text-center">{{ row.average }}</td>
+        <td class="border px-4 py-2 text-center font-semibold">{{ row.position }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="mt-6">
+    <a href="/assessment/marksheet/ class="text-green-600 hover:underline">
+      ← Back to Grades
+    </a>
+  </div>
+</div>
+
+<script>
+function printReport() {
+    const report = document.getElementById('marksheet-section').innerHTML;
+    const originalContent = document.body.innerHTML;
+
+    // Replace the page content with the report
+    document.body.innerHTML = report;
+
+    // Print only that section
+    window.print();
+
+    // Restore original page after printing
+    document.body.innerHTML = originalContent;
+}
+</script>
+
+{% endblock %}

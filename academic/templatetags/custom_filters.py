@@ -34,3 +34,13 @@ def calculate_total(marks_dict):
     if not marks_dict:
         return 0
     return sum(float(mark) for mark in marks_dict.values() if mark and mark != '-')
+
+
+
+
+@register.filter
+def get_item(dictionary, key):
+    """Safely gets a dictionary value by key in templates."""
+    if isinstance(dictionary, dict):
+        return dictionary.get(key)
+    return None
