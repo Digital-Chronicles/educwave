@@ -610,7 +610,6 @@ class TermExamDetailView(LoginRequiredMixin, DetailView):
 #             "head_teacher_remark": "Promoted to next class. Congratulations!",
 #         },
 #     )
-
 @login_required
 def student_term_report(request, student_id):
     # --- School Info ---
@@ -622,59 +621,76 @@ def student_term_report(request, student_id):
     schoolbox = info.box_no if info else ''
     school_location = info.location if info else ''
 
+    # --- Student ---
     student = get_object_or_404(Student, id=student_id)
 
     # --- Fetch all exam results for this student ---
     results = (
         ExamResult.objects.filter(student=student)
-        .select_related('topic', 'subject', 'grade', 'exam_session', 'exam_session__term')
+        .select_related('question', 'subject', 'grade', 'exam_session', 'exam_session__term')
+        .order_by('exam_session__term__year', 'exam_session__term__term_name', 'subject__name')
     )
 
-    # --- Organize results by term + exam type ---
+    # --- Organize results by term and exam type ---
     report_data = {}
-    for res in results:
-        if not res.exam_session:
-            continue  # skip results with no session assigned
 
-        term = res.exam_session.term  # Term object
+    for res in results:
+        if not res.exam_session or not res.subject:
+            continue
+
+        term = res.exam_session.term
         exam_type = res.exam_session.exam_type  # BOT, MOT, EOT
         subject = res.subject
 
         term_key = f"{term.get_term_name_display()} {term.year}"
 
+        # Initialize term record if missing
         if term_key not in report_data:
             report_data[term_key] = {
-                'BOT': [],
-                'MOT': [],
-                'EOT': [],
+                'BOT': {},
+                'MOT': {},
+                'EOT': {},
                 'BOT_average': 0,
                 'MOT_average': 0,
                 'EOT_average': 0,
             }
 
-        # calculate percentage
-        percentage = (res.score / res.question.max_score * 100) if res.question.max_score else 0
+        # Initialize subject in that exam type
+        if subject.name not in report_data[term_key][exam_type]:
+            report_data[term_key][exam_type][subject.name] = {
+                'subject': subject.name,
+                'total_score': 0,
+                'max_possible': 0,
+                'teacher_initials': getattr(subject.teacher, 'initials', '') if hasattr(subject, 'teacher') else ''
+            }
 
-        # attach additional info
-        report_data[term_key][exam_type].append({
-            'subject': subject.name,
-            'total_score': res.score,
-            'max_possible': res.question.max_score,
-            'percentage': percentage,
-            'teacher_initials': getattr(subject.teacher, 'initials', '') if hasattr(subject, 'teacher') else '',
-            'auto_remark': (
-                "Excellent work" if percentage >= 75 else
-                "Fair — keep improving" if percentage >= 50 else
-                "Needs serious effort"
-            )
-        })
+        # --- Add up all question scores for that subject & exam type ---
+        entry = report_data[term_key][exam_type][subject.name]
+        entry['total_score'] += res.score
+        entry['max_possible'] += res.question.max_score if res.question else 0
 
-    # --- Calculate averages ---
+    # --- Convert subjects dicts into lists and calculate percentages ---
     for term_key, data in report_data.items():
         for ex_type in ['BOT', 'MOT', 'EOT']:
-            marks_list = data[ex_type]
-            if marks_list:
-                avg = sum(m['percentage'] for m in marks_list) / len(marks_list)
+            subjects_dict = data[ex_type]
+            subject_list = []
+            for sub, val in subjects_dict.items():
+                max_possible = val['max_possible']
+                percentage = (val['total_score'] / max_possible * 100) if max_possible else 0
+                val['percentage'] = round(percentage, 2)
+                val['auto_remark'] = (
+                    "Excellent work" if percentage >= 75 else
+                    "Fair — keep improving" if percentage >= 50 else
+                    "Needs serious effort"
+                )
+                subject_list.append(val)
+
+            # Replace dict with list for template use
+            data[ex_type] = subject_list
+
+            # --- Calculate average ---
+            if subject_list:
+                avg = sum(s['percentage'] for s in subject_list) / len(subject_list)
                 data[f"{ex_type}_average"] = round(avg, 2)
 
     # --- Determine next term start date ---
@@ -683,19 +699,27 @@ def student_term_report(request, student_id):
     if all_exam_sessions:
         last_exam = max(
             all_exam_sessions,
-            key=lambda x: (x.term.year, x.term.term_name, x.get_exam_type_display())
+            key=lambda x: (x.term.year, ['TERM_1', 'TERM_2', 'TERM_3'].index(x.term.term_name))
         )
         term_order = ['TERM_1', 'TERM_2', 'TERM_3']
         current_index = term_order.index(last_exam.term.term_name)
+        next_term_name = None
+        next_year = last_exam.term.year
+
         if current_index + 1 < len(term_order):
             next_term_name = term_order[current_index + 1]
-            next_term = ExamSession.objects.filter(
-                term__year=last_exam.term.year,
-                term__term_name=next_term_name,
-                exam_type='BOT'
-            ).first()
-            if next_term:
-                next_term_date = next_term.start_date
+        else:
+            next_term_name = 'TERM_1'
+            next_year += 1
+
+        next_session = ExamSession.objects.filter(
+            term__year=next_year,
+            term__term_name=next_term_name,
+            exam_type='BOT'
+        ).first()
+
+        if next_session:
+            next_term_date = next_session.start_date
 
     # --- Grading system ---
     grading_system = [

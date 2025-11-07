@@ -14,13 +14,13 @@ class TopicsAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class Question(admin.ModelAdmin):
-    list_display = ('grade',"question_number", "topic", "exam_type","term_exam", "max_score")
-    search_fields=("topic","term_exam","grade")
-    list_filter=('grade',"exam_type","question_number","topic")
+    list_display = ('grade',"subject","question_number", "topic", "exam_type","term_exam", "max_score")
+    search_fields=("topic","term_exam","grade","subject")
+    list_filter=('grade',"exam_type","question_number","topic","subject")
 
 @admin.register(ExamResult)
 class ExamResult(admin.ModelAdmin):
-    list_display = ("student", "grade", "subject","topic", "question", "score")
+    list_display = ("student", "grade","exam_session" ,"subject","topic", "question", "score")
     search_fields = ("student", "subject", "question")
-    list_filter = ("question",)
+    list_filter = ("question", "grade","exam_session")
     

@@ -175,3 +175,4 @@ class ExamResultForm(forms.ModelForm):
                     'score': f"Score cannot exceed the maximum score of {question.max_score} for this question"
                 })
         return cleaned_data
+    

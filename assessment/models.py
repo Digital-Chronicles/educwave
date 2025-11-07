@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from accounts.models import CustomUser
+
 
 # Create your models here.
 class Topics(models.Model):
@@ -64,3 +66,16 @@ class ExamResult(models.Model):
 
     def __str__(self):
         return f"{self.student.first_name} - {self.question.question_number}: {self.score}/{self.question.max_score}"
+
+
+# models.py
+
+# class UploadedExamCSV(models.Model):
+#     file = models.FileField(upload_to='uploads/exam_csvs/')
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
+#     uploaded_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+#     exam_session = models.ForeignKey('ExamSession', on_delete=models.CASCADE)
+#     subject = models.ForeignKey("academic.Subject", on_delete=models.CASCADE)
+
+#     def __str__(self):
+#         return f"{self.file.name} ({self.exam_session.exam_type})"

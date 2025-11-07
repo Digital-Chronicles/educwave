@@ -213,7 +213,7 @@ class ExamSession(models.Model):
 class StudentMarkSummary(models.Model):
     student = models.ForeignKey('students.Student', on_delete=models.CASCADE, related_name="mark_summaries")
     term_exam = models.ForeignKey(TermExamSession, on_delete=models.CASCADE, related_name="mark_summaries")
-    exam_type = models.ForeignKey("academic.ExamSession", on_delete=models.DO_NOTHING)
+    exam_type = models.ForeignKey(ExamSession, on_delete=models.DO_NOTHING)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="mark_summaries")
     
     # Subject-level summary
@@ -230,7 +230,8 @@ class StudentMarkSummary(models.Model):
     updated = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ('student', 'term_exam', 'subject')
+        unique_together = ('student', 'term_exam', 'subject', 'exam_type')
+       
         verbose_name_plural = "Student Mark Summaries"
         indexes = [
             models.Index(fields=['student', 'term_exam']),
