@@ -6,18 +6,19 @@ app_name = 'assessment'
 
 urlpatterns = [
     # Assessment Home
-    path("", views.assessment_home, name="home"),
+    path("", views.assessment_home, name="home"),   
     
     # Topic Management URLs
     path("topics/", views.topic_lists, name="topic_list"),
     path("topics/create/", views.record_topic, name="topic_create"),
     path('get_topics/', views.get_topics, name='get_topics'),
+    path('get_subjects/', views.get_subjects, name='get_subjects'),
 
     # Question Management URLs
     path("questions/", views.record_question, name="question_list"),
     path("questions/create/", views.record_question, name="question_create"),
     path("get-subjects-by-grade/", views.get_subjects_by_grade, name="get_subjects_by_grade"),
-    path("questions/get-topics/", views.get_topics_by_subject, name="question_topic_ajax"),
+    path("questions/get-topics/", views.get_topics_by_subject, name="get_topics"),
     
     # Results Management URLs
     path("results/", views.exam_results, name="result_list"),

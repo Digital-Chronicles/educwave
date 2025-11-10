@@ -12,7 +12,7 @@ from .models import Topics, Question, ExamResult
 from students.models import Student
 from academic.models import Grade, Subject
 from academic.models import TermExamSession
-
+from django.views.decorators.http import require_GET
 
 # -------------------------
 # Helper Functions
@@ -147,6 +147,11 @@ def record_topic(request):
     context['form'] = form
     return render(request, "record_topic.html", context)
 
+@require_GET
+def get_subjects(request):
+    grade_id = request.GET.get("grade_id")
+    subjects = Subject.objects.filter(grade_id=grade_id).values("id", "name")
+    return JsonResponse(list(subjects), safe=False)
 
 @require_http_methods(["GET"])
 def get_topics(request):

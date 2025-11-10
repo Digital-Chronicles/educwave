@@ -3,11 +3,12 @@ from django.urls import reverse_lazy
 from .models import *
 from academic.models import Grade, Subject
 from students.models import Student
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 class TopicsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add empty label for better UX
         self.fields['grade'].empty_label = "Select Grade"
         self.fields['subject'].empty_label = "Select Subject"
 
@@ -21,11 +22,11 @@ class TopicsForm(forms.ModelForm):
             }),
             "grade": forms.Select(attrs={
                 "class": "w-full p-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                "hx-get": "/get_subjects/",  # For dynamic subject loading
-                "hx-target": "#id_subject",
+                "id": "id_grade"
             }),
             "subject": forms.Select(attrs={
-                "class": "w-full p-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                "class": "w-full p-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                "id": "id_subject"
             }),
         }
 

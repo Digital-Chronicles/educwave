@@ -169,40 +169,60 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Get DOM elements
     const gradeSelect = document.getElementById('id_grade');
     const subjectSelect = document.getElementById('id_subject');
     const topicSelect = document.getElementById('id_topic');
-    
-    // Function to fetch and populate topics
-    async function populateTopics() {
+
+    // 🔹 Fetch subjects when grade changes
+    async function populateSubjects() {
         const gradeId = gradeSelect.value;
+
+        while (subjectSelect.options.length > 1) {
+            subjectSelect.remove(1);
+        }
+        while (topicSelect.options.length > 1) {
+            topicSelect.remove(1);
+        }
+
+        if (!gradeId) return;
+
+        try {
+            const response = await fetch(
+                "{% url 'assessment:get_subjects_by_grade' %}?" +
+                new URLSearchParams({ grade_id: gradeId })
+            );
+            const data = await response.json();
+
+            data.forEach(subject => {
+                const option = new Option(subject.name, subject.id);
+                subjectSelect.add(option);
+            });
+        } catch (error) {
+            console.error('Error fetching subjects:', error);
+        }
+    }
+
+    // 🔹 Fetch topics when subject (or grade) changes
+    async function populateTopics() {
         const subjectId = subjectSelect.value;
-        
-        if (!gradeId || !subjectId) {
-            // Clear topics if either grade or subject is not selected
+        if (!subjectId) {
             while (topicSelect.options.length > 1) {
                 topicSelect.remove(1);
             }
             return;
         }
-        
+
         try {
             const response = await fetch(
-                "{% url 'assessment:get_topics' %}?" + 
-                new URLSearchParams({
-                    grade_id: gradeId,
-                    subject_id: subjectId
-                })
+                "{% url 'assessment:get_topics' %}?" +
+                new URLSearchParams({ subject_id: subjectId })
             );
             const data = await response.json();
-            
-            // Clear existing options except the first one
+
             while (topicSelect.options.length > 1) {
                 topicSelect.remove(1);
             }
-            
-            // Add new options
+
             data.forEach(item => {
                 const option = new Option(item.name, item.id);
                 topicSelect.add(option);
@@ -211,25 +231,24 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error fetching topics:', error);
         }
     }
-    
-    // Grade change handler - just update topics if subject is already selected
+
+    // 🔹 Event bindings
     if (gradeSelect) {
-        gradeSelect.addEventListener('change', function() {
-            if (subjectSelect.value) {
-                populateTopics();
-            }
-        });
+        gradeSelect.addEventListener('change', populateSubjects);
     }
-    
-    // Subject change handler - always update topics
+
     if (subjectSelect) {
         subjectSelect.addEventListener('change', populateTopics);
     }
-    
-    // Initialize topics if values are already selected
-    if (gradeSelect.value && subjectSelect.value) {
+
+    // Initialize if preselected
+    if (gradeSelect.value) {
+        populateSubjects();
+    }
+    if (subjectSelect.value) {
         populateTopics();
     }
 });
 </script>
+
 {% endblock %}
