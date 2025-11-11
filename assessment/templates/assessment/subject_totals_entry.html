@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="text-xl font-bold mb-4">
+  Enter Subject Totals - {{ grade }} | {{ exam.get_exam_type_display }} | {{ term }}
+</h2>
+
+<form method="POST">
+  {% csrf_token %}
+  <input type="hidden" name="grade_id" value="{{ grade.id }}">
+  <input type="hidden" name="exam_id" value="{{ exam.id }}">
+  <input type="hidden" name="term_id" value="{{ term.id }}">
+
+  <table class="table-auto w-full border-collapse border border-gray-400">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border p-2">Student</th>
+        {% for subject in subjects %}
+          <th class="border p-2">{{ subject.name }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+        <tr>
+          <td class="border p-2">{{ student.first_name }} {{ student.last_name }}</td>
+          {% for subject in subjects %}
+            <td class="border p-2">
+              <input type="number"
+                     name="total_{{ student.id }}_{{ subject.id }}"
+                     min="0" max="100"
+                     class="w-20 border rounded p-1 text-center" />
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="mt-4">
+    <button type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      Save Totals
+    </button>
+  </div>
+</form>
+{% endblock %}

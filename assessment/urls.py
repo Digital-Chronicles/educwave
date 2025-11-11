@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .upload_views import ExamResultsView, ExamResultsEntryView, download_marks_template, upload_marks
+from .upload_views import ExamResultsView, ExamResultsEntryView,SubjectTotalEntryView, download_marks_template, upload_marks
 
 app_name = 'assessment'
 
@@ -28,7 +28,9 @@ urlpatterns = [
     path('exam-results/entry/', ExamResultsEntryView.as_view(), name='exam_results_entry'),
     path('exam-results/download-template/', download_marks_template, name='download_marks_template'),
     path('exam-results/upload-marks/', upload_marks, name='upload_marks'),
-    
+    # path("subject-totals/", SubjectTotalEntryView.as_view(), name="subject_total_entry"),
+    path("subject-totals/", SubjectTotalEntryView.as_view(), name="subject_total_entry"),
+
     
     # Mark Sheet
     path("marksheet/", views.marksheet_list, name="marksheet_list"),  # list of grades

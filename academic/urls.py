@@ -23,4 +23,5 @@ urlpatterns = [
 
     # Report URL
     path('reports/student-term-report/<int:student_id>/', views.student_term_report, name='student_term_report'),
+    
 ]

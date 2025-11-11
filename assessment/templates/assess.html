@@ -92,7 +92,7 @@
                 </li>
                                 <!--Report Card -->
                 <li>
-                    <a href="{% url 'assessment:exam_results' %}" class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-red-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 overflow-hidden">
+                    <a href="" class="group relative flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-red-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 overflow-hidden">
                         <div class="absolute -top-4 -right-4 h-16 w-16 bg-red-100 rounded-full transition-all duration-300 group-hover:scale-150"></div>
                         <div class="relative z-10 p-4 mb-4 rounded-full bg-red-50 text-red-600 group-hover:bg-red-100 group-hover:text-purple-700 transition-colors duration-300">
 
@@ -101,11 +101,20 @@
                                 d="M9 12l2 2 4-4m-7 8h10a2 2 0 002-2V6a2 2 0 00-2-2H9l-2 2H5a2 2 0 00-2 2v10a2 2 0 002 2h2z" />
                         </svg>
 
-                        </div>
+                    </div>
                         <h3 class="relative z-10 text-xl font-semibold text-gray-800 mb-2 group-hover:text-purple-700 transition-colors duration-300">Report Cards</h3>
-                        <p class="relative z-10 text-sm text-gray-500 text-center">View Class Report Cards</p>
+                        <p class="relative z-10 text-sm text-gray-500 text-center">View Report Cards</p>
                     </a>
                 </li>
+                <li>
+                            <a href="{% url 'assessment:subject_total_entry' %}?grade_id={{ grade.id }}&exam_id={{ exam.id }}&term_id={{ term.id }}"
+   class="btn btn-primary">
+   Enter Subject Totals
+</a>
+
+                    
+                </li>
+
             </ul>
         </nav>
 

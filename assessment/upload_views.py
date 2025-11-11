@@ -39,202 +39,6 @@ class ExamResultsView(View):
         }
         return render(request, self.template_name, context)
 
-# class ExamResultsEntryView(View):
-#     """View for entering and managing exam results"""
-#     template_name = 'assessment/exam_results_entry.html'
-    
-#     def _get_required_objects(self, grade_id, subject_id, exam_id):
-#         """Helper method to fetch and validate required objects"""
-#         try:
-#             exam = ExamSession.objects.get(id=exam_id)
-#             return {
-#                 'grade': Grade.objects.get(id=grade_id),
-#                 'subject': Subject.objects.get(id=subject_id),
-#                 'term': exam.term,   # each exam session belongs to a term
-#                 'exam': exam,        # the specific exam type (BOT, MOT, etc.)
-#             }
-#         except (Grade.DoesNotExist, Subject.DoesNotExist, ExamSession.DoesNotExist) as e:
-#             raise ValueError(f"Invalid selection: {str(e)}")
-    
-#     def _prepare_context(self, grade, subject, term, exam):
-#         """Prepare context data with students, questions and existing results"""
-#         students = Student.objects.filter(current_grade=grade).order_by('first_name')
-        
-#         # ✅ Filter questions by both term_exam and exam_type
-#         questions = Question.objects.filter(
-#             grade=grade,
-#             subject=subject,
-#             term_exam=term,
-#             exam_type=exam
-#         ).select_related('topic').order_by('question_number')
-        
-#         # Prefetch existing results
-#         existing_results = ExamResult.objects.filter(
-#             grade=grade,
-#             subject=subject,
-#             question__in=questions,
-#             student__in=students
-#         ).select_related('student', 'question')
-        
-#         # Build lookup dict
-#         results_dict = {
-#             (result.student_id, result.question_id): result.score
-#             for result in existing_results
-#         }
-        
-#         return {
-#             'grade': grade,
-#             'subject': subject,
-#             'term': term,
-#             'exam': exam,
-#             'students': students,
-#             'questions': questions,
-#             'existing_results': results_dict,
-#         }
-    
-#     def get(self, request):
-#         grade_id = request.GET.get('grade_id')
-#         subject_id = request.GET.get('subject_id')
-#         exam_id = request.GET.get('exam_id')
-        
-#         if not all([grade_id, subject_id, exam_id]):
-#             messages.error(request, "Please select grade, subject and exam.")
-#             return redirect('assessment:exam_results')
-        
-#         try:
-#             objects = self._get_required_objects(grade_id, subject_id, exam_id)
-#             context = self._prepare_context(**objects)
-#             return render(request, self.template_name, context)
-#         except ValueError as e:
-#             messages.error(request, str(e))
-#             return redirect('assessment:exam_results')
-#     @transaction.atomic
-#     def post(self, request):
-#         grade_id = request.POST.get('grade_id')
-#         subject_id = request.POST.get('subject_id')
-#         exam_id = request.POST.get('exam_id')  # This represents ExamSession.id
-
-#         if not all([grade_id, subject_id, exam_id]):
-#             messages.error(request, "Please select grade, subject and exam.")
-#             return redirect('assessment:exam_results')
-
-#         try:
-#             objects = self._get_required_objects(grade_id, subject_id, exam_id)
-#             grade = objects['grade']
-#             subject = objects['subject']
-#             term = objects['term']
-#             exam = objects['exam']  # ✅ This is the ExamSession instance
-
-#             students = Student.objects.filter(current_grade=grade)
-#             questions = Question.objects.filter(
-#                 grade=grade,
-#                 subject=subject,
-#                 term_exam=term,
-#                 exam_type=exam
-#             )
-
-#             # ✅ Save results with exam_session attached
-#             for student in students:
-#                 for question in questions:
-#                     score_key = f"score_{student.id}_{question.id}"
-#                     score = request.POST.get(score_key, '').strip()
-#                     if not score:
-#                         continue
-#                     try:
-#                         score = int(score)
-#                         if score < 0 or score > question.max_score:
-#                             messages.error(
-#                                 request,
-#                                 f"Invalid score for {student} on Q{question.question_number}."
-#                             )
-#                             continue
-
-#                         ExamResult.objects.update_or_create(
-#                             student=student,
-#                             question=question,
-#                             defaults={
-#                                 'grade': grade,
-#                                 'subject': subject,
-#                                 'topic': question.topic,
-#                                 'exam_session': exam,  # ✅ Fixed: now attaches session!
-#                                 'score': score,
-#                             }
-#                         )
-
-#                     except ValueError:
-#                         messages.error(request, f"Invalid score format for {student}.")
-
-#             messages.success(request, "Exam results saved successfully!")
-#             return redirect(f"{reverse('assessment:exam_results_entry')}?grade_id={grade_id}&subject_id={subject_id}&exam_id={exam_id}")
-
-#         except Exception as e:
-#             messages.error(request, f"Error saving results: {str(e)}")
-#             return redirect('assessment:exam_results')
-   
-    
-#     # @transaction.atomic
-#     # def post(self, request):
-#     #     grade_id = request.POST.get('grade_id')
-#     #     subject_id = request.POST.get('subject_id')
-#     #     exam_id = request.POST.get('exam_id')
-        
-#     #     if not all([grade_id, subject_id, exam_id]):
-#     #         messages.error(request, "Please select grade, subject and exam.")
-#     #         return redirect('assessment:exam_results')
-        
-#     #     try:
-#     #         objects = self._get_required_objects(grade_id, subject_id, exam_id)
-#     #         grade = objects['grade']
-#     #         subject = objects['subject']
-#     #         term = objects['term']
-#     #         exam = objects['exam']
-            
-#     #         students = Student.objects.filter(current_grade=grade)
-#     #         questions = Question.objects.filter(
-#     #             grade=grade,
-#     #             subject=subject,
-#     #             term_exam=term,
-#     #             exam_type=exam
-#     #         )
-            
-#     #         # Save results
-#     #         for student in students:
-#     #             for question in questions:
-#     #                 score_key = f"score_{student.id}_{question.id}"
-#     #                 score = request.POST.get(score_key, '').strip()
-#     #                 if not score:
-#     #                     continue
-#     #                 try:
-#     #                     score = int(score)
-#     #                     if score < 0 or score > question.max_score:
-#     #                         messages.error(
-#     #                             request,
-#     #                             f"Invalid score for {student} on Q{question.question_number}."
-#     #                         )
-#     #                         continue
-                        
-#     #                     ExamResult.objects.update_or_create(
-#     #                         student=student,
-#     #                         question=question,
-#     #                         defaults={
-#     #                             'grade': grade,
-#     #                             'subject': subject,
-#     #                             'topic': question.topic,
-#     #                             'score': score
-#     #                         }
-#     #                     )
-#     #                 except ValueError:
-#     #                     messages.error(request, f"Invalid score format for {student}.")
-            
-#     #         messages.success(request, "Exam results saved successfully!")
-#     #         return redirect(f"{reverse('assessment:exam_results_entry')}?grade_id={grade_id}&subject_id={subject_id}&exam_id={exam_id}")
-        
-#     #     except Exception as e:
-#     #         messages.error(request, f"Error saving results: {str(e)}")
-#     #         return redirect('assessment:exam_results')
-
-
-
 class ExamResultsEntryView(View):
     """View for entering and managing exam results"""
     template_name = 'assessment/exam_results_entry.html'
@@ -512,4 +316,67 @@ def upload_marks(request):
             return redirect('assessment:exam_results')
     
     return redirect('assessment:exam_results')
+class SubjectTotalEntryView(View):
+    template_name = "assessment/subject_totals_entry.html"
 
+    def get(self, request):
+        grade_id = request.GET.get("grade_id")
+        exam_id = request.GET.get("exam_id")
+        term_id = request.GET.get("term_id")
+
+        if not all([grade_id, exam_id, term_id]):
+            messages.error(request, "Please select grade, term, and exam.")
+            return redirect("assessment:exam_results")
+
+        grade = Grade.objects.get(id=grade_id)
+        exam = ExamSession.objects.get(id=exam_id)
+        term = TermExamSession.objects.get(id=term_id)
+        students = Student.objects.filter(current_grade=grade).order_by("first_name")
+        subjects = Subject.objects.filter(grade=grade)
+
+        context = {
+            "grade": grade,
+            "exam": exam,
+            "term": term,
+            "students": students,
+            "subjects": subjects,
+        }
+        return render(request, self.template_name, context)
+
+    @transaction.atomic
+    def post(self, request):
+        grade_id = request.POST.get("grade_id")
+        exam_id = request.POST.get("exam_id")
+        term_id = request.POST.get("term_id")
+
+        grade = Grade.objects.get(id=grade_id)
+        exam = ExamSession.objects.get(id=exam_id)
+        term = TermExamSession.objects.get(id=term_id)
+
+        students = Student.objects.filter(current_grade=grade)
+        subjects = Subject.objects.filter(grade=grade)
+
+        for student in students:
+            for subject in subjects:
+                field_name = f"total_{student.id}_{subject.id}"
+                score = request.POST.get(field_name)
+                if score:
+                    try:
+                        score = int(score)
+                        StudentMarkSummary.objects.update_or_create(
+                            student=student,
+                            term_exam=term,
+                            exam_type=exam,
+                            subject=subject,
+                            defaults={
+                                "grade": grade,
+                                "total_score": score,
+                                "max_possible": 100,
+                                "percentage": score,
+                            }
+                        )
+                    except ValueError:
+                        messages.error(request, f"Invalid score for {student} - {subject}")
+
+        messages.success(request, "Subject totals saved successfully!")
+        return redirect(f"{reverse('assessment:subject_total_entry')}?grade_id={grade_id}&exam_id={exam_id}&term_id={term_id}")

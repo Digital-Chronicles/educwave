@@ -10,7 +10,7 @@ from django.views.decorators.http import require_http_methods
 from .forms import TopicsForm, QuestionForm
 from .models import Topics, Question, ExamResult
 from students.models import Student
-from academic.models import Grade, Subject
+from academic.models import ExamSession, Grade, StudentMarkSummary, Subject
 from academic.models import TermExamSession
 from django.views.decorators.http import require_GET
 
@@ -494,3 +494,4 @@ def marksheet_detail(request, grade_id):
         "assessment/marksheet_detail.html",
         {"grade": grade, "subjects": subjects, "data": data},
     )
+
