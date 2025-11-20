@@ -1,46 +1,330 @@
 {% extends "base.html" %}
 {% block content %}
-<h2 class="text-xl font-bold mb-4">
-  Enter Subject Totals - {{ grade }} | {{ exam.get_exam_type_display }} | {{ term }}
-</h2>
+{% load custom_filters %}
 
-<form method="POST">
-  {% csrf_token %}
-  <input type="hidden" name="grade_id" value="{{ grade.id }}">
-  <input type="hidden" name="exam_id" value="{{ exam.id }}">
-  <input type="hidden" name="term_id" value="{{ term.id }}">
-
-  <table class="table-auto w-full border-collapse border border-gray-400">
-    <thead class="bg-gray-100">
-      <tr>
-        <th class="border p-2">Student</th>
-        {% for subject in subjects %}
-          <th class="border p-2">{{ subject.name }}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for student in students %}
-        <tr>
-          <td class="border p-2">{{ student.first_name }} {{ student.last_name }}</td>
-          {% for subject in subjects %}
-            <td class="border p-2">
-              <input type="number"
-                     name="total_{{ student.id }}_{{ subject.id }}"
-                     min="0" max="100"
-                     class="w-20 border rounded p-1 text-center" />
-            </td>
-          {% endfor %}
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="mt-4">
-    <button type="submit"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-      Save Totals
-    </button>
+<div class="container mt-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="mb-1">Enter Subject Totals</h3>
+      <p class="text-muted mb-0">
+        <span class="badge bg-primary">{{ grade.grade_name }}</span>
+        <span class="badge bg-info">{{ exam.get_exam_type_display }}</span>
+        <span class="badge bg-secondary">{{ term }}</span>
+      </p>
+    </div>
+    <div>
+      <span class="text-muted" id="saveStatus"></span>
+    </div>
   </div>
-</form>
+
+  <!-- Alert Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="POST" id="marksForm">
+    {% csrf_token %}
+    <input type="hidden" name="grade_id" value="{{ grade.id }}">
+    <input type="hidden" name="term_id" value="{{ term.id }}">
+    <input type="hidden" name="exam_id" value="{{ exam.id }}">
+
+    <!-- Quick Actions Toolbar -->
+    <div class="card mb-3">
+      <div class="card-body py-2">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <small class="text-muted">
+              <strong>{{ students|length }}</strong> student{{ students|length|pluralize }}
+              × <strong>{{ subjects|length }}</strong> subject{{ subjects|length|pluralize }}
+             
+              = <strong>{% widthratio students|length subjects|length 1 %}</strong> total marks
+            </small>
+          </div>
+          <div class="col-md-6 text-end">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllMarks()">
+              🗑️ Clear All
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="fillSampleData()">
+              📝 Fill Sample
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marks Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-sm">
+        <thead class="table-light sticky-top">
+          <tr>
+            <th class="align-middle" style="min-width: 180px;">
+              Student Name
+              <br><small class="text-muted">({{ students|length }})</small>
+            </th>
+            {% for subject in subjects %}
+              <th class="text-center align-middle" style="min-width: 120px;">
+                {{ subject.name }}
+                <br>
+                <small class="text-muted">
+                  <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none"
+                          onclick="fillColumn('{{ subject.id }}', prompt('Fill all marks for {{ subject.name }}:'))"
+                          title="Fill all marks for this subject">
+                    ⚡ Fill
+                  </button>
+                </small>
+              </th>
+            {% endfor %}
+            <th class="text-center align-middle">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+          <tr id="row_{{ student.id }}">
+            <td class="fw-bold align-middle">
+              {{ forloop.counter }}. {{ student.first_name }} {{ student.last_name }}
+            </td>
+            {% for subject in subjects %}
+              <td>
+                <input type="number" 
+                       class="form-control form-control-sm mark-input"
+                       name="score_{{ student.id }}_{{ subject.id }}"
+                       id="score_{{ student.id }}_{{ subject.id }}"
+                       value="{{ marks_dict|get_item:student.id|get_item:subject.id|default:'' }}"
+                       min="0" 
+                       max="100"
+                       step="0.5"
+                       placeholder="0-100"
+                       data-student="{{ student.id }}"
+                       data-subject="{{ subject.id }}"
+                       oninput="validateMark(this)" />
+              </td>
+            {% endfor %}
+            <td class="text-center align-middle">
+              <button type="button" class="btn btn-sm btn-outline-danger" 
+                      onclick="clearRow('{{ student.id }}')"
+                      title="Clear this student's marks">
+                🗑️
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ subjects|length|add:2 }}" class="text-center text-muted py-4">
+              No students found in this grade.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
+      <a href="{% url 'assessment:exam_results' %}" class="btn btn-outline-secondary">
+        ← Back to Results
+      </a>
+      <div>
+        <button type="button" class="btn btn-outline-primary" onclick="validateForm()">
+          🔍 Validate
+        </button>
+        <button type="submit" class="btn btn-success btn-lg">
+          💾 Save All Marks
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- JavaScript for Enhanced Functionality -->
+<script>
+// Validate individual mark input
+function validateMark(input) {
+  const value = parseFloat(input.value);
+  const min = parseFloat(input.min);
+  const max = parseFloat(input.max);
+  
+  // Remove any existing validation classes
+  input.classList.remove('is-invalid', 'is-valid');
+  
+  if (input.value === '') {
+    return; // Empty is okay
+  }
+  
+  if (isNaN(value) || value < min || value > max) {
+    input.classList.add('is-invalid');
+  } else {
+    input.classList.add('is-valid');
+  }
+}
+
+// Clear all marks in the form
+function clearAllMarks() {
+  if (confirm('Are you sure you want to clear ALL marks? This cannot be undone.')) {
+    document.querySelectorAll('.mark-input').forEach(input => {
+      input.value = '';
+      input.classList.remove('is-invalid', 'is-valid');
+    });
+  }
+}
+
+// Clear marks for a specific student row
+function clearRow(studentId) {
+  if (confirm('Clear all marks for this student?')) {
+    document.querySelectorAll(`input[data-student="${studentId}"]`).forEach(input => {
+      input.value = '';
+      input.classList.remove('is-invalid', 'is-valid');
+    });
+  }
+}
+
+// Fill all marks for a specific subject column
+function fillColumn(subjectId, value) {
+  if (value === null || value === '') return;
+  
+  const numValue = parseFloat(value);
+  if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+    alert('Please enter a valid mark between 0 and 100');
+    return;
+  }
+  
+  document.querySelectorAll(`input[data-subject="${subjectId}"]`).forEach(input => {
+    input.value = value;
+    validateMark(input);
+  });
+}
+
+// Fill sample data for testing
+function fillSampleData() {
+  if (!confirm('Fill all empty fields with random sample marks?')) return;
+  
+  document.querySelectorAll('.mark-input').forEach(input => {
+    if (input.value === '') {
+      const randomMark = Math.floor(Math.random() * 41) + 60; // 60-100
+      input.value = randomMark;
+      validateMark(input);
+    }
+  });
+}
+
+// Validate entire form before submission
+function validateForm() {
+  let invalidCount = 0;
+  let emptyCount = 0;
+  
+  document.querySelectorAll('.mark-input').forEach(input => {
+    if (input.value === '') {
+      emptyCount++;
+    } else if (input.classList.contains('is-invalid')) {
+      invalidCount++;
+    }
+  });
+  
+  let message = 'Validation Results:\n\n';
+  message += `✓ Valid marks: ${document.querySelectorAll('.is-valid').length}\n`;
+  message += `○ Empty fields: ${emptyCount}\n`;
+  message += `✗ Invalid marks: ${invalidCount}\n`;
+  
+  if (invalidCount > 0) {
+    message += '\n⚠️ Please fix invalid marks before saving.';
+  } else if (emptyCount > 0) {
+    message += '\nℹ️ Some fields are empty (this is okay).';
+  } else {
+    message += '\n✅ All fields are valid!';
+  }
+  
+  alert(message);
+}
+
+// Auto-save indicator
+let saveTimeout;
+document.getElementById('marksForm')?.addEventListener('input', function() {
+  clearTimeout(saveTimeout);
+  document.getElementById('saveStatus').textContent = '✏️ Unsaved changes';
+  
+  saveTimeout = setTimeout(() => {
+    document.getElementById('saveStatus').textContent = '💡 Remember to save';
+  }, 2000);
+});
+
+// Keyboard navigation enhancement
+document.querySelectorAll('.mark-input').forEach((input, index, inputs) => {
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const next = inputs[index + 1];
+      if (next) next.focus();
+    }
+  });
+});
+
+// Warn before leaving with unsaved changes
+let formChanged = false;
+document.getElementById('marksForm')?.addEventListener('change', () => {
+  formChanged = true;
+});
+
+document.getElementById('marksForm')?.addEventListener('submit', () => {
+  formChanged = false;
+});
+
+window.addEventListener('beforeunload', (e) => {
+  if (formChanged) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+
+<style>
+/* Sticky header for better scrolling */
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f8f9fa;
+}
+
+/* Input styling */
+.mark-input {
+  text-align: center;
+  font-weight: 500;
+}
+
+.mark-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Validation colors */
+.mark-input.is-valid {
+  border-color: #198754;
+}
+
+.mark-input.is-invalid {
+  border-color: #dc3545;
+}
+
+/* Hover effect for rows */
+tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .mark-input {
+    font-size: 0.875rem;
+  }
+}
+</style>
+
 {% endblock %}

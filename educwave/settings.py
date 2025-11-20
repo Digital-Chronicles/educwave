@@ -157,14 +157,15 @@ USE_TZ = True
 # Directory where static files will be collected
 # STATIC_ROOT = BASE_DIR / 'static'
 
-# #development
-# STATIC_URL = '/static/'
-# # STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]#development
-
-#production
-
+#development
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')#production
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+
+# #production
+
+# STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 

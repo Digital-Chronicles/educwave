@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Add Total for Exam Results</h1>
+        <p class="text-gray-600 mt-2">Fill in totals for students for the entire class</p>
+      </div>
+      <div class="mt-4 md:mt-0">
+        <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-800">
+          View Help Documentation
+        </a>
+      </div>
+    </div>
+
+    <!-- Selection Card -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+      <div class="p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-6">Select Examination Details</h2>
+
+        <form method="POST" id="subjectTotalsForm" class="space-y-6">
+          {% csrf_token %}
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Grade -->
+            <div>
+              <label for="grade_id" class="block text-sm font-medium text-gray-700 mb-2">Grade</label>
+              <select id="grade_id" name="grade_id"
+                class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="">Select Grade</option>
+                {% for g in grades %}
+                  <option value="{{ g.id }}" {% if request.GET.g_id == g.id|stringformat:"s" %}selected{% endif %}>
+                    {{ g.grade_name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Term -->
+            <div>
+              <label for="term_id" class="block text-sm font-medium text-gray-700 mb-2">Term</label>
+              <select id="term_id" name="term_id"
+                class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="">Select Term</option>
+                {% for term in terms %}
+                  <option value="{{ term.id }}" {% if request.GET.term_id == term.id|stringformat:"s" %}selected{% endif %}>
+                    {{ term }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Exam Type -->
+            <div>
+              <label for="exam_id" class="block text-sm font-medium text-gray-700 mb-2">Exam Type</label>
+              <select id="exam_id" name="exam_id"
+                class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="">Select Exam Type</option>
+                {% for exam in exam_types %}
+                  <option value="{{ exam.id }}" {% if request.GET.exam_id == exam.id|stringformat:"s" %}selected{% endif %}>
+                    {{ exam.get_exam_type_display }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button type="submit" onclick="loadEntryForm()"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 transition">
+              Enter Results
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+        <div class="text-sm text-gray-600">
+          Select grade, term, and exam type to enter results
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const termSelect = document.getElementById("term_id");
+  const examSelect = document.getElementById("exam_id");
+
+  termSelect.addEventListener("change", function() {
+    const termId = this.value;
+    examSelect.innerHTML = '<option value="">Loading exams...</option>';
+
+    if (!termId) {
+      examSelect.innerHTML = '<option value="">Select Exam Type</option>';
+      return;
+    }
+
+    fetch(`/assessment/exam-results/get-exams-by-term/?term_id=${termId}`)
+      .then(response => response.json())
+      .then(data => {
+        examSelect.innerHTML = '<option value="">Select Exam Type</option>';
+        if (data.exams && data.exams.length > 0) {
+          data.exams.forEach(exam => {
+            const opt = document.createElement("option");
+            opt.value = exam.id;
+            opt.textContent = exam.exam_type;
+            examSelect.appendChild(opt);
+          });
+        } else {
+          examSelect.innerHTML = '<option value="">No exams found for this term</option>';
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching exams:", error);
+        examSelect.innerHTML = '<option value="">Error loading exams</option>';
+      });
+  });
+});
+</script>
+
+{% endblock %}

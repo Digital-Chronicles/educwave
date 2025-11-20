@@ -25,6 +25,15 @@ from assessment.models import ExamResult
 from students.models import Student
 from assessment.models import Topics
 
+from django.views import View
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.urls import reverse
+from django.db import transaction
+
+from academic.models import ExamSession, TermExamSession, Subject, Grade,  StudentMarkSummary
+
+
 
 @role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
 def academics(request):
@@ -619,5 +628,4 @@ def student_term_report(request, student_id):
         "class_teacher_remark": "Keep up the good discipline and focus.",
         "head_teacher_remark": "Promoted to next class. Congratulations!",
     })
-
 

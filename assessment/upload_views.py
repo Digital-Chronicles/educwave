@@ -8,7 +8,7 @@ from django.views import View
 from django.db import transaction
 from academic.models import Grade, StudentMarkSummary, Subject, TermExamSession,ExamSession
 from students.models import Student
-from assessment.models import Question, ExamResult
+from assessment.models import Question, ExamResult, Topics
 
 
 class ExamResultsView(View):
@@ -316,67 +316,150 @@ def upload_marks(request):
             return redirect('assessment:exam_results')
     
     return redirect('assessment:exam_results')
-class SubjectTotalEntryView(View):
+
+
+
+
+##ENTERING TOTALS AT ONCE
+
+class SubjectTotalsSelectView(View):
+    """Select which grade, term, and exam to enter totals for."""
+
+    template_name = "assessment/subject_totals_select.html"
+
+    def get(self, request):
+        grades = Grade.objects.all().order_by("grade_name")
+        terms = TermExamSession.objects.all().order_by("-id")
+        exams = ExamSession.objects.all().order_by("-id")
+
+        return render(request, self.template_name, {
+            "grades": grades,
+            "terms": terms,
+            "exams": exams,
+        })
+
+    def post(self, request):
+        grade_id = request.POST.get("grade_id")
+        term_id = request.POST.get("term_id")
+        exam_id = request.POST.get("exam_id")
+
+        if not all([grade_id, term_id, exam_id]):
+            messages.error(request, "Please select all fields.")
+            return redirect("assessment:subject_totals_select")
+
+        # Redirect with parameters to totals entry page
+        return redirect(f"{reverse('assessment:subject_totals_entry')}?grade_id={grade_id}&term_id={term_id}&exam_id={exam_id}")
+
+def get_exams_by_term(request):
+    """Return all exams for a given term (used for dependent dropdown)."""
+    term_id = request.GET.get("term_id")
+    if not term_id:
+        return JsonResponse({"error": "Missing term_id"}, status=400)
+    
+    exams = ExamSession.objects.filter(term_id=term_id).values("id", "exam_type")
+    data = list(exams)
+    return JsonResponse({"exams": data})
+
+
+class SubjectTotalsEntryView(View):
+    """Allows teachers to enter subject total marks for each student in bulk"""
     template_name = "assessment/subject_totals_entry.html"
 
     def get(self, request):
         grade_id = request.GET.get("grade_id")
-        exam_id = request.GET.get("exam_id")
         term_id = request.GET.get("term_id")
+        exam_id = request.GET.get("exam_id")
 
-        if not all([grade_id, exam_id, term_id]):
-            messages.error(request, "Please select grade, term, and exam.")
-            return redirect("assessment:exam_results")
+        # --- Basic validation ---
+        if not all([grade_id, term_id, exam_id]):
+            messages.error(request, "Please select grade, term, and exam type.")
+            return redirect("assessment:subject_totals_select")
 
-        grade = Grade.objects.get(id=grade_id)
-        exam = ExamSession.objects.get(id=exam_id)
-        term = TermExamSession.objects.get(id=term_id)
+        try:
+            grade = Grade.objects.get(id=grade_id)
+            term = TermExamSession.objects.get(id=term_id)
+            exam_session = ExamSession.objects.get(id=exam_id)  # Use exam_session
+        except (Grade.DoesNotExist, TermExamSession.DoesNotExist, ExamSession.DoesNotExist):
+            messages.error(request, "Invalid grade, term, or exam type selection.")
+            return redirect("assessment:subject_totals_select")
+
+        # --- Fetch data ---
         students = Student.objects.filter(current_grade=grade).order_by("first_name")
-        subjects = Subject.objects.filter(grade=grade)
+        subjects = Subject.objects.filter(grade=grade).order_by("name")
+
+        # --- Existing marks (for editing) ---
+        # Use ExamResult instead of StudentMarkSummary
+        existing_marks = ExamResult.objects.filter(
+            grade=grade,
+            exam_session=exam_session,
+            subject__in=subjects,
+            question__isnull=True  # Only get subject totals (no question associated)
+        )
+        marks_dict = {(m.student_id, m.subject_id): m.score for m in existing_marks}
 
         context = {
             "grade": grade,
-            "exam": exam,
             "term": term,
+            "exam": exam_session,  # Use exam_session
             "students": students,
             "subjects": subjects,
+            "marks_dict": marks_dict,
         }
         return render(request, self.template_name, context)
 
     @transaction.atomic
     def post(self, request):
         grade_id = request.POST.get("grade_id")
-        exam_id = request.POST.get("exam_id")
         term_id = request.POST.get("term_id")
+        exam_id = request.POST.get("exam_id")
 
-        grade = Grade.objects.get(id=grade_id)
-        exam = ExamSession.objects.get(id=exam_id)
-        term = TermExamSession.objects.get(id=term_id)
+        try:
+            grade = Grade.objects.get(id=grade_id)
+            exam_session = ExamSession.objects.get(id=exam_id)  # Get exam_session directly
+        except (Grade.DoesNotExist, ExamSession.DoesNotExist):
+            messages.error(request, "Invalid grade or exam type.")
+            return redirect("assessment:subject_totals_select")
 
         students = Student.objects.filter(current_grade=grade)
         subjects = Subject.objects.filter(grade=grade)
 
+        saved_count = 0
+
         for student in students:
             for subject in subjects:
-                field_name = f"total_{student.id}_{subject.id}"
-                score = request.POST.get(field_name)
-                if score:
-                    try:
-                        score = int(score)
-                        StudentMarkSummary.objects.update_or_create(
-                            student=student,
-                            term_exam=term,
-                            exam_type=exam,
-                            subject=subject,
-                            defaults={
-                                "grade": grade,
-                                "total_score": score,
-                                "max_possible": 100,
-                                "percentage": score,
-                            }
-                        )
-                    except ValueError:
-                        messages.error(request, f"Invalid score for {student} - {subject}")
+                field_key = f"score_{student.id}_{subject.id}"
+                score_val = request.POST.get(field_key)
 
-        messages.success(request, "Subject totals saved successfully!")
-        return redirect(f"{reverse('assessment:subject_total_entry')}?grade_id={grade_id}&exam_id={exam_id}&term_id={term_id}")
+                if not score_val:
+                    continue  # skip empty cells
+
+                try:
+                    score = int(score_val)
+                    if score < 0 or score > 100:
+                        messages.warning(request, f"Invalid score for {student} in {subject}. Skipped.")
+                        continue
+
+                    percentage = round((score / 100) * 100, 2)
+
+                    # For subject totals, we set question and topic to None
+                    ExamResult.objects.update_or_create(
+                        student=student,
+                        exam_session=exam_session,
+                        subject=subject,
+                        question=None,  # This makes it a subject total record
+                        defaults={
+                            "grade": grade,
+                            "topic": None,  # No topic for subject totals
+                            "score": score,  # Use the score field
+                            "total_score": score,  # Also store in total_score if you want
+                            "max_possible": 100,
+                            "percentage": percentage,
+                        },
+                    )
+                    saved_count += 1
+
+                except ValueError:
+                    messages.warning(request, f"Invalid score format for {student} in {subject}. Skipped.")
+
+        messages.success(request, f"✅ Successfully saved {saved_count} marks.")
+        return redirect(f"{reverse('assessment:subject_totals_entry')}?grade_id={grade_id}&term_id={term_id}&exam_id={exam_id}")

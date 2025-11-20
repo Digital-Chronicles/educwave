@@ -96,6 +96,7 @@ class StudentMarkSummaryAdmin(admin.ModelAdmin):
         'class_average',
     )
     list_filter = (
+        "student",
         'term_exam__year', 
         'term_exam__term_name', 
         'exam_type__exam_type',

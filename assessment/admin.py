@@ -22,5 +22,5 @@ class Question(admin.ModelAdmin):
 class ExamResult(admin.ModelAdmin):
     list_display = ("student", "grade","exam_session" ,"subject","topic", "question", "score")
     search_fields = ("student", "subject", "question")
-    list_filter = ("question", "grade","exam_session")
+    list_filter = ("student","question", "grade","exam_session")
     

@@ -106,14 +106,6 @@
                         <p class="relative z-10 text-sm text-gray-500 text-center">View Report Cards</p>
                     </a>
                 </li>
-                <li>
-                            <a href="{% url 'assessment:subject_total_entry' %}?grade_id={{ grade.id }}&exam_id={{ exam.id }}&term_id={{ term.id }}"
-   class="btn btn-primary">
-   Enter Subject Totals
-</a>
-
-                    
-                </li>
 
             </ul>
         </nav>
@@ -301,11 +293,13 @@
                                 </p>
                             </div>
                             <div class="ml-4 flex-shrink-0">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full {{ result.score|score_class:result.question.max_score }}">
-                                    {% widthratio result.score result.question.max_score 100 %}%
-                                </span>
+                                {% with max_score=result.question.max_score|default:result.max_possible %}
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full {{ result.score|score_class:max_score }}">
+                                        {% widthratio result.score max_score 100 %}%
+                                    </span>
+                                {% endwith %}
                             </div>
-                        </div>
+                                                    </div>
                         {% endfor %}
                     {% else %}
                         <div class="text-center py-8">
