@@ -491,6 +491,148 @@ class TermExamDetailView(LoginRequiredMixin, DetailView):
                 
         return distribution
    
+# @login_required
+# def student_term_report(request, student_id):
+#     # --- School Info ---
+#     info = GeneralInformation.objects.first()
+#     schoolname = info.school_name if info else ''
+#     schoolbadge = info.school_badge if info else ''
+#     schoolemail = info.email if info else ''
+#     schoolcontact = info.contact_number if info else ''
+#     schoolbox = info.box_no if info else ''
+#     school_location = info.location if info else ''
+
+#     # --- Student ---
+#     student = get_object_or_404(Student, id=student_id)
+
+#     # --- Fetch all exam results for this student ---
+#     results = (
+#         ExamResult.objects.filter(student=student)
+#         .select_related('question', 'subject', 'grade', 'exam_session', 'exam_session__term')
+#         .order_by('exam_session__term__year', 'exam_session__term__term_name', 'subject__name')
+#     )
+
+#     # --- Organize results by term and exam type ---
+#     report_data = {}
+
+#     for res in results:
+#         if not res.exam_session or not res.subject:
+#             continue
+
+#         term = res.exam_session.term
+#         exam_type = res.exam_session.exam_type  # BOT, MOT, EOT
+#         subject = res.subject
+
+#         term_key = f"{term.get_term_name_display()} {term.year}"
+
+#         # Initialize term record if missing
+#         if term_key not in report_data:
+#             report_data[term_key] = {
+#                 'BOT': {},
+#                 'MOT': {},
+#                 'EOT': {},
+#                 'BOT_average': 0,
+#                 'MOT_average': 0,
+#                 'EOT_average': 0,
+#             }
+
+#         # Initialize subject in that exam type
+#         if subject.name not in report_data[term_key][exam_type]:
+#             report_data[term_key][exam_type][subject.name] = {
+#                 'subject': subject.name,
+#                 'total_score': 0,
+#                 'max_possible': 0,
+#                 'teacher_initials': getattr(subject.teacher, 'initials', '') if hasattr(subject, 'teacher') else ''
+#             }
+
+#         # --- Add up all question scores for that subject & exam type ---
+#         entry = report_data[term_key][exam_type][subject.name]
+#         entry['total_score'] += res.score
+#         entry['max_possible'] += res.question.max_score if res.question else 0
+
+#     # --- Convert subjects dicts into lists and calculate percentages ---
+#     for term_key, data in report_data.items():
+#         for ex_type in ['BOT', 'MOT', 'EOT']:
+#             subjects_dict = data[ex_type]
+#             subject_list = []
+#             for sub, val in subjects_dict.items():
+#                 max_possible = val['max_possible']
+#                 percentage = (val['total_score'] / max_possible * 100) if max_possible else 0
+#                 val['percentage'] = round(percentage, 2)
+#                 val['auto_remark'] = (
+#                     "Excellent work" if percentage >= 75 else
+#                     "Fair — keep improving" if percentage >= 50 else
+#                     "Needs serious effort"
+#                 )
+#                 subject_list.append(val)
+
+#             # Replace dict with list for template use
+#             data[ex_type] = subject_list
+
+#             # --- Calculate average ---
+#             if subject_list:
+#                 avg = sum(s['percentage'] for s in subject_list) / len(subject_list)
+#                 data[f"{ex_type}_average"] = round(avg, 2)
+
+#     # --- Determine next term start date ---
+#     all_exam_sessions = [res.exam_session for res in results if res.exam_session]
+#     next_term_date = None
+#     if all_exam_sessions:
+#         last_exam = max(
+#             all_exam_sessions,
+#             key=lambda x: (x.term.year, ['TERM_1', 'TERM_2', 'TERM_3'].index(x.term.term_name))
+#         )
+#         term_order = ['TERM_1', 'TERM_2', 'TERM_3']
+#         current_index = term_order.index(last_exam.term.term_name)
+#         next_term_name = None
+#         next_year = last_exam.term.year
+
+#         if current_index + 1 < len(term_order):
+#             next_term_name = term_order[current_index + 1]
+#         else:
+#             next_term_name = 'TERM_1'
+#             next_year += 1
+
+#         next_session = ExamSession.objects.filter(
+#             term__year=next_year,
+#             term__term_name=next_term_name,
+#             exam_type='BOT'
+#         ).first()
+
+#         if next_session:
+#             next_term_date = next_session.start_date
+
+#     # --- Grading system ---
+#     grading_system = [
+#         {"grade": "A", "range": "80–100", "comment": "Excellent"},
+#         {"grade": "B", "range": "70–79", "comment": "Very Good"},
+#         {"grade": "C", "range": "60–69", "comment": "Good"},
+#         {"grade": "D", "range": "50–59", "comment": "Fair"},
+#         {"grade": "E", "range": "0–49", "comment": "Poor"},
+#     ]
+
+#     exam_types = ["BOT", "MOT", "EOT"]
+
+#     return render(request, "reports/student_term_report.html", {
+#         "report_data": report_data,
+#         "next_term_date": next_term_date,
+#         "exam_types": exam_types,
+#         "schoolname": schoolname,
+#         "schoolbadge": schoolbadge,
+#         "schoolemail": schoolemail,
+#         "schoolcontact": schoolcontact,
+#         "schoolbox": schoolbox,
+#         "school_location": school_location,
+#         "student": student,
+#         "grading_system": grading_system,
+#         "class_teacher_remark": "Keep up the good discipline and focus.",
+#         "head_teacher_remark": "Promoted to next class. Congratulations!",
+#     })
+
+
+
+
+
 @login_required
 def student_term_report(request, student_id):
     # --- School Info ---
@@ -534,6 +676,12 @@ def student_term_report(request, student_id):
                 'BOT_average': 0,
                 'MOT_average': 0,
                 'EOT_average': 0,
+                'BOT_aggregate': 0,
+                'MOT_aggregate': 0,
+                'EOT_aggregate': 0,
+                'BOT_division': '',
+                'MOT_division': '',
+                'EOT_division': '',
             }
 
         # Initialize subject in that exam type
@@ -542,37 +690,78 @@ def student_term_report(request, student_id):
                 'subject': subject.name,
                 'total_score': 0,
                 'max_possible': 0,
+                'percentage': 0,
+                'points': 0,
                 'teacher_initials': getattr(subject.teacher, 'initials', '') if hasattr(subject, 'teacher') else ''
             }
 
-        # --- Add up all question scores for that subject & exam type ---
+        # --- Handle both subject totals and individual questions ---
         entry = report_data[term_key][exam_type][subject.name]
-        entry['total_score'] += res.score
-        entry['max_possible'] += res.question.max_score if res.question else 0
+        
+        # If this is a SUBJECT TOTAL, use it directly
+        if res.is_subject_total:
+            entry['total_score'] = res.total_score or res.score
+            entry['max_possible'] = res.max_possible or 100
+            entry['percentage'] = res.percentage or ((res.total_score or res.score) / (res.max_possible or 100) * 100)
+        
+        # If this is an INDIVIDUAL QUESTION, accumulate scores
+        else:
+            entry['total_score'] += res.score
+            entry['max_possible'] += res.question.max_score if res.question else 0
+            if entry['max_possible'] > 0:
+                entry['percentage'] = (entry['total_score'] / entry['max_possible']) * 100
 
-    # --- Convert subjects dicts into lists and calculate percentages ---
+    # --- Calculate points, aggregates, and divisions ---
     for term_key, data in report_data.items():
         for ex_type in ['BOT', 'MOT', 'EOT']:
             subjects_dict = data[ex_type]
             subject_list = []
+            total_points = 0
+            subject_count = 0
+
             for sub, val in subjects_dict.items():
-                max_possible = val['max_possible']
-                percentage = (val['total_score'] / max_possible * 100) if max_possible else 0
-                val['percentage'] = round(percentage, 2)
+                # Ensure percentage is calculated
+                if val['percentage'] == 0 and val['max_possible'] > 0:
+                    val['percentage'] = (val['total_score'] / val['max_possible']) * 100
+                
+                percentage = val['percentage']
+                
+                # Calculate points based on Uganda primary system
+                points = calculate_points_uganda(percentage)
+                val['points'] = points
+                
+                # Add to aggregate calculation (only for subjects with valid scores)
+                if points > 0:
+                    total_points += points
+                    subject_count += 1
+                
+                # Auto remark based on percentage
                 val['auto_remark'] = (
                     "Excellent work" if percentage >= 75 else
                     "Fair — keep improving" if percentage >= 50 else
                     "Needs serious effort"
                 )
+                
                 subject_list.append(val)
 
             # Replace dict with list for template use
             data[ex_type] = subject_list
 
-            # --- Calculate average ---
+            # --- Calculate average percentage ---
             if subject_list:
-                avg = sum(s['percentage'] for s in subject_list) / len(subject_list)
+                avg = sum(float(s['percentage']) for s in subject_list) / len(subject_list)
                 data[f"{ex_type}_average"] = round(avg, 2)
+            else:
+                data[f"{ex_type}_average"] = 0
+
+            # --- Calculate aggregate and division ---
+            if subject_count > 0:
+                aggregate = total_points
+                data[f"{ex_type}_aggregate"] = aggregate
+                data[f"{ex_type}_division"] = calculate_division_uganda(aggregate)
+            else:
+                data[f"{ex_type}_aggregate"] = 0
+                data[f"{ex_type}_division"] = "Ungraded"
 
     # --- Determine next term start date ---
     all_exam_sessions = [res.exam_session for res in results if res.exam_session]
@@ -602,13 +791,13 @@ def student_term_report(request, student_id):
         if next_session:
             next_term_date = next_session.start_date
 
-    # --- Grading system ---
-    grading_system = [
-        {"grade": "A", "range": "80–100", "comment": "Excellent"},
-        {"grade": "B", "range": "70–79", "comment": "Very Good"},
-        {"grade": "C", "range": "60–69", "comment": "Good"},
-        {"grade": "D", "range": "50–59", "comment": "Fair"},
-        {"grade": "E", "range": "0–49", "comment": "Poor"},
+    # --- Division system ---
+    division_system = [
+        {"range": "4 – 12", "division": "Division One", "performance": "Excellent"},
+        {"range": "13 – 23", "division": "Division Two", "performance": "Very Good"},
+        {"range": "24 – 29", "division": "Division Three", "performance": "Good"},
+        {"range": "30 – 34", "division": "Division Four", "performance": "Fair"},
+        {"range": "35 and above", "division": "Ungraded / Fail", "performance": "Poor"},
     ]
 
     exam_types = ["BOT", "MOT", "EOT"]
@@ -624,8 +813,41 @@ def student_term_report(request, student_id):
         "schoolbox": schoolbox,
         "school_location": school_location,
         "student": student,
-        "grading_system": grading_system,
+        "division_system": division_system,
         "class_teacher_remark": "Keep up the good discipline and focus.",
         "head_teacher_remark": "Promoted to next class. Congratulations!",
     })
 
+def calculate_points_uganda(percentage):
+    """Calculate points for Uganda primary system"""
+    if percentage >= 90:
+        return 1
+    elif percentage >= 80:
+        return 2
+    elif percentage >= 70:
+        return 3
+    elif percentage >= 65:
+        return 4
+    elif percentage >= 60:
+        return 5
+    elif percentage >= 50:
+        return 6
+    elif percentage >= 45:
+        return 7
+    elif percentage >= 35:
+        return 8
+    else:
+        return 9
+
+def calculate_division_uganda(aggregate):
+    """Calculate division based on aggregate points for Uganda system"""
+    if 4 <= aggregate <= 12:
+        return "Division One"
+    elif 13 <= aggregate <= 23:
+        return "Division Two"
+    elif 24 <= aggregate <= 29:
+        return "Division Three"
+    elif 30 <= aggregate <= 34:
+        return "Division Four"
+    else:
+        return "Ungraded / Fail"

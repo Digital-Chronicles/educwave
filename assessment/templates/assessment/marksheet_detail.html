@@ -33,6 +33,8 @@
         <th class="border px-4 py-2 text-center">Total</th>
         <th class="border px-4 py-2 text-center">Average</th>
         <th class="border px-4 py-2 text-center">Position</th>
+        <th class="border px-4 py-2 text-center">Report</th>
+        {% comment %} /academics/reports/student-term-report/{{student.id}}/ {% endcomment %}
       </tr>
     </thead>
     <tbody>
@@ -45,6 +47,8 @@
         <td class="border px-4 py-2 text-center font-bold">{{ row.total }}</td>
         <td class="border px-4 py-2 text-center">{{ row.average }}</td>
         <td class="border px-4 py-2 text-center font-semibold">{{ row.position }}</td>
+        
+        <td class="border px-4 py-2 text-center font-semibold"><a href="/academics/reports/student-term-report/{{row.student.id}}/">report</a></td>
       </tr>
       {% endfor %}
     </tbody>
