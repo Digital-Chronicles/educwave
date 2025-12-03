@@ -32,7 +32,7 @@ def teacher_dashboard(request):
         teacher = request.user.teacher_profile
     except Teacher.DoesNotExist:
         # If user is not a teacher, redirect to appropriate dashboard
-        return redirect('/')
+        return redirect('teachers:teachers')
     
     # Auto-detect current context
     current_term = get_current_term()
