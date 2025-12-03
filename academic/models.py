@@ -10,7 +10,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 import datetime
 from assessment.models import Topics
-from teachers.models import Teacher
+
 
 #Grade
 class Grade(models.Model):
@@ -19,6 +19,9 @@ class Grade(models.Model):
         Teacher, on_delete=models.SET_NULL, null=True, related_name="grades")
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
+        
+    # ADD THIS FIELD - For filtering active classes
+    is_active = models.BooleanField(default=True, help_text="Whether this class is currently active")
 
     class Meta:
         db_table = "class"
@@ -59,7 +62,8 @@ class Subject(models.Model):
         Teacher, on_delete=models.SET_NULL,
         null=True, blank=True, related_name="subjects"
     )
-
+    # ADD THIS FIELD - For filtering active subjects
+    is_active = models.BooleanField(default=True, help_text="Whether this subject is currently being taught")
     class Meta:
         db_table = "subject"
         db_table_comment = "This includes Subject data"
@@ -153,6 +157,9 @@ class TermExamSession(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+        # ADD THIS FIELD - Crucial for auto-detection
+    is_current = models.BooleanField(default=False, help_text="Mark this as the current active term")
+
     class Meta:
         db_table = "term_exam_session"
         ordering = ["-year", "term_name"]
@@ -167,7 +174,26 @@ class TermExamSession(models.Model):
             raise ValidationError({
                 'start_date': "Start date must be before end date.",
                 'end_date': "End date must be after start date."
-            })
+            })        
+        # Ensure only one current term per year
+        if self.is_current:
+            existing_current = TermExamSession.objects.filter(
+                is_current=True,
+                year=self.year
+            ).exclude(pk=self.pk)
+            if existing_current.exists():
+                raise ValidationError({
+                    'is_current': "There can only be one current term per academic year."
+                })
+    def save(self, *args, **kwargs):
+        # If this is set as current, unset others
+        if self.is_current:
+            TermExamSession.objects.filter(
+                is_current=True,
+                year=self.year
+            ).update(is_current=False)
+        super().save(*args, **kwargs)        
+        
 
     def __str__(self):
         return f"{self.get_term_name_display()} - {self.year} "

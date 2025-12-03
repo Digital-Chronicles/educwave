@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pbt=ihm7-w+*moo+=qc9t$3n*nub!ywnhump%8gy^4#i=g$&xx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -162,7 +162,7 @@ USE_TZ = True
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
-# #production
+#production
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

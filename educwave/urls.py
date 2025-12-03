@@ -18,19 +18,23 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('management.urls')),
     path('students/', include('students.urls')),
-    path('teachers/', include('teachers.urls')),
+    
+    path('teachers/', include('teachers.urls', namespace='teachers')),
     path('academics/', include('academic.urls')),
     path('finance/', include('finance.urls')),
     path('assessment/', include('assessment.urls')),
     # CKeditor
     path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('select2/', include('django_select2.urls')),
+    path('select2/', include('django_select2.urls')), 
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

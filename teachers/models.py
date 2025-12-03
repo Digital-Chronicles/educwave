@@ -1,8 +1,13 @@
 from django.db import models
+
 from accounts.models import CustomUser
+
 from .districts import Districts
 from django.conf import settings
 from django.core.validators import RegexValidator
+
+
+
 
 # Create your models here.
 class Teacher(models.Model):
@@ -11,7 +16,7 @@ class Teacher(models.Model):
         ("female", "female"),
     )
 
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="teacher")
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="teacher_profile")
     initials = models.CharField(blank=True, null=True, max_length=5, default="NJ")
     registration_id = models.CharField(max_length=100, unique=True)
     first_name = models.CharField(max_length=150)
@@ -30,8 +35,28 @@ class Teacher(models.Model):
     profile_picture = models.ImageField(upload_to="teacher_profile_pictures", null=True, blank=True)
     school = models.ForeignKey('management.GeneralInformation', on_delete=models.CASCADE, related_name="teachers")
     registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="registered_teachers")
+
+        # ADD THIS FIELD - For teacher status
+    is_active = models.BooleanField(default=True, help_text="Whether this teacher is currently active")
     class Meta:
         db_table = "teachers"
+
+        # ADD THESE HELPER METHODS
+    def get_assigned_classes(self):
+        """Get all classes assigned to this teacher"""
+        from academic.models import Grade 
+        return Grade.objects.filter(class_teacher=self, is_active=True)
+    
+    def get_assigned_subjects(self):
+        """Get all subjects assigned to this teacher"""
+        from academic.models import Subject 
+        return Subject.objects.filter(teacher=self, is_active=True)
+    
+    def get_student_count(self):
+        """Get total number of students in assigned classes"""
+        classes = self.get_assigned_classes()
+        from students.models import Student 
+        return Student.objects.filter(current_grade__in=classes).count()
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

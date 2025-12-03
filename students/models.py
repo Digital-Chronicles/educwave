@@ -80,6 +80,14 @@ class Student(models.Model):
         db_table_comment = "This includes Students data"
         ordering = ["first_name"]
 
+        # ADD THIS HELPER METHOD
+    def get_current_class_teacher(self):
+        """Get the class teacher for student's current grade"""
+        if self.current_grade and self.current_grade.class_teacher:
+            return self.current_grade.class_teacher
+        return None
+        
+
     def get_full_name(self):
         """Return the full name of the student"""
         return f"{self.first_name} {self.last_name}".strip()

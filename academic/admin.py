@@ -9,7 +9,7 @@ mark_as_updated.short_description = "Mark selected as updated"
 # Grade Model
 @admin.register(Grade)
 class GradeAdmin(admin.ModelAdmin):
-    list_display = ('grade_name', 'class_teacher', 'created', 'updated')
+    list_display = ('grade_name',  'is_active','class_teacher', 'created', 'updated')
     search_fields = ('grade_name', 'class_teacher__name')
     list_filter = ('grade_name', 'class_teacher')
     ordering = ['grade_name']
@@ -19,7 +19,7 @@ class GradeAdmin(admin.ModelAdmin):
 # Subject Model
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'code', 'curriculum','grade', 'created', )
+    list_display = ('name', 'is_active','code', 'curriculum','grade', 'created', )
     search_fields = ('name', 'description', 'curriculum')
     list_filter = ('name', 'curriculum', 'grade')
     ordering = ['name']
@@ -64,7 +64,7 @@ class NotesAdmin(admin.ModelAdmin):
 
 @admin.register(TermExamSession)
 class TermsAdmin(admin.ModelAdmin):
-    list_display = ( 'term_name', 'start_date', 'end_date', 'created_by', 'created', 'updated')
+    list_display = ( 'term_name', 'is_current','start_date', 'end_date', 'created_by', 'created', 'updated')
     list_filter = ('start_date', 'end_date', 'created_by')
     search_fields = ('term_name', 'created_by__name')
     date_hierarchy = 'start_date'
