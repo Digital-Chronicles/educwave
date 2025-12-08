@@ -1,222 +1,249 @@
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Sum
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
-from django.urls import reverse_lazy
+# finance/views.py
+from decimal import Decimal
 from django.contrib import messages
-from datetime import timedelta
-from students.models import Student
-from finance.models import SchoolFees, StudentTuitionDescription, FeeTransaction
+from django.db.models import F, Sum
+from django.db.models.functions import Coalesce
+from django.shortcuts import get_object_or_404, redirect, render
+from .models import StudentTuitionDescription, FeeTransaction, SchoolFees
 from academic.models import Grade
-from .forms import TuitionDescriptionForm, TransactionForm, SchoolFeesForm
+from students.models import Student
+from .forms import StudentTuitionDescriptionForm, FeeTransactionForm
+from django.db.models import Q
+from django.shortcuts import render
+from students.models import Student
 
 
-@login_required
 def finance_dashboard(request):
-    # Student statistics
-    total_students = Student.objects.count()
-    active_students = Student.objects.filter(current_status='active').count()
-    graduated_students = Student.objects.filter(current_status='graduated').count()
-    
-    # Fee statistics
-    total_fees_due = StudentTuitionDescription.objects.aggregate(
-        total=Sum('total_fee')
-    )['total'] or 0
-    
-    total_paid = FeeTransaction.objects.filter(status='paid').aggregate(
-        total=Sum('amount_paid')
-    )['total'] or 0
-    
-    outstanding_balance = total_fees_due - total_paid
-    
-    # Recent transactions (last 30 days)
-    recent_transactions = FeeTransaction.objects.filter(
-        created__gte=timezone.now() - timedelta(days=30)
-    ).order_by('-created')[:10]
-    
-    # Payment status breakdown
-    payment_status = {
-        'paid': FeeTransaction.objects.filter(status='paid').count(),
-        'pending': FeeTransaction.objects.filter(status='pending').count(),
-        'overdue': FeeTransaction.objects.filter(status='overdue').count(),
-    }
-    
-    # Grade-wise fee summary
-    grade_summary = []
-    grades = Grade.objects.all()
-    for grade in grades:
-        try:
-            fee_structure = SchoolFees.objects.get(grade=grade)
-            students_in_grade = StudentTuitionDescription.objects.filter(
-                tuition__grade=grade
-            ).count()
-            
-            grade_summary.append({
-                'grade': grade.grade_name,
-                'tuition_fee': fee_structure.tuitionfee,
-                'students_count': students_in_grade,
-                'total_expected': fee_structure.tuitionfee * students_in_grade,
-            })
-        except SchoolFees.DoesNotExist:
-            continue
-    
-    # Upcoming due payments (next 7 days)
-    upcoming_due = FeeTransaction.objects.filter(
-        due_date__gte=timezone.now().date(),
-        due_date__lte=timezone.now().date() + timedelta(days=7),
-        status__in=['pending', 'overdue']
-    ).order_by('due_date')
-    
+    """
+    Simple dashboard:
+    - Total expected fees (all StudentTuitionDescription.total_fee)
+    - Total collected (all FeeTransaction.amount_paid)
+    - Total outstanding (expected - collected)
+    - Optional per-grade summary
+    """
+    # Total collected
+    total_collected = (
+        FeeTransaction.objects.aggregate(
+            total=Coalesce(Sum('amount_paid'), Decimal('0.00'))
+        )['total']
+    )
+
+    # Total expected from all students with tuition description
+    total_expected = (
+        StudentTuitionDescription.objects.aggregate(
+            total=Coalesce(Sum('total_fee'), Decimal('0.00'))
+        )['total']
+    )
+
+    total_outstanding = total_expected - total_collected
+
+    # Per-grade summary (optional)
+    grade_summaries = (
+        Grade.objects
+        .annotate(
+            expected=Coalesce(
+                Sum('school_fees__student_tuition_descriptions__total_fee'),
+                Decimal('0.00')
+            ),
+            collected=Coalesce(
+                Sum(
+                    'school_fees__student_tuition_descriptions__fee_transactions__amount_paid'
+                ),
+                Decimal('0.00')
+            ),
+        )
+        .annotate(
+            outstanding=F('expected') - F('collected')
+        )
+        .order_by('grade_name')
+    )
+
     context = {
-        'total_students': total_students,
-        'active_students': active_students,
-        'graduated_students': graduated_students,
-        'total_fees_due': total_fees_due,
-        'total_paid': total_paid,
-        'outstanding_balance': outstanding_balance,
-        'recent_transactions': recent_transactions,
-        'payment_status': payment_status,
-        'grade_summary': grade_summary,
-        'upcoming_due': upcoming_due,
+        'total_expected': total_expected,
+        'total_collected': total_collected,
+        'total_outstanding': total_outstanding,
+        'grade_summaries': grade_summaries,
     }
-    
-    return render(request, "finance_dashboard.html", context)
+    return render(request, 'finance_dashboard.html', context)
 
 
-# Tuition Description Views
-class TuitionDescriptionListView(ListView):
-    model = StudentTuitionDescription
-    template_name = 'tuition_description_list.html'
-    context_object_name = 'tuition_descriptions'
-    paginate_by = 20
+def finance_student_list(request):
+    """
+    List of students for the finance department.
+    With optional search by first or last name.
+    """
+    # use current_grade instead of grade
+    qs = (
+        Student.objects
+        .select_related('current_grade')
+        .order_by('current_grade__grade_name', 'first_name', 'last_name')
+    )
 
-    def get_queryset(self):
-        queryset = super().get_queryset().select_related('student', 'tuition__grade')
-        if 'student_id' in self.request.GET:
-            queryset = queryset.filter(student__id=self.request.GET['student_id'])
-        return queryset
+    search = request.GET.get('q', '').strip()
+    if search:
+        qs = qs.filter(
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search)
+        )
 
-class TuitionDescriptionCreateView(CreateView):
-    model = StudentTuitionDescription
-    form_class = TuitionDescriptionForm
-    template_name = 'tuition_description_form.html'
-    success_url = reverse_lazy('tuition_description_list')
+    context = {
+        'students': qs,
+        'search': search,
+    }
+    return render(request, 'finance_student_list.html', context)
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Tuition description added successfully!')
-        return super().form_valid(form)
 
-    def get_initial(self):
-        initial = super().get_initial()
-        if 'student_id' in self.request.GET:
-            student = get_object_or_404(Student, id=self.request.GET['student_id'])
-            initial['student'] = student
-        return initial
+def student_finance_detail(request, student_id):
+    """
+    Shows:
+    - Student info
+    - Tuition description (if any)
+    - Total fee, total paid, balance
+    - List of payments
+    - Buttons to edit tuition / record payment
+    """
+    student = get_object_or_404(Student, pk=student_id)
 
-class TuitionDescriptionUpdateView(UpdateView):
-    model = StudentTuitionDescription
-    form_class = TuitionDescriptionForm
-    template_name = 'tuition_description_form.html'
-    success_url = reverse_lazy('tuition_description_list')
+    tuition_desc = (
+        StudentTuitionDescription.objects
+        .select_related('tuition__grade')
+        .filter(student=student)
+        .first()
+    )
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Tuition description updated successfully!')
-        return super().form_valid(form)
+    total_fee = Decimal('0.00')
+    total_paid = Decimal('0.00')
+    balance = Decimal('0.00')
+    transactions = []
 
-class TuitionDescriptionDeleteView(DeleteView):
-    model = StudentTuitionDescription
-    template_name = 'tuition_description_confirm_delete.html'
-    success_url = reverse_lazy('tuition_description_list')
+    if tuition_desc:
+        total_fee = tuition_desc.total_fee
+        total_paid = (
+            tuition_desc.fee_transactions.aggregate(
+                total=Coalesce(Sum('amount_paid'), Decimal('0.00'))
+            )['total']
+        )
+        balance = total_fee - total_paid
+        transactions = tuition_desc.fee_transactions.order_by('-created')
 
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Tuition description deleted successfully!')
-        return super().delete(request, *args, **kwargs)
+    context = {
+        'student': student,
+        'tuition_desc': tuition_desc,
+        'total_fee': total_fee,
+        'total_paid': total_paid,
+        'balance': balance,
+        'transactions': transactions,
+    }
+    return render(request, 'finance_student_detail.html', context)
 
-# Transaction Views
-class TransactionListView(ListView):
-    model = FeeTransaction
-    template_name = 'transaction_list.html'
-    context_object_name = 'transactions'
-    paginate_by = 20
 
-    def get_queryset(self):
-        queryset = super().get_queryset().select_related('student__student', 'student__tuition__grade')
-        if 'student_id' in self.request.GET:
-            queryset = queryset.filter(student__student__id=self.request.GET['student_id'])
-        return queryset.order_by('-created')
+# finance/views.py
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['total_paid'] = self.get_queryset().filter(status='paid').aggregate(total=Sum('amount_paid'))['total'] or 0
-        return context
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib import messages
 
-class TransactionCreateView(CreateView):
-    model = FeeTransaction
-    form_class = TransactionForm
-    template_name = 'transaction_form.html'
-    success_url = reverse_lazy('transaction_list')
+from students.models import Student
+from .models import SchoolFees, StudentTuitionDescription
+from .forms import StudentTuitionDescriptionForm
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Transaction recorded successfully!')
-        return super().form_valid(form)
 
-    def get_initial(self):
-        initial = super().get_initial()
-        if 'student_id' in self.request.GET:
-            student = get_object_or_404(StudentTuitionDescription, student__id=self.request.GET['student_id'])
-            initial['student'] = student
-            initial['amount_due'] = student.total_fee
-        return initial
+def register_student_tuition_description(request, student_id):
+    """
+    Create or update StudentTuitionDescription for this student.
+    Tuition is auto-linked from SchoolFees based on student's current_grade.
+    """
+    student = get_object_or_404(Student, pk=student_id)
 
-class TransactionUpdateView(UpdateView):
-    model = FeeTransaction
-    form_class = TransactionForm
-    template_name = 'transaction_form.html'
-    success_url = reverse_lazy('transaction_list')
+    # ✅ make sure student has a current_grade
+    if not student.current_grade:
+        messages.error(
+            request,
+            "This student has no current grade set. "
+            "Please update the student's current grade first."
+        )
+        return redirect('finance_student_detail', student_id=student.id)
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Transaction updated successfully!')
-        return super().form_valid(form)
+    # ✅ get SchoolFees for this grade (use current_grade, not grade)
+    try:
+        school_fees = SchoolFees.objects.get(grade=student.current_grade)
+    except SchoolFees.DoesNotExist:
+        messages.error(
+            request,
+            f"No SchoolFees configured for grade {student.current_grade}. "
+            "Please create SchoolFees for this grade first."
+        )
+        return redirect('finance_student_detail', student_id=student.id)
 
-class TransactionDeleteView(DeleteView):
-    model = FeeTransaction
-    template_name = 'transaction_confirm_delete.html'
-    success_url = reverse_lazy('transaction_list')
+    # existing tuition description (if any)
+    tuition_desc = StudentTuitionDescription.objects.filter(student=student).first()
 
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, 'Transaction deleted successfully!')
-        return super().delete(request, *args, **kwargs)
+    if request.method == "POST":
+        form = StudentTuitionDescriptionForm(
+            request.POST,
+            instance=tuition_desc,
+            student=student,   # passed into form.__init__
+        )
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tuition description saved successfully.")
+            return redirect('finance_student_detail', student_id=student.id)
+    else:
+        form = StudentTuitionDescriptionForm(
+            instance=tuition_desc,
+            student=student,
+        )
 
-# School Fees Management Views
-class SchoolFeesListView(ListView):
-    model = SchoolFees
-    template_name = 'school_fees_list.html'
-    context_object_name = 'school_fees_list'
+    context = {
+        "student": student,
+        "form": form,
+        "school_fees": school_fees,
+        "tuition_desc": tuition_desc,
+    }
+    return render(request, "register_tuition_description.html", context)
 
-    def get_queryset(self):
-        return SchoolFees.objects.select_related('grade').order_by('grade__grade_name')
 
-class SchoolFeesUpdateView(UpdateView):
-    model = SchoolFees
-    form_class = SchoolFeesForm
-    template_name = 'school_fees_form.html'
-    success_url = reverse_lazy('manage_school_fees')
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 
-    def form_valid(self, form):
-        messages.success(self.request, 'School fees updated successfully!')
-        return super().form_valid(form)
+from students.models import Student
+from .models import StudentTuitionDescription, FeeTransaction
+from .forms import FeeTransactionForm
 
-class SchoolFeesDetailView(DetailView):
-    model = SchoolFees
-    template_name = 'school_fees_detail.html'
-    context_object_name = 'school_fees'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        grade = self.object.grade
-        context['students'] = Student.objects.filter(current_grade=grade)
-        context['tuition_descriptions'] = StudentTuitionDescription.objects.filter(
-            tuition__grade=grade
-        ).select_related('student')
-        return context
+def record_fee_payment(request, student_id):
+    # Get the actual Student
+    student = get_object_or_404(Student, pk=student_id)
+
+    # Get the student's tuition description (StudentTuitionDescription)
+    tuition_description = get_object_or_404(StudentTuitionDescription, student=student)
+
+    # ✅ Use the correct FK name: student=tuition_description
+    # or simply: tuition_description.fee_transactions.all()
+    transactions = (
+        FeeTransaction.objects
+        .filter(student=tuition_description)
+        .order_by('-created')
+    )
+
+    if request.method == "POST":
+        # We pass tuition_description into the form so it can use it if needed
+        form = FeeTransactionForm(request.POST, tuition_description=tuition_description)
+        if form.is_valid():
+            # ✅ Make sure the FK is set to this tuition_description
+            fee_tx = form.save(commit=False)
+            fee_tx.student = tuition_description   # FK -> StudentTuitionDescription
+            fee_tx.save()
+
+            messages.success(request, "Payment recorded successfully.")
+            return redirect('finance_student_detail', student_id=student.id)
+    else:
+        form = FeeTransactionForm(tuition_description=tuition_description)
+
+    context = {
+        "student": student,
+        "student_id": student.id,
+        "tuition_description": tuition_description,
+        "form": form,
+        "transactions": transactions,
+    }
+    return render(request, "finance_record_payment.html", context)

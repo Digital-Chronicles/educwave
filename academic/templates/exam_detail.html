@@ -2,42 +2,135 @@
 
 {% block page_title %}Exam Details{% endblock page_title %}
 {% block academicsSetActive %}active{% endblock academicsSetActive %}
+
 {% block content %}
-<div class="card">
-    <div class="p-2">
-        <h2 class="mb-4">{{ exam.subject }}</h2>
-        <div class="content table-responsive table-full-width">
-            <table class="table table-bordered">
-                <tbody>
-                    <tr>
-                        <th scope="row">Date</th>
-                        <td>{{ exam.date }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Duration</th>
-                        <td>{{ exam.duration_minutes }} minutes</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Grade</th>
-                        <td>{{ exam.grade }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Created By</th>
-                        <td>{{ exam.created_by }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Description</th>
-                        <td>{{ exam.description }}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Exam File</th>
-                        <td>
-                            <a href="{{ exam.file.url }}" class="btn btn-secondary">Download Exam File</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+<div class="container mx-auto px-4 py-6">
+  <!-- Header / Breadcrumb-ish -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Exam Details</h1>
+      <p class="text-sm text-gray-500">View full information about this exam.</p>
     </div>
+    <a href="{% url 'exams' %}"
+       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           class="h-4 w-4 mr-2"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Exams
+    </a>
+  </div>
+
+  <!-- Card -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <!-- Card header -->
+    <div class="px-6 py-4 border-b border-gray-100">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">
+            {{ exam.subject }}
+          </h2>
+          <p class="text-sm text-gray-500 mt-1">
+            Grade:
+            <span class="font-medium text-gray-800">{{ exam.grade }}</span>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
+            Duration: {{ exam.duration_minutes }} mins
+          </span>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+            {{ exam.date|date:"M d, Y" }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card body -->
+    <div class="px-6 py-5">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50">
+              <th scope="row" class="w-40 py-3 pr-4 text-left text-gray-500 font-medium align-top">
+                Date
+              </th>
+              <td class="py-3 text-gray-900">
+                {{ exam.date|date:"Y-m-d" }}
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50">
+              <th scope="row" class="w-40 py-3 pr-4 text-left text-gray-500 font-medium align-top">
+                Duration
+              </th>
+              <td class="py-3 text-gray-900">
+                {{ exam.duration_minutes }} minutes
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50">
+              <th scope="row" class="w-40 py-3 pr-4 text-left text-gray-500 font-medium align-top">
+                Grade
+              </th>
+              <td class="py-3 text-gray-900">
+                {{ exam.grade }}
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50">
+              <th scope="row" class="w-40 py-3 pr-4 text-left text-gray-500 font-medium align-top">
+                Created By
+              </th>
+              <td class="py-3 text-gray-900">
+                {{ exam.created_by }}
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50">
+              <th scope="row" class="w-40 py-3 pr-4 text-left text-gray-500 font-medium align-top">
+                Description
+              </th>
+              <td class="py-3 text-gray-900">
+                {% if exam.description %}
+                  <p class="whitespace-pre-line">{{ exam.description }}</p>
+                {% else %}
+                  <span class="text-gray-400 italic">No description provided.</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr class="hover:bg-gray-50">
+              <th scope="row" class="w-40 py-3 pr-4 text-left text-gray-500 font-medium align-top">
+                Exam File
+              </th>
+              <td class="py-3 text-gray-900">
+                {% if exam.file %}
+                  <a href="{{ exam.file.url }}"
+                     class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4 mr-2"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 12l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Exam File
+                  </a>
+                {% else %}
+                  <span class="text-gray-400 italic">No file uploaded.</span>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock content %}
