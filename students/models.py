@@ -122,7 +122,6 @@ class Student(models.Model):
         db_table_comment = "This includes Students data"
         ordering = ["first_name"]
 
-<<<<<<< HEAD
         # ADD THIS HELPER METHOD
     def get_current_class_teacher(self):
         """Get the class teacher for student's current grade"""
@@ -133,9 +132,9 @@ class Student(models.Model):
 
     def get_full_name(self):
         """Return the full name of the student"""
-=======
+
     def get_full_name(self) -> str:
->>>>>>> fe
+
         return f"{self.first_name} {self.last_name}".strip()
 
     # 🔹 FINANCE HELPER (read-only)

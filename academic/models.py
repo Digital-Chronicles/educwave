@@ -5,11 +5,10 @@ from django_ckeditor_5.fields import CKEditor5Field
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 import datetime
-<<<<<<< HEAD
+
 from assessment.models import Topics
 
-=======
->>>>>>> fe
+
 
 
 class Grade(models.Model):
@@ -206,7 +205,7 @@ class TermExamSession(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-        # ADD THIS FIELD - Crucial for auto-detection
+    # ADD THIS FIELD - Crucial for auto-detection
     is_current = models.BooleanField(default=False, help_text="Mark this as the current active term")
 
     class Meta:
@@ -222,9 +221,8 @@ class TermExamSession(models.Model):
         if self.start_date and self.end_date and self.start_date >= self.end_date:
             raise ValidationError({
                 'start_date': "Start date must be before end date.",
-<<<<<<< HEAD
-                'end_date': "End date must be after start date."
-            })        
+                'end_date': "End date must be after start date.",
+            })
         # Ensure only one current term per year
         if self.is_current:
             existing_current = TermExamSession.objects.filter(
@@ -235,6 +233,7 @@ class TermExamSession(models.Model):
                 raise ValidationError({
                     'is_current': "There can only be one current term per academic year."
                 })
+
     def save(self, *args, **kwargs):
         # If this is set as current, unset others
         if self.is_current:
@@ -242,16 +241,10 @@ class TermExamSession(models.Model):
                 is_current=True,
                 year=self.year
             ).update(is_current=False)
-        super().save(*args, **kwargs)        
-        
-=======
-                'end_date': "End date must be after start date.",
-            })
->>>>>>> fe
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.get_term_name_display()} - {self.year}"
-
 
 class ExamSession(models.Model):
     class ExamChoices(models.TextChoices):
