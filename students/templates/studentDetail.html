@@ -5,201 +5,284 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-6">
-  <!-- Action Bar -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Student Profile</h1>
-    <div class="flex space-x-2">
-      <a href="{% url 'students' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+  <!-- Top bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Student Profile</h1>
+      <p class="text-sm text-gray-500">View and manage full student information.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="{% url 'students' %}"
+         class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
         Back to Students
       </a>
-      <button onclick="toggleEditModal()" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+      <button type="button"
+              onclick="toggleEditModal()"
+              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2m-2 4h2m-6 8h12M5 7h.01M5 11h.01M5 15h.01" />
+        </svg>
         Edit Profile
       </button>
     </div>
   </div>
 
   <div class="flex flex-col lg:flex-row gap-6">
-    <!-- Left Column: Profile Information -->
+    <!-- LEFT COLUMN -->
     <div class="w-full lg:w-1/3 space-y-6">
-      <!-- Profile Card -->
+      <!-- PROFILE CARD -->
       <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-        <!-- Profile Header -->
+        <!-- Header / cover -->
         <div class="relative">
           {% if student.profile_picture %}
-          <div class="h-40 bg-gradient-to-r from-blue-50 to-blue-100">
-            <img src="{{ student.profile_picture.url }}" alt="Background" class="w-full h-full object-cover opacity-30">
-          </div>
+            <div class="h-40 bg-gradient-to-r from-blue-50 to-blue-100">
+              <img src="{{ student.profile_picture.url }}"
+                   alt="Cover"
+                   class="w-full h-full object-cover opacity-30">
+            </div>
           {% else %}
-          <div class="h-40 bg-gradient-to-r from-blue-50 to-blue-100"></div>
+            <div class="h-40 bg-gradient-to-r from-blue-50 to-blue-100"></div>
           {% endif %}
-          
-          <!-- Profile Picture -->
-          <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+
+          <!-- Avatar -->
+          <div class="absolute -bottom-16 left-1/2 -translate-x-1/2 transform">
             <div class="h-32 w-32 rounded-full border-4 border-white bg-white shadow-md overflow-hidden">
               {% if student.profile_picture %}
-              <img src="{{ student.profile_picture.url }}" alt="Profile" class="h-full w-full object-cover">
+                <img src="{{ student.profile_picture.url }}"
+                     alt="Profile"
+                     class="h-full w-full object-cover">
               {% else %}
-              <div class="h-full w-full bg-blue-100 flex items-center justify-center">
-                <span class="text-4xl font-bold text-blue-600">{{ student.first_name|first|upper }}{{ student.last_name|first|upper }}</span>
-              </div>
+                <div class="h-full w-full bg-blue-100 flex items-center justify-center">
+                  <span class="text-4xl font-bold text-blue-600">
+                    {{ student.first_name|first|upper }}{{ student.last_name|first|upper }}
+                  </span>
+                </div>
               {% endif %}
             </div>
           </div>
         </div>
-        
-        <!-- Profile Content -->
+
+        <!-- Body -->
         <div class="pt-20 px-6 pb-6">
+          <!-- Name + reg -->
           <div class="text-center">
-            <h2 class="text-2xl font-bold text-gray-800">{{ student.first_name }} {{ student.last_name }}</h2>
-            <p class="text-blue-600 font-medium">{{ student.registration_id }}</p>
-            <p class="text-gray-500 mt-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {{ student.current_status|default:'-' }}
-              </span>
+            <h2 class="text-2xl font-bold text-gray-800">
+              {{ student.get_full_name }}
+            </h2>
+            <p class="text-blue-600 font-medium text-sm mt-1">
+              {{ student.registration_id }}
             </p>
+
+            <!-- Status pill -->
+            <p class="mt-3">
+              {% if student.current_status %}
+                {% if student.current_status == "active" %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {{ student.get_current_status_display }}
+                  </span>
+                {% elif student.current_status == "graduated" %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {{ student.get_current_status_display }}
+                  </span>
+                {% elif student.current_status == "dropped out" %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    {{ student.get_current_status_display }}
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {{ student.get_current_status_display }}
+                  </span>
+                {% endif %}
+              {% else %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Status not set
+                </span>
+              {% endif %}
+            </p>
+
+            <!-- School type pill -->
+            {% if student.school_type %}
+              <p class="mt-2 text-xs text-gray-500">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-medium">
+                  {{ student.get_school_type_display }}
+                </span>
+              </p>
+            {% endif %}
           </div>
-          
-          <!-- Stats -->
+
+          <!-- Small stats -->
           <div class="mt-6 grid grid-cols-3 gap-4 text-center">
             <div class="p-2 bg-gray-50 rounded-lg">
-              <p class="text-gray-500 text-sm">Grade</p>
-              <p class="text-lg font-semibold">
+              <p class="text-gray-500 text-xs uppercase tracking-wide">Grade</p>
+              <p class="text-sm font-semibold text-gray-900">
                 {% if student.current_grade %}
-                  {{ student.current_grade.name }}
+                  {{ student.current_grade }}
                 {% else %}
                   -
                 {% endif %}
               </p>
             </div>
             <div class="p-2 bg-gray-50 rounded-lg">
-              <p class="text-gray-500 text-sm">Gender</p>
-              <p class="text-lg font-semibold">{{ student.gender|default:'-' }}</p>
+              <p class="text-gray-500 text-xs uppercase tracking-wide">Gender</p>
+              <p class="text-sm font-semibold text-gray-900">
+                {{ student.gender|default:'-' }}
+              </p>
             </div>
             <div class="p-2 bg-gray-50 rounded-lg">
-              <p class="text-gray-500 text-sm">YOE</p>
-              <p class="text-lg font-semibold">{{ student.year_of_entry|default:'-' }}</p>
+              <p class="text-gray-500 text-xs uppercase tracking-wide">Year of Entry</p>
+              <p class="text-sm font-semibold text-gray-900">
+                {{ student.year_of_entry|default:'-' }}
+              </p>
             </div>
           </div>
-          
-          <!-- Quick Actions -->
+
+          <!-- Quick links -->
           <div class="mt-6 space-y-3">
-            <a href="/academics/reports/student-term-report/{{student.id}}/" class="block px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-center transition-colors shadow-sm">
-              <div class="flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            <a href="/academics/reports/student-term-report/{{ student.id }}/"
+               class="block px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm text-center shadow-sm">
+              <div class="flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                View Performance
+                <span>View Performance</span>
               </div>
             </a>
-            <a href="/finance/register/tuition/description/{{student.id}}" class="block px-4 py-2.5 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg text-center transition-colors shadow-sm">
-              <div class="flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+            <a href="/finance/register/tuition/description/{{ student.id }}"
+               class="block px-4 py-2.5 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-lg text-sm text-center shadow-sm">
+              <div class="flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Tuition Description
+                <span>Tuition Description</span>
               </div>
             </a>
           </div>
         </div>
       </div>
 
-      <!-- Caretakers Card -->
-       {% include 'features/caretakerCard.html' %}
+      <!-- Caretakers card (partial) -->
+      {% include 'features/caretakerCard.html' %}
     </div>
 
-    <!-- Right Column: Student Information -->
+    <!-- RIGHT COLUMN -->
     <div class="w-full lg:w-2/3 space-y-6">
-      <!-- General Information Card -->
-       {% include 'features/generalInformationCard.html' %}
+      <!-- General information card -->
+      {% include 'features/generalInformationCard.html' %}
 
-      <!-- Address Information Card -->
+      <!-- Address information card -->
       {% include 'features/addressInformationCard.html' %}
 
-      <!-- Academic Information Card -->
-       {% include 'features/academicInformationCard.html' %}
-
+      <!-- Academic information card -->
+      {% include 'features/academicInformationCard.html' %}
     </div>
   </div>
 </div>
 
-<!-- Edit Student Modal -->
+<!-- MODALS (partials) -->
 {% include 'features/editStudentModal.html' %}
-
-<!-- Address Modal -->
 {% include 'features/addressModal.html' %}
-
-<!-- Caretaker Modal -->
 {% include 'features/caretakerModal.html' %}
-
-<!-- Grade Modal -->
 {% include 'features/gradeModal.html' %}
-
-<!-- Delete Confirmation Modal -->
 {% include 'features/deleteConfirmationModal.html' %}
 
 <script>
-  // Toggle modals
-  function toggleEditModal() {
-    document.getElementById('editModal').classList.toggle('hidden');
-  }
-  
-  function toggleAddressModal() {
-    document.getElementById('addressModal').classList.toggle('hidden');
-  }
-  
-  function toggleCaretakerModal() {
-    document.getElementById('caretakerModal').classList.toggle('hidden');
-    document.getElementById('caretakerForm').reset();
-    document.getElementById('caretaker_id').value = '';
-    document.getElementById('caretakerModalTitle').textContent = 'Add Caretaker';
-  }
-  
-  function toggleGradeModal() {
-    document.getElementById('gradeModal').classList.toggle('hidden');
-  }
-  
-  function toggleDeleteModal() {
-    document.getElementById('deleteModal').classList.toggle('hidden');
-  }
-  
-  // Edit caretaker
-  function editCaretaker(caretakerId) {
-      // Find the caretaker in the existing list (no API call needed)
-      const caretaker = Array.from(document.querySelectorAll('.caretaker-item')).find(item => {
-          return item.dataset.id === caretakerId.toString();
-      });
-      
-      if (caretaker) {
-          document.getElementById('caretaker_id').value = caretakerId;
-          document.getElementById('name').value = caretaker.dataset.name;
-          document.getElementById('relationship').value = caretaker.dataset.relationship;
-          document.getElementById('contact_number').value = caretaker.dataset.contact;
-          document.getElementById('email').value = caretaker.dataset.email || '';
-          document.getElementById('caretakerModalTitle').textContent = 'Edit Caretaker';
-          toggleCaretakerModal();
-      }
+  // Helpers to toggle hidden class on modals
+  function toggleById(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('hidden');
+    }
   }
 
-  // Add to your existing JavaScript
+  function toggleEditModal() {
+    toggleById('editModal');
+  }
+
+  function toggleAddressModal() {
+    toggleById('addressModal');
+  }
+
+  function toggleCaretakerModal() {
+    toggleById('caretakerModal');
+    const form = document.getElementById('caretakerForm');
+    if (form) form.reset();
+    const hiddenId = document.getElementById('caretaker_id');
+    if (hiddenId) hiddenId.value = '';
+    const title = document.getElementById('caretakerModalTitle');
+    if (title) title.textContent = 'Add Caretaker';
+  }
+
+  function toggleGradeModal() {
+    toggleById('gradeModal');
+  }
+
+  function toggleDeleteModal() {
+    toggleById('deleteModal');
+  }
+
+  // Edit caretaker (fills form from DOM data attributes)
+  function editCaretaker(caretakerId) {
+    const items = document.querySelectorAll('.caretaker-item');
+    const caretaker = Array.from(items).find(item => item.dataset.id === caretakerId.toString());
+    if (!caretaker) return;
+
+    const idInput = document.getElementById('caretaker_id');
+    const nameInput = document.getElementById('name');
+    const relationshipInput = document.getElementById('relationship');
+    const contactInput = document.getElementById('contact_number');
+    const emailInput = document.getElementById('email');
+    const title = document.getElementById('caretakerModalTitle');
+
+    if (idInput) idInput.value = caretakerId;
+    if (nameInput) nameInput.value = caretaker.dataset.name || '';
+    if (relationshipInput) relationshipInput.value = caretaker.dataset.relationship || '';
+    if (contactInput) contactInput.value = caretaker.dataset.contact || '';
+    if (emailInput) emailInput.value = caretaker.dataset.email || '';
+    if (title) title.textContent = 'Edit Caretaker';
+
+    toggleCaretakerModal();
+  }
+
+  // Edit grade
   function editGrade(gradeId, classAssignedId, assignedDate) {
-      document.getElementById('grade_id').value = gradeId;
-      document.getElementById('class_assigned').value = classAssignedId;
-      document.getElementById('assigned_date').value = assignedDate;
-      toggleGradeModal();
+    const gradeIdInput = document.getElementById('grade_id');
+    const classSelect = document.getElementById('class_assigned');
+    const dateInput = document.getElementById('assigned_date');
+
+    if (gradeIdInput) gradeIdInput.value = gradeId;
+    if (classSelect) classSelect.value = classAssignedId;
+    if (dateInput) dateInput.value = assignedDate;
+
+    toggleGradeModal();
   }
 
   function addNewGrade() {
-      document.getElementById('grade_id').value = '';
-      document.getElementById('class_assigned').value = '';
-      document.getElementById('assigned_date').value = new Date().toISOString().split('T')[0];
-      toggleGradeModal();
-  }
-  
-  // Delete caretaker
-  function deleteCaretaker(caretakerId) {
-    document.getElementById('delete_caretaker_id').value = caretakerId;
-    toggleDeleteModal();
+    const gradeIdInput = document.getElementById('grade_id');
+    const classSelect = document.getElementById('class_assigned');
+    const dateInput = document.getElementById('assigned_date');
+
+    if (gradeIdInput) gradeIdInput.value = '';
+    if (classSelect) classSelect.value = '';
+    if (dateInput) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+
+    toggleGradeModal();
   }
 
+  // Delete caretaker
+  function deleteCaretaker(caretakerId) {
+    const hidden = document.getElementById('delete_caretaker_id');
+    if (hidden) hidden.value = caretakerId;
+    toggleDeleteModal();
+  }
 </script>
 {% endblock content %}

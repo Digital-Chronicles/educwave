@@ -4,7 +4,7 @@ from . import csv_views
 
 
 urlpatterns = [
-    path("", views.StudentList.as_view(), name="students"),
+    path("", views.studentList, name="students"),
     path("register/student-detail/", views.RegisterStudentDetails.as_view(), name="registerStudentDetail"),
     path("student-details/<int:id>/", views.studentDetail, name="StudentDetail"),
 

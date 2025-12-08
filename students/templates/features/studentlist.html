@@ -3,33 +3,92 @@
   <div class="flex flex-col md:flex-row md:items-center md:justify-between px-6 py-4 border-b border-gray-200">
     <div class="mb-4 md:mb-0">
       <h4 class="text-xl font-semibold text-gray-800">Student List</h4>
-      <p class="text-gray-600">General Student List</p>
+      <p class="text-gray-600 text-sm">Manage all registered students with powerful filters.</p>
     </div>
-    <div class="flex space-x-2">
-      <div>
-        <a href="/students/register/csv_upload/"
-          class="inline-flex items-center px-4 py-2 bg-blue-800 text-white rounded-md hover:bg-primary-dark transition-colors">
-          <i class="fas fa-users mr-2"></i>
-          Bulk Student Registration
-        </a>
-      </div>
-      <div>
-        <a href="/students/register/student-detail/"
-          class="inline-flex items-center px-4 py-2 bg-blue-800 text-white rounded-md hover:bg-primary-dark transition-colors">
-          <i class="fas fa-user-plus mr-2"></i>
-          Register New Student
-        </a>
-      </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="/students/register/csv_upload/"
+         class="inline-flex items-center px-4 py-2 bg-slate-800 text-white rounded-md hover:bg-slate-900 text-sm font-medium">
+        <i class="fas fa-users mr-2"></i>
+        Bulk Registration
+      </a>
+      <a href="/students/register/student-detail/"
+         class="inline-flex items-center px-4 py-2 bg-blue-700 text-white rounded-md hover:bg-blue-800 text-sm font-medium">
+        <i class="fas fa-user-plus mr-2"></i>
+        New Student
+      </a>
     </div>
   </div>
 
-  <!-- Search Form -->
-  <div class="px-6 py-3">
-    <form id="searchForm" class="w-full">
-      <input type="text" id="searchInput"
-        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent"
-        placeholder="Search For Student" />
-    </form>
+  <!-- Filters Bar -->
+  <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+      <!-- Search -->
+      <div class="lg:col-span-2">
+        <label class="block text-xs font-medium text-gray-600 mb-1">
+          Search
+        </label>
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400 text-sm"></i>
+          </span>
+          <input
+            type="text"
+            id="searchInput"
+            class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            placeholder="Search by name, reg ID, guardian phone..."
+          />
+        </div>
+      </div>
+
+      <!-- Status filter -->
+      <div>
+        <label for="statusFilter" class="block text-xs font-medium text-gray-600 mb-1">
+          Status
+        </label>
+        <select
+          id="statusFilter"
+          class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+        >
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="graduated">Graduated</option>
+          <option value="dropped out">Dropped Out</option>
+        </select>
+      </div>
+
+      <!-- Grade / School-type filters in second row on small screens -->
+      <div class="grid grid-cols-2 gap-3 lg:col-span-1">
+        <div>
+          <label for="gradeFilter" class="block text-xs font-medium text-gray-600 mb-1">
+            Grade
+          </label>
+          <select
+            id="gradeFilter"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+          >
+            <option value="">All</option>
+            <option value="with">With grade</option>
+            <option value="without">Without grade</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="schoolTypeFilter" class="block text-xs font-medium text-gray-600 mb-1">
+            School Type
+          </label>
+          <select
+            id="schoolTypeFilter"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+          >
+            <option value="">All</option>
+            <option value="day">Day</option>
+            <option value="boarding">Boarding</option>
+            <option value="bursary">Bursary</option>
+            <option value="scholarhip">Scholarship</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Table -->
@@ -37,40 +96,57 @@
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
         <tr>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Reg Id
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Reg ID
           </th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">First
-            Name</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Last
-            Name</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Current
-            Grade</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">DOB</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Current
-            Status</th>
-          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-primary uppercase tracking-wider">Actions
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Name
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Current Grade
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            DOB
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Status
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            School Type
+          </th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+            Actions
           </th>
         </tr>
       </thead>
-      <tbody id="studentsBody" class="bg-white divide-y divide-gray-200">
-        <!-- Dynamic content will be inserted here -->
+      <tbody id="studentsBody" class="bg-white divide-y divide-gray-200 text-sm">
+        <!-- Dynamic content -->
       </tbody>
     </table>
   </div>
 
-  <!-- Pagination -->
-  <div id="paginationControls" class="px-6 py-4 flex items-center justify-between border-t border-gray-200">
-    <button id="prevPage"
-      class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-      disabled>
-      Previous
-    </button>
-    <span id="currentPage" class="text-gray-700">1</span>
-    <button id="nextPage"
-      class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-      disabled>
-      Next
-    </button>
+  <!-- Pagination + summary -->
+  <div class="px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-200 bg-gray-50">
+    <div class="text-xs text-gray-600" id="resultsSummary">
+      Showing 0–0 of 0 students
+    </div>
+    <div class="flex items-center space-x-2 justify-end">
+      <button
+        id="prevPage"
+        class="px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-100 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled
+      >
+        Previous
+      </button>
+      <span id="currentPage" class="text-xs text-gray-700">1</span>
+      <button
+        id="nextPage"
+        class="px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-100 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled
+      >
+        Next
+      </button>
+    </div>
   </div>
 </div>
 
@@ -78,20 +154,79 @@
   document.addEventListener("DOMContentLoaded", () => {
     const studentsBody = document.getElementById("studentsBody");
     const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const gradeFilter = document.getElementById("gradeFilter");
+    const schoolTypeFilter = document.getElementById("schoolTypeFilter");
     const prevPage = document.getElementById("prevPage");
     const nextPage = document.getElementById("nextPage");
-    const currentPage = document.getElementById("currentPage");
+    const currentPageSpan = document.getElementById("currentPage");
+    const resultsSummary = document.getElementById("resultsSummary");
 
-    // Define default query parameters
+    let isLoading = false;
+
+    // Default query parameters
     let currentParams = {
       page: 1,
       search: "",
+      status: "",
+      grade_filter: "",
+      school_type: "",
+    };
+
+    const setLoading = (loading) => {
+      isLoading = loading;
+      if (loading) {
+        studentsBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-4 text-center text-gray-500 text-sm">
+              Loading students...
+            </td>
+          </tr>`;
+      }
+    };
+
+    const buildStatusBadgeClass = (statusRaw) => {
+      if (!statusRaw) return "bg-gray-100 text-gray-700";
+
+      const status = statusRaw.toLowerCase();
+      if (status === "active") {
+        return "bg-green-100 text-green-800";
+      }
+      if (status === "graduated") {
+        return "bg-blue-100 text-blue-800";
+      }
+      if (status === "dropped out") {
+        return "bg-red-100 text-red-800";
+      }
+      return "bg-gray-100 text-gray-700";
+    };
+
+    const formatStatusLabel = (statusRaw) => {
+      if (!statusRaw) return "-";
+      // Assume backend might send either "active" or "Active"
+      let s = statusRaw.toLowerCase();
+      if (s === "dropped out") return "Dropped Out";
+      if (s === "graduated") return "Graduated";
+      if (s === "active") return "Active";
+      return statusRaw;
+    };
+
+    const formatSchoolType = (typeRaw) => {
+      if (!typeRaw) return "-";
+      const t = typeRaw.toLowerCase();
+      if (t === "day") return "Day";
+      if (t === "boarding") return "Boarding";
+      if (t === "bursary") return "Bursary";
+      if (t === "scholarhip") return "Scholarship";
+      return typeRaw;
     };
 
     const loadStudents = () => {
+      if (isLoading) return;
+      setLoading(true);
+
       const params = new URLSearchParams(currentParams).toString();
 
-      // Fetch data from the server
       fetch(`?${params}`, {
         headers: {
           "x-requested-with": "XMLHttpRequest",
@@ -104,56 +239,120 @@
           return response.json();
         })
         .then((data) => {
-          // Render the table rows
-          if (data.students.length === 0) {
+          // Expecting: { students: [], has_previous, has_next, current_page, total_count, start_index, end_index }
+          if (!data.students || data.students.length === 0) {
             studentsBody.innerHTML = `
               <tr>
-                <td colspan="7" class="px-6 py-4 text-center text-primary font-medium">
-                  No students found.
+                <td colspan="7" class="px-6 py-4 text-center text-gray-500 text-sm">
+                  No students found matching the current filters.
                 </td>
               </tr>`;
           } else {
             studentsBody.innerHTML = data.students
-              .map(
-                (student) => `
-                <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.registration_id}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.first_name}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.last_name}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.current_grade || "-"}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${student.date_of_birth}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${student.current_status === 'Active' ? 'bg-green-100 text-green-800' :
-                    student.current_status === 'Inactive' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'}">
-                      ${student.current_status}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <a href="/students/student-details/${student.id}" class="text-white bg-blue-600 hover:bg-blue-800 px-3 py-1 rounded-md text-sm font-medium">
-                      MANAGE
-                    </a>
-                  </td>
-                </tr>`
-              )
+              .map((student) => {
+                const statusClass = buildStatusBadgeClass(student.current_status);
+                const statusLabel = formatStatusLabel(student.current_status);
+                const schoolTypeLabel = formatSchoolType(student.school_type);
+                const gradeLabel = student.current_grade || "No grade assigned";
+
+                return `
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
+                      ${student.registration_id}
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <div class="flex flex-col">
+                        <span class="font-medium">${student.first_name} ${student.last_name}</span>
+                        ${student.guardian_phone
+                          ? `<span class="text-xs text-gray-500">Guardian: ${student.guardian_phone}</span>`
+                          : ""
+                        }
+                      </div>
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
+                      ${gradeLabel}
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
+                      ${student.date_of_birth}
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm">
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                        ${statusLabel}
+                      </span>
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs">
+                        ${schoolTypeLabel}
+                      </span>
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap text-right text-sm">
+                      <a
+                        href="/students/student-details/${student.id}"
+                        class="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+                      >
+                        <i class="fas fa-chevron-right mr-1"></i>
+                        Manage
+                      </a>
+                    </td>
+                  </tr>`;
+              })
               .join("");
           }
-          // Update pagination buttons
+
+          // Pagination
           prevPage.disabled = !data.has_previous;
           nextPage.disabled = !data.has_next;
-          currentPage.textContent = data.current_page;
+          currentPageSpan.textContent = data.current_page || 1;
+
+          // Summary (if backend sends these; otherwise you can remove this part)
+          if (data.total_count !== undefined && data.start_index !== undefined && data.end_index !== undefined) {
+            resultsSummary.textContent = `Showing ${data.start_index}–${data.end_index} of ${data.total_count} students`;
+          } else {
+            resultsSummary.textContent = "";
+          }
         })
         .catch((error) => {
           console.error("Error loading students:", error);
           studentsBody.innerHTML = `
             <tr>
-              <td colspan="7" class="px-6 py-4 text-center text-red-500 font-medium">
+              <td colspan="7" class="px-6 py-4 text-center text-red-500 font-medium text-sm">
                 Error loading student data. Please try again.
               </td>
             </tr>`;
+        })
+        .finally(() => {
+          isLoading = false;
         });
     };
+
+    // Debounce for search
+    let searchTimeout = null;
+    const triggerReload = () => {
+      currentParams.page = 1;
+      loadStudents();
+    };
+
+    searchInput.addEventListener("input", (e) => {
+      const value = e.target.value.trim();
+      currentParams.search = value;
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(triggerReload, 400);
+    });
+
+    statusFilter.addEventListener("change", (e) => {
+      currentParams.status = e.target.value;
+      triggerReload();
+    });
+
+    gradeFilter.addEventListener("change", (e) => {
+      currentParams.grade_filter = e.target.value; // "with" / "without" / ""
+      triggerReload();
+    });
+
+    schoolTypeFilter.addEventListener("change", (e) => {
+      currentParams.school_type = e.target.value; // "day" / "boarding" / ...
+      triggerReload();
+    });
 
     // Pagination controls
     prevPage.addEventListener("click", () => {
@@ -165,13 +364,6 @@
 
     nextPage.addEventListener("click", () => {
       currentParams.page++;
-      loadStudents();
-    });
-
-    // Search functionality
-    searchInput.addEventListener("input", (e) => {
-      currentParams.search = e.target.value.trim();
-      currentParams.page = 1; // Reset to first page on search
       loadStudents();
     });
 

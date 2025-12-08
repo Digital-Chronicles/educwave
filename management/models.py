@@ -1,14 +1,11 @@
+# management/models.py
+
 from django.db import models
-from accounts.models import CustomUser
-from teachers.models import Teacher
-from students.models import Student, Grade
-from academic.models import Subject, Topics
 from django.core.validators import RegexValidator
-from datetime import date
 from django.core.exceptions import ValidationError
+from accounts.models import CustomUser
 
 
-# Create your models here.
 class GeneralInformation(models.Model):
     school_name = models.CharField(max_length=255, unique=True)
     school_badge = models.ImageField(upload_to="badges", blank=True, null=True)
@@ -21,7 +18,12 @@ class GeneralInformation(models.Model):
     email = models.EmailField()
     website = models.URLField(null=True, blank=True)
     established_year = models.PositiveIntegerField()
-    registered_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True)
+    registered_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
     created = models.DateField(auto_now_add=True)
     updated = models.DateField(auto_now=True)
 
@@ -32,21 +34,23 @@ class GeneralInformation(models.Model):
     def __str__(self):
         return self.school_name
 
-    def get_abbr(self):
+    def get_abbr(self) -> str:
         """
         Generates an abbreviation from the school_name field.
         Picks the first letter of each word in the name.
         """
         return ''.join(word[0].upper() for word in self.school_name.split() if word)
-    
+
     def save(self, *args, **kwargs):
+        # Enforce singleton: only one GeneralInformation instance
         if not self.pk and GeneralInformation.objects.exists():
-            # If there's an existing instance and we're trying to create a new one, raise an error
-            raise ValidationError("There is already an instance of Settings. You can only update the existing one.")
-        super(GeneralInformation, self).save(*args, **kwargs)
+            raise ValidationError(
+                "There is already a GeneralInformation instance. "
+                "You can only update the existing one."
+            )
+        super().save(*args, **kwargs)
 
 
-# Application Settings Table
 class ApplicationSetting(models.Model):
     setting_name = models.CharField(max_length=100)
     value = models.TextField()
@@ -62,12 +66,28 @@ class ApplicationSetting(models.Model):
     def __str__(self):
         return self.setting_name
 
-# Classes and Lessons Table
+
 class Lesson(models.Model):
-    class_assigned = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name="lesson")
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="lesson")
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name="lesson")
-    topic = models.ForeignKey(Topics, on_delete=models.CASCADE, related_name="lesson")
+    class_assigned = models.ForeignKey(
+        'academic.Grade',
+        on_delete=models.CASCADE,
+        related_name="lessons",
+    )
+    subject = models.ForeignKey(
+        'academic.Subject',
+        on_delete=models.CASCADE,
+        related_name="lessons",
+    )
+    teacher = models.ForeignKey(
+        'teachers.Teacher',
+        on_delete=models.CASCADE,
+        related_name="lessons",
+    )
+    topic = models.ForeignKey(
+        'assessment.Topics',
+        on_delete=models.CASCADE,
+        related_name="lessons",
+    )
     lesson_date = models.DateField()
     duration_minutes = models.PositiveIntegerField()
     created = models.DateField(auto_now_add=True)
@@ -75,13 +95,13 @@ class Lesson(models.Model):
 
     class Meta:
         db_table = "lesson"
-        db_table_comment = "This includes exams data"
+        db_table_comment = "This includes lessons data"
         order_with_respect_to = "class_assigned"
 
     def __str__(self):
-        return self.school_name
+        return f"{self.class_assigned} - {self.subject} ({self.lesson_date})"
 
-# Scheduling Settings Table
+
 class SchedulingSetting(models.Model):
     setting_name = models.CharField(max_length=100)
     value = models.TextField()
@@ -92,14 +112,18 @@ class SchedulingSetting(models.Model):
 
     class Meta:
         db_table = "scheduling_setting"
-        db_table_comment = "This includes scheduling setting about the school"
+        db_table_comment = "This includes scheduling settings about the school"
 
     def __str__(self):
         return self.setting_name
 
-# Certificates and Awards Table
+
 class CertificateAward(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="certificate_award")
+    student = models.ForeignKey(
+        'students.Student',
+        on_delete=models.CASCADE,
+        related_name="certificate_awards",
+    )
     award_name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     awarded_by = models.CharField(max_length=255)
@@ -109,12 +133,12 @@ class CertificateAward(models.Model):
 
     class Meta:
         db_table = "certificate_award"
-        db_table_comment = "This includes certificate_awards about the school"
+        db_table_comment = "This includes certificate awards for students"
 
     def __str__(self):
-        return self.school_name
+        return f"{self.student.get_full_name()} - {self.award_name}"
 
-# Grades and Scoring Table
+
 class Ranking_Grade(models.Model):
     grade = models.CharField(max_length=5)
     min_percentage = models.DecimalField(max_digits=5, decimal_places=2)
@@ -125,13 +149,12 @@ class Ranking_Grade(models.Model):
 
     class Meta:
         db_table = "ranking_grade"
-        db_table_comment = "This includes grade information about the school"
+        db_table_comment = "This includes grade ranking information"
 
     def __str__(self):
         return self.grade
-    
 
-# Transaction Settings Table
+
 class TransactionSetting(models.Model):
     setting_name = models.CharField(max_length=100)
     value = models.TextField()
@@ -142,7 +165,7 @@ class TransactionSetting(models.Model):
 
     class Meta:
         db_table = "transaction_setting"
-        db_table_comment = "This includes transaction setting about the school"
+        db_table_comment = "This includes transaction settings about the school"
 
     def __str__(self):
         return self.setting_name

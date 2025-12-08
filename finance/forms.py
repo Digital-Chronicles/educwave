@@ -1,175 +1,154 @@
+# finance/forms.py
+
 from django import forms
-from django_select2 import forms as s2forms
 from .models import StudentTuitionDescription, FeeTransaction, SchoolFees
-from academic.models import Grade
-from students.models import Student
 
-# Custom Widgets
-class StudentWidget(s2forms.ModelSelect2Widget):
-    model = Student
-    search_fields = [
-        "first_name__icontains",
-        "last_name__icontains",
-        "registration_id__icontains",
-        "admission_number__icontains"
-    ]
 
-class GradeWidget(s2forms.ModelSelect2Widget):
-    model = Grade
-    search_fields = ["name__icontains", "code__icontains"]
-
-class SchoolFeesWidget(s2forms.ModelSelect2Widget):
-    model = SchoolFees
-    search_fields = [
-        "grade__name__icontains",
-        "description__icontains",
-        "grade__code__icontains"
-    ]
-
-class StudentTuitionWidget(s2forms.ModelSelect2Widget):
-    model = StudentTuitionDescription
-    search_fields = [
-        "student__first_name__icontains",
-        "student__last_name__icontains",
-        "student__registration_id__icontains"
-    ]
-
-# Payment Choices
-PAYMENT_METHOD_CHOICES = (
-    ('', '---------'),
-    ('cash', 'Cash'),
-    ('bank', 'Bank Transfer'),
-    ('card', 'Credit/Debit Card'),
-    ('mobile', 'Mobile Money'),
+# ✅ Reusable Tailwind class sets
+TAILWIND_INPUT = (
+    "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm "
+    "shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 "
+    "focus:border-indigo-500 placeholder-gray-400"
 )
 
-STATUS_CHOICES = (
-    ('', '---------'),
-    ('pending', 'Pending'),
-    ('paid', 'Paid'),
-    ('partial', 'Partial Payment'),
-    ('overdue', 'Overdue'),
+TAILWIND_SELECT = (
+    "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm "
+    "shadow-sm bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 "
+    "focus:border-indigo-500"
 )
 
-# Base Form Styling
-class BaseForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            if not isinstance(field.widget, (s2forms.Select2Widget, s2forms.Select2MultipleWidget)):
-                field.widget.attrs.update({
-                    'class': 'w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
-                    'autocomplete': 'off'
-                })
+TAILWIND_TEXTAREA = (
+    "block w-full rounded-md border border-gray-300 px-3 py-2 text-sm "
+    "shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 "
+    "focus:border-indigo-500 placeholder-gray-400 min-h-[90px]"
+)
 
-# Forms
-class TuitionDescriptionForm(BaseForm):
+TAILWIND_CHECKBOX = (
+    "h-4 w-4 rounded border-gray-300 text-indigo-600 "
+    "focus:ring-indigo-500 focus:ring-offset-0"
+)
+
+
+class StudentTuitionDescriptionForm(forms.ModelForm):
+    """
+    Finance user only selects options (hostel, lunch, breakfast).
+    The actual tuition (SchoolFees) is auto-set from the student's current_grade.
+    """
     class Meta:
         model = StudentTuitionDescription
-        fields = ['student', 'tuition', 'hostel', 'lunch', 'breakfast']
+        fields = ['hostel', 'lunch', 'breakfast']
         widgets = {
-            'student': StudentWidget(attrs={
-                'data-placeholder': 'Search student by name or ID'
-            }),
-            'tuition': SchoolFeesWidget(attrs={
-                'data-placeholder': 'Select fee structure'
-            }),
-            'hostel': forms.CheckboxInput(attrs={
-                'class': 'h-5 w-5 text-blue-600 rounded focus:ring-blue-500'
-            }),
-            'lunch': forms.CheckboxInput(attrs={
-                'class': 'h-5 w-5 text-blue-600 rounded focus:ring-blue-500'
-            }),
-            'breakfast': forms.CheckboxInput(attrs={
-                'class': 'h-5 w-5 text-blue-600 rounded focus:ring-blue-500'
-            }),
+            'hostel': forms.CheckboxInput(attrs={"class": TAILWIND_CHECKBOX}),
+            'lunch': forms.CheckboxInput(attrs={"class": TAILWIND_CHECKBOX}),
+            'breakfast': forms.CheckboxInput(attrs={"class": TAILWIND_CHECKBOX}),
         }
 
     def __init__(self, *args, **kwargs):
+        # Expect the view to send student instance
+        self.student = kwargs.pop('student', None)
         super().__init__(*args, **kwargs)
-        self.fields['tuition'].queryset = SchoolFees.objects.select_related('grade')
-        self.fields['student'].label = "Student"
-        self.fields['tuition'].label = "Fee Structure"
 
-class TransactionForm(BaseForm):
-    amount_paid = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        widget=forms.NumberInput(attrs={
-            'step': '0.01',
-            'placeholder': '0.00'
-        })
-    )
+    def clean(self):
+        cleaned = super().clean()
 
+        if not self.student:
+            raise forms.ValidationError(
+                "Student is required to set tuition description."
+            )
+
+        # Make sure the student has a current grade
+        if not self.student.current_grade:
+            raise forms.ValidationError(
+                "This student has no current grade set. "
+                "Please assign a grade to the student first."
+            )
+
+        # Make sure there is a SchoolFees record for this student's current grade
+        try:
+            school_fees = SchoolFees.objects.get(grade=self.student.current_grade)
+        except SchoolFees.DoesNotExist:
+            raise forms.ValidationError(
+                f"No SchoolFees found for grade {self.student.current_grade}. "
+                "Please create it in the finance module first."
+            )
+
+        # Store it so we can reuse in save()
+        self.school_fees = school_fees
+        return cleaned
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.student = self.student
+        instance.tuition = self.school_fees  # from clean()
+        if commit:
+            instance.save()
+        return instance
+
+
+class FeeTransactionForm(forms.ModelForm):
+    """
+    Form for recording a single fee payment (FeeTransaction).
+    The tuition_description (StudentTuitionDescription instance) is passed in from the view.
+    """
     class Meta:
         model = FeeTransaction
-        fields = ['student', 'amount_paid', 'payment_method', 'due_date', 'status', 'payment_reference', 'remarks']
+        fields = [
+            'amount_paid',
+            'payment_method',
+            'term',
+            'academic_year',
+            'due_date',
+            'remarks',
+        ]
         widgets = {
-            'student': StudentTuitionWidget(attrs={
-                'data-placeholder': 'Search student fee record'
+            'amount_paid': forms.NumberInput(attrs={
+                "class": TAILWIND_INPUT,
+                "placeholder": "e.g. 150000",
+                "step": "0.01",
+                "min": "0"
             }),
-            'payment_method': s2forms.Select2Widget(choices=PAYMENT_METHOD_CHOICES),
-            'status': s2forms.Select2Widget(choices=STATUS_CHOICES),
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'payment_reference': forms.TextInput(attrs={
-                'placeholder': 'Transaction reference number'
+            'payment_method': forms.Select(attrs={
+                "class": TAILWIND_SELECT,
+            }),
+            'term': forms.Select(attrs={
+                "class": TAILWIND_SELECT,
+            }),
+            'academic_year': forms.TextInput(attrs={
+                "class": TAILWIND_INPUT,
+                "placeholder": "e.g. 2025/2026",
+            }),
+            'due_date': forms.DateInput(attrs={
+                "class": TAILWIND_INPUT,
+                "type": "date",
             }),
             'remarks': forms.Textarea(attrs={
-                'rows': 3,
-                'placeholder': 'Additional notes...'
+                "class": TAILWIND_TEXTAREA,
+                "placeholder": "Optional notes, reference, receipt number…",
             }),
         }
 
     def __init__(self, *args, **kwargs):
+        # Expect the tuition description instance
+        self.tuition_description = kwargs.pop('tuition_description', None)
         super().__init__(*args, **kwargs)
-        if 'student' in self.initial:
-            student = self.initial['student']
-            self.fields['amount_due'] = forms.DecimalField(
-                initial=student.total_fee,
-                disabled=True,
-                required=False,
-                widget=forms.NumberInput(attrs={
-                    'class': 'w-full px-4 py-2 border rounded-lg bg-gray-100'
-                })
+
+    def clean(self):
+        cleaned = super().clean()
+        if not self.tuition_description:
+            raise forms.ValidationError(
+                "Tuition description is required to record a payment."
             )
-            self.fields['amount_due'].label = "Total Fee Due"
+        return cleaned
 
-class SchoolFeesForm(BaseForm):
-    class Meta:
-        model = SchoolFees
-        fields = ['grade', 'tuitionfee', 'hostelfee', 'breakfastfee', 'lunchfee', 'description']
-        widgets = {
-            'grade': GradeWidget(attrs={
-                'data-placeholder': 'Select grade level'
-            }),
-            'tuitionfee': forms.NumberInput(attrs={
-                'step': '0.01',
-                'placeholder': '0.00',
-                'min': '0'
-            }),
-            'hostelfee': forms.NumberInput(attrs={
-                'step': '0.01',
-                'placeholder': '0.00',
-                'min': '0'
-            }),
-            'breakfastfee': forms.NumberInput(attrs={
-                'step': '0.01',
-                'placeholder': '0.00',
-                'min': '0'
-            }),
-            'lunchfee': forms.NumberInput(attrs={
-                'step': '0.01',
-                'placeholder': '0.00',
-                'min': '0'
-            }),
-            'description': forms.Textarea(attrs={
-                'rows': 3,
-                'placeholder': 'Fee description...'
-            }),
-        }
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.student = self.tuition_description
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in ['tuitionfee', 'hostelfee', 'breakfastfee', 'lunchfee']:
-            self.fields[field].label = f"{self.fields[field].label} (₦)"
-            self.fields[field].widget.attrs['min'] = '0'
+        # grade is auto-set in FeeTransaction.save() if missing,
+        # but we can set it here explicitly for safety
+        if not instance.grade:
+            instance.grade = self.tuition_description.tuition.grade
+
+        if commit:
+            instance.save()
+        return instance

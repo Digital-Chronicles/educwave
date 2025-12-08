@@ -5,9 +5,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EduWave Uganda</title>
+  <title>{% block title %}EduWave Uganda{% endblock %}</title>
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3713/3713363.png" type="image/png">
-  {{ form.media.css }}
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -47,11 +47,9 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- ChartJS -->
+  <!-- ChartJS (if needed on dashboard pages) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Select2 CSS -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
   <style>
     /* Custom styles */
     .sidebar {
@@ -79,7 +77,7 @@
     }
 
     .nav-item.active i,
-    .nav-item.active p {
+    .nav-item.active span {
       color: #1e40af;
     }
 
@@ -109,19 +107,9 @@
       border-radius: 50%;
       background-color: #ef4444;
     }
-
-    /* Select2 custom styles */
-    .select2-container--default .select2-selection--single {
-      height: 42px;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-      height: 40px;
-    }
   </style>
+
+  {% block extra_head %}{% endblock %}
 </head>
 
 <body class="bg-gray-50 font-sans antialiased">
@@ -130,7 +118,7 @@
     <div class="sidebar w-64 bg-white shadow-sm flex flex-col border-r border-gray-200">
       <div class="p-4 border-b border-gray-200 flex items-center">
         <img src="https://cdn-icons-png.flaticon.com/512/3079/3079165.png" alt="Logo" class="h-8 w-8 mr-2">
-        <a href="#" class="text-xl font-bold text-primary-800">EduWave</a>
+        <a href="{% url 'dashboard' %}" class="text-xl font-bold text-primary-800">EduWave</a>
       </div>
 
       <nav class="flex-1 overflow-y-auto py-2">
@@ -143,53 +131,60 @@
         </div>
 
         <ul class="space-y-1 px-2">
+          <!-- Dashboard -->
           <li class="nav-item {% block dashboardSetActive %}{% endblock %}">
-            <a href="/" class="flex items-center p-3 rounded-lg">
+            <a href="{% url 'dashboard' %}" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-tachometer-alt mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Dashboard </span>
             </a>
           </li>
+
+          <!-- Students -->
           <li class="nav-item {% block studentSetActive %}{% endblock %}">
-            <a href="/students/" class="flex items-center p-3 rounded-lg">
+            <a href="{% url 'students' %}" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-users mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Students</span>
-              <span
-                class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">1,234</span>
             </a>
           </li>
+
+          <!-- Academics -->
           <li class="nav-item {% block academicsSetActive %}{% endblock %}">
-            <a href="/academics/" class="flex items-center p-3 rounded-lg">
+            <a href="{% url 'academics' %}" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-book-open mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Academics</span>
             </a>
           </li>
+
+          <!-- Assessment -->
           <li class="nav-item {% block assessmentSetActive %}{% endblock %}">
             <a href="/assessment/" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-clipboard-check mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Assessment</span>
             </a>
           </li>
+
+          <!-- Teachers -->
           <li class="nav-item {% block teacherSetActive %}{% endblock %}">
-            <a href="/teachers/" class="flex items-center p-3 rounded-lg">
+            <a href="{% url 'teachers' %}" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-chalkboard-teacher mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Teachers</span>
-              <span
-                class="ml-auto bg-primary-100 text-primary-800 text-xs font-medium px-2 py-0.5 rounded-full">42</span>
             </a>
           </li>
+
+          <!-- Finance -->
           <li class="nav-item {% block financeSetActive %}{% endblock %}">
-            <a href="/finance/" class="flex items-center p-3 rounded-lg">
+            <a href="{% url 'finance-dashboard' %}" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-wallet mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Finance</span>
             </a>
           </li>
 
           <!-- Divider -->
-          <li class="px-3 pt-4">
+          <!-- <li class="px-3 pt-4">
             <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Administration</span>
-          </li>
+          </li> -->
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a href="#" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-cog mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Settings</span>
@@ -200,7 +195,7 @@
               <i class="fas fa-user-shield mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">User Management</span>
             </a>
-          </li>
+          </li> -->
         </ul>
       </nav>
 
@@ -210,7 +205,9 @@
           <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png" alt="User"
             class="h-10 w-10 rounded-full mr-3">
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-gray-800 truncate">User</p>
+            <p class="text-sm font-medium text-gray-800 truncate">
+              {{ request.user.get_full_name|default:request.user.username }}
+            </p>
             <p class="text-xs text-gray-500 truncate">Admin</p>
           </div>
           <button class="text-gray-400 hover:text-gray-600">
@@ -225,13 +222,17 @@
       <!-- Top navigation -->
       <header class="bg-white shadow-xs border-b border-gray-200">
         <div class="flex items-center justify-between px-6 py-3">
-          <!-- Breadcrumbs -->
+          <!-- Breadcrumbs / Page title -->
           <div class="flex items-center">
             <h1 class="text-lg font-semibold text-gray-800 mr-4">
               {% block page_title %}{% endblock %}
             </h1>
             <nav class="flex items-center text-sm">
+
               <a href="/" class="text-secondary-700 hover:text-primary-900">Dashboard</a>
+
+              <a href="{% url 'dashboard' %}" class="text-primary-700 hover:text-primary-900">Dashboard</a>
+
               <span class="mx-2 text-gray-400">/</span>
               <span class="text-gray-600">{% block breadcrumb %}{% endblock %}</span>
             </nav>
@@ -251,7 +252,9 @@
 
             <div class="relative dropdown">
               <button class="flex items-center space-x-2 focus:outline-none">
-                <span class="hidden md:inline text-sm font-medium text-gray-700">User</span>
+                <span class="hidden md:inline text-sm font-medium text-gray-700">
+                  {{ request.user.username }}
+                </span>
                 <i class="fas fa-chevron-down text-xs text-gray-500"></i>
               </button>
 
@@ -260,6 +263,7 @@
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                 <div class="border-t border-gray-200"></div>
+
                 {% comment %} <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a> {% endcomment %}
                 <form method="post" action="{% url 'logout' %}">
                   {% csrf_token %}
@@ -267,6 +271,9 @@
                       Logout
                   </button>
               </form>
+
+
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
 
               </div>
             </div>
@@ -303,30 +310,6 @@
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 
-  <!-- jQuery (required for Select2) -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  {{ form.media.js }}
-
-  <!-- Initialize Select2 -->
-  <script>
-    $(document).ready(function () {
-      // Initialize all select elements as Select2
-      $('select').not('.django-select2').select2({
-        width: '100%',
-        theme: 'classic',
-        minimumResultsForSearch: 6
-      });
-
-      // Initialize Select2 for django-select2 widgets
-      $('.django-select2').select2({
-        width: '100%',
-        dropdownAutoWidth: true,
-        theme: 'classic'
-      });
-    });
-  </script>
-  
-  {% block extra_js %}
-  {% endblock extra_js %}
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

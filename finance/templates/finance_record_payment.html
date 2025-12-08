@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-8">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+
+    <!-- Page heading + back link -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">
+          Record Fee Payment
+        </h1>
+        <p class="mt-1 text-sm text-gray-600">
+          Record a new payment for this student's tuition account.
+        </p>
+      </div>
+
+      <a href="{% url 'finance_student_detail' student_id %}"
+         class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
+        <span aria-hidden="true" class="mr-1">&larr;</span>
+        Back to student finance profile
+      </a>
+    </div>
+
+    <!-- Student & tuition summary -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Student card -->
+      <div class="bg-white shadow-sm rounded-xl p-5 lg:col-span-2 border border-gray-100">
+        <h2 class="text-base font-semibold text-gray-900 mb-4">
+          Student details
+        </h2>
+
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div>
+            <dt class="font-medium text-gray-500">Name</dt>
+            <dd class="mt-0.5 text-gray-900">
+              {{ tuition_description.student.get_full_name }}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="font-medium text-gray-500">Registration ID</dt>
+            <dd class="mt-0.5 text-gray-900">
+              {{ tuition_description.student.registration_id }}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="font-medium text-gray-500">Current Grade</dt>
+            <dd class="mt-0.5 text-gray-900">
+              {{ tuition_description.student.current_grade|default:"—" }}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="font-medium text-gray-500">School type</dt>
+            <dd class="mt-0.5 text-gray-900">
+              {{ tuition_description.student.school_type|default:"—" }}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="font-medium text-gray-500">Guardian</dt>
+            <dd class="mt-0.5 text-gray-900">
+              {{ tuition_description.student.guardian_name|default:"—" }}
+            </dd>
+          </div>
+
+          <div>
+            <dt class="font-medium text-gray-500">Guardian phone</dt>
+            <dd class="mt-0.5 text-gray-900">
+              {{ tuition_description.student.guardian_phone|default:"—" }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Balance card -->
+      <div class="bg-white shadow-sm rounded-xl p-5 border border-gray-100">
+        <h2 class="text-base font-semibold text-gray-900 mb-4">
+          Fee summary
+        </h2>
+
+        <dl class="space-y-2 text-sm">
+          <div class="flex items-center justify-between">
+            <dt class="text-gray-500">Tuition record</dt>
+            <dd class="text-gray-900">
+              {{ tuition_description.tuition }}
+            </dd>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <dt class="text-gray-500">Hostel</dt>
+            <dd class="text-gray-900">
+              {% if tuition_description.hostel %}Yes{% else %}No{% endif %}
+            </dd>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <dt class="text-gray-500">Lunch</dt>
+            <dd class="text-gray-900">
+              {% if tuition_description.lunch %}Yes{% else %}No{% endif %}
+            </dd>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <dt class="text-gray-500">Breakfast</dt>
+            <dd class="text-gray-900">
+              {% if tuition_description.breakfast %}Yes{% else %}No{% endif %}
+            </dd>
+          </div>
+
+          <div class="border-t border-gray-200 pt-3 mt-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <dt class="text-gray-500">Total charged</dt>
+              <dd class="text-gray-900 font-medium">
+                {{ tuition_description.total_fee }}
+              </dd>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <dt class="text-gray-500">Total paid</dt>
+              <dd class="text-gray-900 font-medium">
+                {{ tuition_description.get_total_paid }}
+              </dd>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <dt class="text-gray-500">Current balance</dt>
+              <dd class="font-semibold {% if tuition_description.current_balance > 0 %}text-red-600{% else %}text-emerald-600{% endif %}">
+                {{ tuition_description.current_balance }}
+              </dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Payment form -->
+    <div class="bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+      <h2 class="text-base font-semibold text-gray-900 mb-4">
+        New payment
+      </h2>
+
+      {% if form.non_field_errors %}
+        <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3">
+          {% for error in form.non_field_errors %}
+            <p class="text-sm text-red-700">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate class="space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- amount_paid -->
+          <div>
+            <label for="{{ form.amount_paid.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Amount paid
+            </label>
+            {{ form.amount_paid }}
+            {% if form.amount_paid.errors %}
+              <p class="mt-1 text-xs text-red-600">
+                {{ form.amount_paid.errors|join:", " }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- payment_method -->
+          <div>
+            <label for="{{ form.payment_method.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Payment method
+            </label>
+            {{ form.payment_method }}
+            {% if form.payment_method.errors %}
+              <p class="mt-1 text-xs text-red-600">
+                {{ form.payment_method.errors|join:", " }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- term -->
+          <div>
+            <label for="{{ form.term.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Term
+            </label>
+            {{ form.term }}
+            {% if form.term.errors %}
+              <p class="mt-1 text-xs text-red-600">
+                {{ form.term.errors|join:", " }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- academic_year -->
+          <div>
+            <label for="{{ form.academic_year.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Academic year
+            </label>
+            {{ form.academic_year }}
+            {% if form.academic_year.errors %}
+              <p class="mt-1 text-xs text-red-600">
+                {{ form.academic_year.errors|join:", " }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- due_date -->
+          <div>
+            <label for="{{ form.due_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Due date (optional)
+            </label>
+            {{ form.due_date }}
+            {% if form.due_date.errors %}
+              <p class="mt-1 text-xs text-red-600">
+                {{ form.due_date.errors|join:", " }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- remarks -->
+          <div class="md:col-span-2">
+            <label for="{{ form.remarks.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+              Remarks / Reference
+            </label>
+            {{ form.remarks }}
+            {% if form.remarks.errors %}
+              <p class="mt-1 text-xs text-red-600">
+                {{ form.remarks.errors|join:", " }}
+              </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <a href="{% url 'finance_student_detail' student_id %}"
+             class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+            Cancel
+          </a>
+          <button type="submit"
+                  class="inline-flex items-center px-4 py-2 rounded-md border border-transparent text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Save payment
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Previous payments -->
+    <div class="bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-gray-900">Payment history</h2>
+      </div>
+
+      {% if transactions %}
+        <div class="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8">
+          <div class="inline-block min-w-full align-middle px-4 sm:px-6 lg:px-8">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Term</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Academic year</th>
+                  <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Amount paid</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Method</th>
+                  <th class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Remarks</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-100">
+                {% for tx in transactions %}
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-900 whitespace-nowrap">
+                      {{ tx.created|date:"Y-m-d" }}
+                    </td>
+                    <td class="px-3 py-2 text-gray-900 whitespace-nowrap">
+                      {{ tx.term|default:"—" }}
+                    </td>
+                    <td class="px-3 py-2 text-gray-900 whitespace-nowrap">
+                      {{ tx.academic_year|default:"—" }}
+                    </td>
+                    <td class="px-3 py-2 text-right text-gray-900 whitespace-nowrap">
+                      {{ tx.amount_paid }}
+                    </td>
+                    <td class="px-3 py-2 text-gray-900 whitespace-nowrap">
+                      {{ tx.get_payment_method_display }}
+                    </td>
+                    <td class="px-3 py-2 text-gray-700 max-w-xs">
+                      {{ tx.remarks|default:"—" }}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% else %}
+        <p class="text-sm text-gray-600">
+          No payments have been recorded for this student yet.
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
