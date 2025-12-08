@@ -337,15 +337,23 @@ def bulk_marks_upload(request):
     
     if request.method == 'POST':
         if 'download_template' in request.POST:
-            return download_template_csv(teacher)
+            return download_template_csv(request, teacher)
         elif 'marks_file' in request.FILES:
             excel_file = request.FILES['marks_file']
-            file_type = request.POST.get('file_type', 'excel')
+            file_name = excel_file.name.lower()
             
-            if file_type == 'csv':
+            print(f"DEBUG: Uploading file: {file_name}")
+            
+            # Detect file type
+            if file_name.endswith('.csv'):
+                print("DEBUG: Processing as CSV file")
                 return handle_csv_upload(request, excel_file, teacher)
-            else:
+            elif file_name.endswith(('.xlsx', '.xls')):
+                print("DEBUG: Processing as Excel file")
                 return handle_excel_upload(request, excel_file, teacher)
+            else:
+                messages.error(request, "Please upload a CSV (.csv) or Excel (.xlsx, .xls) file")
+                return redirect('teachers:bulk_upload')
     
     # Get teacher's classes and subjects for the template
     assigned_classes = Grade.objects.filter(class_teacher=teacher, is_active=True)
@@ -432,75 +440,162 @@ def download_template_csv(teacher):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
-
 def handle_csv_upload(request, csv_file, teacher):
-    """Handle CSV file upload with subjects as columns"""
+    """Handle CSV file upload with detailed debugging"""
     try:
+        print(f"DEBUG: Starting CSV upload for teacher: {teacher.user.username}")
+        print(f"DEBUG: File name: {csv_file.name}, Size: {csv_file.size}")
+        
         # Read CSV file
-        df = pd.read_csv(csv_file)
+        import pandas as pd
         
-        # Remove instruction rows if present
-        df = df[~df.iloc[:, 0].astype(str).str.contains('INSTRUCTIONS')]
-        df = df[~df.iloc[:, 0].astype(str).str.contains('MAX_SCORE')]
+        # Try different encodings
+        encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252']
+        df = None
         
-        # Check if we have the new format (subjects as columns)
-        if df.shape[1] > 4:  # More than student_id, reg_id, name, class
-            return process_subject_columns_csv(df, teacher)
+        for encoding in encodings:
+            try:
+                csv_file.seek(0)  # Reset file pointer
+                df = pd.read_csv(csv_file, encoding=encoding)
+                print(f"DEBUG: Successfully read CSV with {encoding} encoding")
+                break
+            except UnicodeDecodeError:
+                print(f"DEBUG: Failed to read with {encoding} encoding")
+                continue
+        
+        if df is None:
+            messages.error(request, "Unable to read CSV file. Please save as UTF-8 encoding.")
+            return redirect('teachers:bulk_upload')
+        
+        print(f"DEBUG: DataFrame shape: {df.shape}")
+        print(f"DEBUG: Columns: {list(df.columns)}")
+        print(f"DEBUG: First few rows:")
+        print(df.head().to_string())
+        
+        # Clean column names (remove whitespace)
+        df.columns = df.columns.str.strip()
+        
+        # Check if we have subject columns format
+        required_columns = ['student_id', 'registration_id', 'student_name', 'class']
+        subject_columns = [col for col in df.columns if col not in required_columns]
+        
+        if subject_columns:
+            print(f"DEBUG: Detected subject columns: {subject_columns}")
+            return process_subject_columns_csv(request, df, teacher, subject_columns)
         else:
-            return process_old_format_csv(df, teacher)
+            print(f"DEBUG: No subject columns detected, checking for old format")
+            # Check for old format columns
+            if all(col in df.columns for col in ['student_id', 'subject', 'score']):
+                return process_old_format_csv(request, df, teacher)
+            else:
+                messages.error(request, "Invalid CSV format. Please use the template from this page.")
+                return redirect('teachers:bulk_upload')
         
     except Exception as e:
+        print(f"FATAL ERROR in CSV upload: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         messages.error(request, f"❌ Error processing CSV file: {str(e)}")
         return redirect('teachers:bulk_upload')
 
-def process_subject_columns_csv(df, teacher):
+def process_subject_columns_csv(request, df, teacher, subject_columns):
     """Process CSV with subjects as columns"""
     current_term = get_current_term()
     current_exam = get_current_exam(current_term)
+    
+    print(f"DEBUG: Current term: {current_term}")
+    print(f"DEBUG: Current exam: {current_exam}")
     
     if not current_exam:
         messages.error(request, "No active exam session found")
         return redirect('teachers:bulk_upload')
     
-    success_count = 0
-    error_rows = []
-    
-    # Identify subject columns (everything after student info columns)
-    student_info_columns = ['student_id', 'registration_id', 'student_name', 'class']
-    subject_columns = [col for col in df.columns if col not in student_info_columns]
-    
     # Map subject names to Subject objects
     subject_objects = {}
     for subject_name in subject_columns:
+        subject_name = str(subject_name).strip()
         try:
+            # Try exact match
             subject = Subject.objects.get(name=subject_name, teacher=teacher)
             subject_objects[subject_name] = subject
+            print(f"DEBUG: Found subject: '{subject_name}' -> {subject.id}")
         except Subject.DoesNotExist:
-            error_rows.append(f"Subject '{subject_name}' not found or not assigned to you")
+            # Try case-insensitive
+            try:
+                subject = Subject.objects.get(name__iexact=subject_name, teacher=teacher)
+                subject_objects[subject_name] = subject
+                print(f"DEBUG: Found subject (case-insensitive): '{subject_name}'")
+            except Subject.DoesNotExist:
+                print(f"DEBUG: Subject not found: '{subject_name}'")
+                # Try to find similar subject
+                similar = Subject.objects.filter(
+                    name__icontains=subject_name,
+                    teacher=teacher
+                ).first()
+                if similar:
+                    subject_objects[subject_name] = similar
+                    print(f"DEBUG: Using similar subject: '{subject_name}' -> '{similar.name}'")
+    
+    print(f"DEBUG: Mapped {len(subject_objects)} subjects")
     
     if not subject_objects:
-        messages.error(request, "No valid subjects found in the file")
+        messages.error(request, "No valid subjects found in the file. Please check subject names.")
         return redirect('teachers:bulk_upload')
+    
+    success_count = 0
+    error_rows = []
+    saved_details = []
     
     # Process each row (student)
     for index, row in df.iterrows():
         try:
-            student_id = int(row['student_id'])
-            student = Student.objects.get(id=student_id)
+            # Get student info
+            student_id = None
+            registration_id = None
+            
+            if 'student_id' in row and pd.notna(row['student_id']):
+                student_id = int(row['student_id'])
+            if 'registration_id' in row and pd.notna(row['registration_id']):
+                registration_id = str(row['registration_id']).strip()
+            
+            if not student_id and not registration_id:
+                error_rows.append(f"Row {index+2}: Missing student_id and registration_id")
+                continue
+            
+            # Find student
+            student = None
+            try:
+                if student_id:
+                    student = Student.objects.get(id=student_id)
+                elif registration_id:
+                    student = Student.objects.get(registration_id=registration_id)
+            except Student.DoesNotExist:
+                error_rows.append(f"Row {index+2}: Student not found (ID: {student_id}, Reg: {registration_id})")
+                continue
+            
+            print(f"\nDEBUG: Processing student: {student} (ID: {student.id})")
             
             # Process each subject column
             for subject_name, subject in subject_objects.items():
                 if subject_name in row and pd.notna(row[subject_name]) and str(row[subject_name]).strip() != '':
                     try:
-                        score = float(row[subject_name])
+                        score_str = str(row[subject_name]).strip()
+                        score = float(score_str)
+                        print(f"DEBUG:  Subject '{subject_name}': Score = {score}")
                         
                         # Validate score
                         if not (0 <= score <= 100):
                             error_rows.append(f"Row {index+2} ({student} - {subject_name}): Score {score} out of range")
                             continue
                         
+                        # Check if student is in teacher's class
+                        if not Grade.objects.filter(class_teacher=teacher, student=student).exists():
+                            error_rows.append(f"Row {index+2} ({student}): Not in your classes")
+                            continue
+                        
                         # Save the mark
-                        ExamResult.objects.update_or_create(
+                        exam_result, created = ExamResult.objects.update_or_create(
                             student=student,
                             subject=subject,
                             exam_session=current_exam,
@@ -513,27 +608,45 @@ def process_subject_columns_csv(df, teacher):
                                 'percentage': float(score),
                             }
                         )
+                        
+                        print(f"DEBUG:  {'Created' if created else 'Updated'} mark: ID {exam_result.id}")
                         success_count += 1
+                        saved_details.append(f"{student} - {subject}: {score}")
                         
                     except ValueError:
-                        error_rows.append(f"Row {index+2} ({student} - {subject_name}): Invalid score format")
-                
-        except Student.DoesNotExist:
-            error_rows.append(f"Row {index+2}: Student ID {student_id} not found")
+                        error_rows.append(f"Row {index+2} ({student} - {subject_name}): Invalid score '{row[subject_name]}'")
+                    except Exception as e:
+                        error_rows.append(f"Row {index+2} ({student} - {subject_name}): Error - {str(e)}")
+                        print(f"ERROR: {e}")
+        
         except Exception as e:
-            error_rows.append(f"Row {index+2}: Error - {str(e)}")
+            error_rows.append(f"Row {index+2}: Processing error - {str(e)}")
+            print(f"ERROR processing row {index+2}: {e}")
+    
+    print(f"\nDEBUG: Processing complete")
+    print(f"DEBUG: Successfully saved {success_count} marks")
     
     # Show results
     if success_count > 0:
         messages.success(request, f"✅ Successfully imported {success_count} marks!")
+        
+        # Show preview of saved marks
+        if saved_details:
+            preview = saved_details[:5]  # Show first 5
+            for detail in preview:
+                messages.info(request, f"✓ {detail}")
+            if len(saved_details) > 5:
+                messages.info(request, f"... and {len(saved_details) - 5} more")
     
     if error_rows:
-        error_message = f"⚠️ {len(error_rows)} warnings: " + "; ".join(error_rows[:3])
-        if len(error_rows) > 3:
-            error_message += f" ... and {len(error_rows) - 3} more"
-        messages.warning(request, error_message)
+        error_message = f"⚠️ {len(error_rows)} issues found. First few:"
+        for error in error_rows[:5]:
+            messages.warning(request, error)
+        if len(error_rows) > 5:
+            messages.warning(request, f"... and {len(error_rows) - 5} more")
     
     return redirect('teachers:bulk_upload')
+
 
 def process_old_format_csv(df, teacher):
     """Process old format CSV (for backward compatibility)"""
@@ -603,101 +716,179 @@ def process_old_format_csv(df, teacher):
         messages.warning(request, error_message)
     
     return redirect('teachers:bulk_upload')
+
 def handle_excel_upload(request, excel_file, teacher):
-    """Handle Excel file upload (original functionality)"""
+    """Handle Excel file upload with detailed debugging"""
     try:
+        print(f"DEBUG: Starting Excel upload for teacher: {teacher.user.username}")
+        print(f"DEBUG: File name: {excel_file.name}, Size: {excel_file.size}")
+        
         # Check file extension
         if not excel_file.name.endswith(('.xlsx', '.xls')):
             messages.error(request, "Please upload an Excel file (.xlsx or .xls)")
             return redirect('teachers:bulk_upload')
         
-        # Read Excel file
+        # Read Excel file with detailed info
+        import pandas as pd
         df = pd.read_excel(excel_file)
         
+        print(f"DEBUG: DataFrame shape: {df.shape}")
+        print(f"DEBUG: Columns: {list(df.columns)}")
+        print(f"DEBUG: First few rows:")
+        print(df.head())
+        
         # Check required columns
-        required_columns = ['registration_id', 'subject', 'score']
+        required_columns = ['student_id', 'registration_id', 'student_name', 'class']
         missing_columns = [col for col in required_columns if col not in df.columns]
         
         if missing_columns:
+            print(f"DEBUG: Missing columns: {missing_columns}")
             messages.error(request, f"Missing required columns: {', '.join(missing_columns)}")
             return redirect('teachers:bulk_upload')
         
+        # Identify subject columns (everything after required columns)
+        subject_columns = [col for col in df.columns if col not in required_columns]
+        print(f"DEBUG: Subject columns found: {subject_columns}")
+        
+        if not subject_columns:
+            messages.error(request, "No subject columns found in the file")
+            return redirect('teachers:bulk_upload')
+        
+        # Get current context
         current_term = get_current_term()
         current_exam = get_current_exam(current_term)
+        
+        print(f"DEBUG: Current term: {current_term}")
+        print(f"DEBUG: Current exam: {current_exam}")
         
         if not current_exam:
             messages.error(request, "No active exam session found")
             return redirect('teachers:bulk_upload')
         
+        # Map subject names to Subject objects
+        subject_objects = {}
+        for subject_name in subject_columns:
+            try:
+                subject = Subject.objects.get(name=subject_name, teacher=teacher)
+                subject_objects[subject_name] = subject
+                print(f"DEBUG: Found subject: {subject_name} -> {subject.id}")
+            except Subject.DoesNotExist:
+                print(f"DEBUG: Subject not found: {subject_name}")
+                # Try case-insensitive search
+                try:
+                    subject = Subject.objects.get(name__iexact=subject_name, teacher=teacher)
+                    subject_objects[subject_name] = subject
+                    print(f"DEBUG: Found subject (case-insensitive): {subject_name}")
+                except Subject.DoesNotExist:
+                    print(f"DEBUG: Subject not found (case-insensitive): {subject_name}")
+        
+        print(f"DEBUG: Mapped {len(subject_objects)} subjects")
+        
+        if not subject_objects:
+            messages.error(request, "No valid subjects found in the file. Please check subject names.")
+            return redirect('teachers:bulk_upload')
+        
         success_count = 0
         error_rows = []
+        saved_marks = []
         
+        # Process each row (student)
         for index, row in df.iterrows():
             try:
-                registration_id = str(row['registration_id']).strip()
-                subject_name = str(row['subject']).strip()
+                student_id = row['student_id']
+                registration_id = row['registration_id']
+                student_name = row['student_name']
                 
-                # Skip rows with empty scores
-                if pd.isna(row['score']) or str(row['score']).strip() == '':
-                    continue
-                    
-                score = float(row['score'])
+                print(f"\nDEBUG: Processing row {index+2}: {student_name} (ID: {student_id})")
                 
-                # Validate score range
-                if not (0 <= score <= 100):
-                    error_rows.append(f"Row {index+2}: Score {score} out of range (0-100)")
-                    continue
+                # Find student
+                try:
+                    student = Student.objects.get(id=int(student_id))
+                    print(f"DEBUG: Found student: {student}")
+                except Student.DoesNotExist:
+                    # Try by registration_id
+                    try:
+                        student = Student.objects.get(registration_id=str(registration_id))
+                        print(f"DEBUG: Found student by registration_id: {student}")
+                    except Student.DoesNotExist:
+                        error_rows.append(f"Row {index+2}: Student '{student_name}' (ID: {student_id}) not found")
+                        continue
                 
-                # Find student and subject
-                student = Student.objects.get(registration_id=registration_id)
-                subject = Subject.objects.get(name=subject_name, teacher=teacher)
+                # Process each subject column
+                for subject_name, subject in subject_objects.items():
+                    if subject_name in row and pd.notna(row[subject_name]) and str(row[subject_name]).strip() != '':
+                        try:
+                            score = float(row[subject_name])
+                            print(f"DEBUG:  Subject {subject_name}: Score = {score}")
+                            
+                            # Validate score
+                            if not (0 <= score <= 100):
+                                error_rows.append(f"Row {index+2} ({student} - {subject_name}): Score {score} out of range")
+                                continue
+                            
+                            # Check if student is in teacher's class
+                            if not Grade.objects.filter(class_teacher=teacher, student=student).exists():
+                                error_rows.append(f"Row {index+2} ({student}): Not in your classes")
+                                continue
+                            
+                            # Save the mark
+                            exam_result, created = ExamResult.objects.update_or_create(
+                                student=student,
+                                subject=subject,
+                                exam_session=current_exam,
+                                question=None,
+                                defaults={
+                                    'grade': student.current_grade,
+                                    'score': int(score),
+                                    'total_score': int(score),
+                                    'max_possible': 100,
+                                    'percentage': float(score),
+                                }
+                            )
+                            
+                            print(f"DEBUG:  {'Created' if created else 'Updated'} mark: ID {exam_result.id}")
+                            success_count += 1
+                            saved_marks.append(f"{student} - {subject}: {score}")
+                            
+                        except ValueError as e:
+                            error_rows.append(f"Row {index+2} ({student} - {subject_name}): Invalid score format '{row[subject_name]}'")
+                        except Exception as e:
+                            error_rows.append(f"Row {index+2} ({student} - {subject_name}): Error - {str(e)}")
+                            print(f"ERROR: {e}")
                 
-                # Check if student is in teacher's class
-                if not Grade.objects.filter(class_teacher=teacher, student=student).exists():
-                    error_rows.append(f"Row {index+2}: Student {registration_id} not in your classes")
-                    continue
-                
-                # Save the mark
-                ExamResult.objects.update_or_create(
-                    student=student,
-                    subject=subject,
-                    exam_session=current_exam,
-                    question=None,
-                    defaults={
-                        'grade': student.current_grade,
-                        'score': int(score),
-                        'total_score': int(score),
-                        'max_possible': 100,
-                        'percentage': float(score),
-                    }
-                )
-                success_count += 1
-                
-            except Student.DoesNotExist:
-                error_rows.append(f"Row {index+2}: Student {registration_id} not found")
-            except Subject.DoesNotExist:
-                error_rows.append(f"Row {index+2}: Subject '{subject_name}' not found or not assigned to you")
-            except ValueError as e:
-                error_rows.append(f"Row {index+2}: Invalid score format")
             except Exception as e:
-                error_rows.append(f"Row {index+2}: Error - {str(e)}")
+                error_rows.append(f"Row {index+2}: Processing error - {str(e)}")
+                print(f"ERROR processing row {index+2}: {e}")
+        
+        print(f"\nDEBUG: Processing complete")
+        print(f"DEBUG: Successfully saved {success_count} marks")
+        print(f"DEBUG: Errors: {len(error_rows)}")
         
         # Show results
         if success_count > 0:
-            messages.success(request, f"✅ Successfully imported {success_count} marks from Excel!")
+            messages.success(request, f"✅ Successfully imported {success_count} marks!")
+            # Show first few saved marks
+            if saved_marks:
+                preview = ", ".join(saved_marks[:3])
+                messages.info(request, f"Saved: {preview}" + ("..." if len(saved_marks) > 3 else ""))
         
         if error_rows:
-            error_message = f"❌ {len(error_rows)} errors occurred. First few: " + "; ".join(error_rows[:5])
-            if len(error_rows) > 5:
-                error_message += f" ... and {len(error_rows) - 5} more"
+            error_message = f"⚠️ {len(error_rows)} warnings: " + "; ".join(error_rows[:3])
+            if len(error_rows) > 3:
+                error_message += f" ... and {len(error_rows) - 3} more"
             messages.warning(request, error_message)
         
+        # Return to show results
+        return redirect('teachers:bulk_upload')
+        
     except Exception as e:
+        print(f"FATAL ERROR in Excel upload: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         messages.error(request, f"❌ Error processing Excel file: {str(e)}")
-    
-    return redirect('teachers:bulk_upload')
+        return redirect('teachers:bulk_upload')
 
-@login_required
 @login_required
 def download_class_template(request, class_id):
     """Download CSV template for specific class with subjects as columns"""
