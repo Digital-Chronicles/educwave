@@ -27,36 +27,38 @@ import pandas as pd
 
 @login_required
 def teacher_dashboard(request):
-    """Simple, task-oriented dashboard for teachers"""
-    try:
-        teacher = request.user.teacher_profile
-    except Teacher.DoesNotExist:
-        # If user is not a teacher, redirect to appropriate dashboard
-        return redirect('teachers:teachers')
-    
-    # Auto-detect current context
-    current_term = get_current_term()
-    current_exam = get_current_exam(current_term)
-    
-    # Get teacher's context
-    assigned_classes = Grade.objects.filter(class_teacher=teacher)
-    assigned_subjects = Subject.objects.filter(teacher=teacher)
-    pending_tasks = get_pending_mark_entries(teacher, current_term, current_exam)
-    
-    context = {
-        'teacher': teacher,
-        'current_term': current_term,
-        'current_exam': current_exam,
-        'assigned_classes': assigned_classes,
-        'assigned_subjects': assigned_subjects,
-        'pending_tasks': pending_tasks,
-    }
-    return render(request, 'teachers/dashboard.html', context)
+    if hasattr(request.user, 'teacher'):
+        teacher = request.user.teacher
+
+        # Auto-detect current context
+        current_term = get_current_term()
+        current_exam = get_current_exam(current_term)
+
+        # Get teacher's context
+        assigned_classes = Grade.objects.filter(class_teacher=teacher)
+        assigned_subjects = Subject.objects.filter(teacher=teacher)
+        pending_tasks = get_pending_mark_entries(teacher, current_term, current_exam)
+
+        context = {
+            'teacher': teacher,
+            'current_term': current_term,
+            'current_exam': current_exam,
+            'assigned_classes': assigned_classes,
+            'assigned_subjects': assigned_subjects,
+            'pending_tasks': pending_tasks,
+        }
+
+        return render(request, 'teachers/dashboard.html', context)
+
+    else:
+        # If user is admin (or other), redirect to teacher list
+        return redirect('teachers:teachers_listings')
+
 
 @login_required
 def quick_mark_entry(request):
     """One-click mark entry - auto-detects context"""
-    teacher = request.user.teacher_profile
+    teacher = request.user.teacher
     
     # Get request parameters or use defaults
     class_id = request.GET.get('class')
@@ -111,7 +113,7 @@ def quick_mark_entry(request):
 @login_required
 def bulk_marks_upload(request):
     """Excel upload for marks"""
-    teacher = request.user.teacher_profile
+    teacher = request.user.teacher
     
     if request.method == 'POST' and request.FILES.get('marks_file'):
         excel_file = request.FILES['marks_file']
@@ -333,7 +335,7 @@ from io import BytesIO
 @login_required
 def bulk_marks_upload(request):
     """Bulk marks upload page with download template option"""
-    teacher = request.user.teacher_profile
+    teacher = request.user.teacher
     
     if request.method == 'POST':
         if 'download_template' in request.POST:
@@ -892,7 +894,7 @@ def handle_excel_upload(request, excel_file, teacher):
 @login_required
 def download_class_template(request, class_id):
     """Download CSV template for specific class with subjects as columns"""
-    teacher = request.user.teacher_profile
+    teacher = request.user.teacher
     class_obj = get_object_or_404(Grade, id=class_id, class_teacher=teacher)
     
     # Get current context

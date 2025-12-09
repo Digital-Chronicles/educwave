@@ -165,7 +165,7 @@
 
           <!-- Teachers -->
           <li class="nav-item {% block teacherSetActive %}{% endblock %}">
-            <a href="{% url 'teachers' %}" class="flex items-center p-3 rounded-lg">
+            <a href="{% url 'teachers:dashboard' %}" class="flex items-center p-3 rounded-lg">
               <i class="fas fa-chalkboard-teacher mr-3 text-gray-500"></i>
               <span class="text-gray-700 font-medium">Teachers</span>
             </a>
@@ -273,7 +273,6 @@
               </form>
 
 
-                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
 
               </div>
             </div>
