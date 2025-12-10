@@ -19,7 +19,7 @@ def download_student_csv_template(request):
     
     # Write header row
     headers = [
-        "first_name", "last_name", "date_of_birth", "current_status",
+        "first_name", "last_name", "date_of_birth", "current_status", "current_grade",
         "gender", "grade_of_entry", "year_of_entry", "guardian_name",
         "guardian_phone", "father_name", "father_phone", "mother_name",
         "mother_phone"
@@ -28,7 +28,7 @@ def download_student_csv_template(request):
     
     # Add example data row
     example_data = [
-        "John", "Doe", "2015-05-15", "active", "Male", "grade_3", "2023",
+        "John", "Doe", "2015-05-15", "active", "Primary 1", "Male", "grade_1", "2023",
         "Jane Smith", "+1234567890", "Mike Doe", "+1234567891", 
         "Sarah Doe", "+1234567892"
     ]
@@ -54,11 +54,21 @@ def student_csv_view(request):
             created_count = 0
             for row in reader:
                 try:
+                    from academic.models import Grade 
+                    grade_name = row['current_grade']
+                    try:
+                        grade_instance = Grade.objects.get(grade_name=grade_name)
+                    except Grade.DoesNotExist:
+                        messages.warning(request, f"Grade '{grade_name}' not found for student {row.get('first_name')} {row.get('last_name')}")
+                        continue
+                    except Grade.MultipleObjectsReturned:
+                        grade_instance = Grade.objects.filter(name=grade_name).first()
                     student = Student(
                         first_name=row['first_name'],
                         last_name=row['last_name'],
                         date_of_birth=row['date_of_birth'],
                         current_status=row.get('current_status', 'active'),
+                        current_grade=grade_instance,
                         gender=row.get('gender', None),
                         grade_of_entry=row.get('grade_of_entry', None),
                         year_of_entry=row.get('year_of_entry', None),
