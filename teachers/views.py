@@ -110,23 +110,23 @@ def quick_mark_entry(request):
     }
     return render(request, 'teachers/quick_mark_entry.html', context)
 
-@login_required
-def bulk_marks_upload(request):
-    """Excel upload for marks"""
-    teacher = request.user.teacher
+# @login_required
+# def bulk_marks_upload(request):
+#     """Excel upload for marks"""
+#     teacher = request.user.teacher
     
-    if request.method == 'POST' and request.FILES.get('marks_file'):
-        excel_file = request.FILES['marks_file']
+#     if request.method == 'POST' and request.FILES.get('marks_file'):
+#         excel_file = request.FILES['marks_file']
         
-        try:
-            success_count = process_excel_marks(excel_file, teacher)
-            messages.success(request, f"Successfully imported {success_count} marks!")
-            return redirect('teachers:dashboard')
+#         try:
+#             success_count = process_excel_marks(excel_file, teacher)
+#             messages.success(request, f"Successfully imported {success_count} marks!")
+#             return redirect('teachers:dashboard')
             
-        except Exception as e:
-            messages.error(request, f"Error processing file: {str(e)}")
+#         except Exception as e:
+#             messages.error(request, f"Error processing file: {str(e)}")
     
-    return render(request, 'teachers/bulk_upload.html')
+#     return render(request, 'teachers/bulk_upload.html')
 
 # Helper functions
 def get_current_term():
@@ -281,7 +281,7 @@ def process_excel_marks(excel_file, teacher):
 @login_required
 def teacher_reports(request):
     """Placeholder for teacher reports"""
-    teacher = request.user.teacher_profile
+    teacher = request.user.teacher
     # You can implement this later
     return render(request, 'teachers/reports.html', {'teacher': teacher})
 
@@ -310,7 +310,7 @@ def my_classes(request):
 @login_required
 def teacher_profile(request):
     """Teacher profile page"""
-    teacher = request.user.teacher_profile
+    teacher = request.user.teacher
     return render(request, 'teachers/profile.html', {'teacher': teacher})
 class RegisterTeacherDetails(RoleRequiredMixin, generic.CreateView):
     model = Teacher
@@ -368,6 +368,7 @@ def bulk_marks_upload(request):
         'subjects': Subject.objects.filter(teacher=teacher, is_active=True),
     }
     return render(request, 'teachers/bulk_upload.html', context)
+
 def download_template_csv(teacher):
     """Download CSV template filtered by teacher's classes"""
     # Get current context
@@ -442,6 +443,9 @@ def download_template_csv(teacher):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
+
+
+
 def handle_csv_upload(request, csv_file, teacher):
     """Handle CSV file upload with detailed debugging"""
     try:
@@ -513,36 +517,101 @@ def process_subject_columns_csv(request, df, teacher, subject_columns):
         messages.error(request, "No active exam session found")
         return redirect('teachers:bulk_upload')
     
+    # Get the class from the CSV or teacher's assigned class
+    class_obj = None
+    if 'class' in df.columns and not df['class'].isnull().all():
+        # Try to get class from CSV data
+        try:
+            class_name = str(df['class'].iloc[0]).strip()
+            class_obj = Grade.objects.filter(grade_name=class_name, class_teacher=teacher).first()
+            print(f"DEBUG: Found class from CSV: {class_name}")
+        except Exception as e:
+            print(f"DEBUG: Error getting class from CSV: {e}")
+    
+    if not class_obj:
+        # Get teacher's primary assigned class
+        class_obj = Grade.objects.filter(class_teacher=teacher, is_active=True).first()
+        print(f"DEBUG: Using teacher's assigned class: {class_obj}")
+    
+    if not class_obj:
+        messages.error(request, "No valid class found. Please check your CSV or contact admin.")
+        return redirect('teachers:bulk_upload')
+    
+    print(f"DEBUG: Processing for class: {class_obj.grade_name}")
+    
+    # CHECK: Is this teacher the class teacher?
+    is_class_teacher = (class_obj.class_teacher == teacher)
+    print(f"DEBUG: Teacher is class teacher: {is_class_teacher}")
+    
     # Map subject names to Subject objects
     subject_objects = {}
     for subject_name in subject_columns:
         subject_name = str(subject_name).strip()
         try:
-            # Try exact match
-            subject = Subject.objects.get(name=subject_name, teacher=teacher)
-            subject_objects[subject_name] = subject
-            print(f"DEBUG: Found subject: '{subject_name}' -> {subject.id}")
-        except Subject.DoesNotExist:
-            # Try case-insensitive
-            try:
-                subject = Subject.objects.get(name__iexact=subject_name, teacher=teacher)
+            if is_class_teacher:
+                # Class teacher can process ALL subjects in their class
+                subject = Subject.objects.get(
+                    name=subject_name,
+                    grade=class_obj,
+                    is_active=True
+                )
                 subject_objects[subject_name] = subject
-                print(f"DEBUG: Found subject (case-insensitive): '{subject_name}'")
-            except Subject.DoesNotExist:
-                print(f"DEBUG: Subject not found: '{subject_name}'")
-                # Try to find similar subject
-                similar = Subject.objects.filter(
-                    name__icontains=subject_name,
-                    teacher=teacher
-                ).first()
-                if similar:
-                    subject_objects[subject_name] = similar
-                    print(f"DEBUG: Using similar subject: '{subject_name}' -> '{similar.name}'")
+                print(f"DEBUG: Found subject for class teacher: '{subject_name}' -> {subject.id}")
+            else:
+                # Regular teacher can only process subjects they teach
+                subject = Subject.objects.get(
+                    name=subject_name,
+                    teacher=teacher,
+                    grade=class_obj,
+                    is_active=True
+                )
+                subject_objects[subject_name] = subject
+                print(f"DEBUG: Found subject for regular teacher: '{subject_name}' -> {subject.id}")
+            
+        except Subject.DoesNotExist:
+            if is_class_teacher:
+                # Try case-insensitive for class teacher
+                try:
+                    subject = Subject.objects.get(
+                        name__iexact=subject_name,
+                        grade=class_obj,
+                        is_active=True
+                    )
+                    subject_objects[subject_name] = subject
+                    print(f"DEBUG: Found subject (case-insensitive) for class teacher: '{subject_name}'")
+                except Subject.DoesNotExist:
+                    print(f"DEBUG: Subject not found in class {class_obj.grade_name}: '{subject_name}'")
+                    # Try to find similar subject in the class
+                    similar = Subject.objects.filter(
+                        name__icontains=subject_name,
+                        grade=class_obj,
+                        is_active=True
+                    ).first()
+                    if similar:
+                        subject_objects[subject_name] = similar
+                        print(f"DEBUG: Using similar subject in class: '{subject_name}' -> '{similar.name}'")
+            else:
+                print(f"DEBUG: Subject not found or not taught by teacher: '{subject_name}'")
+                # Try case-insensitive for regular teacher
+                try:
+                    subject = Subject.objects.get(
+                        name__iexact=subject_name,
+                        teacher=teacher,
+                        grade=class_obj,
+                        is_active=True
+                    )
+                    subject_objects[subject_name] = subject
+                    print(f"DEBUG: Found subject (case-insensitive) for regular teacher: '{subject_name}'")
+                except Subject.DoesNotExist:
+                    print(f"DEBUG: Subject not taught by teacher: '{subject_name}'")
     
     print(f"DEBUG: Mapped {len(subject_objects)} subjects")
     
     if not subject_objects:
-        messages.error(request, "No valid subjects found in the file. Please check subject names.")
+        if is_class_teacher:
+            messages.error(request, f"No valid subjects found for class {class_obj.grade_name}. Please check subject names.")
+        else:
+            messages.error(request, "No valid subjects found that you teach. Please check subject names or contact the class teacher.")
         return redirect('teachers:bulk_upload')
     
     success_count = 0
@@ -578,6 +647,11 @@ def process_subject_columns_csv(request, df, teacher, subject_columns):
             
             print(f"\nDEBUG: Processing student: {student} (ID: {student.id})")
             
+            # Check if student is in the correct class
+            if student.current_grade != class_obj:
+                error_rows.append(f"Row {index+2} ({student}): Student is not in class {class_obj.grade_name}")
+                continue
+            
             # Process each subject column
             for subject_name, subject in subject_objects.items():
                 if subject_name in row and pd.notna(row[subject_name]) and str(row[subject_name]).strip() != '':
@@ -591,10 +665,11 @@ def process_subject_columns_csv(request, df, teacher, subject_columns):
                             error_rows.append(f"Row {index+2} ({student} - {subject_name}): Score {score} out of range")
                             continue
                         
-                        # Check if student is in teacher's class
-                        if not Grade.objects.filter(class_teacher=teacher, student=student).exists():
-                            error_rows.append(f"Row {index+2} ({student}): Not in your classes")
-                            continue
+                        # Check if student is in teacher's class (for regular teachers)
+                        if not is_class_teacher:
+                            if not Grade.objects.filter(class_teacher=teacher, student=student).exists():
+                                error_rows.append(f"Row {index+2} ({student}): Not in your classes")
+                                continue
                         
                         # Save the mark
                         exam_result, created = ExamResult.objects.update_or_create(
@@ -891,60 +966,69 @@ def handle_excel_upload(request, excel_file, teacher):
         messages.error(request, f"❌ Error processing Excel file: {str(e)}")
         return redirect('teachers:bulk_upload')
 
+
+
 @login_required
-def download_class_template(request, class_id):
-    """Download CSV template for specific class with subjects as columns"""
-    teacher = request.user.teacher
-    class_obj = get_object_or_404(Grade, id=class_id, class_teacher=teacher)
+def download_class_template(request, teacher):
+    """Download CSV template for bulk upload"""
+    # Get teacher's assigned class
+    class_obj = Grade.objects.filter(class_teacher=teacher, is_active=True).first()
     
-    # Get current context
-    current_term = get_current_term()
-    current_exam = get_current_exam(current_term)
+    if not class_obj:
+        messages.error(request, "No assigned class found")
+        return redirect('teachers:bulk_upload')
     
-    # Get students in this class
-    students = Student.objects.filter(current_grade=class_obj).order_by('first_name')
+    # Get all subjects for this class (if class teacher, get all subjects)
+    subjects = Subject.objects.filter(grade=class_obj, is_active=True).order_by('name')
     
-    # Get subjects for this class taught by this teacher
-    subjects = Subject.objects.filter(grade=class_obj, teacher=teacher, is_active=True).order_by('name')
-    
-    # Create CSV content with subjects as columns
+    # Create CSV
     import csv
     from io import StringIO
     
     output = StringIO()
     writer = csv.writer(output)
     
-    # Create headers
-    headers = ['student_id', 'registration_id', 'student_name']
+    # Create headers with class column
+    headers = ['student_id', 'registration_id', 'student_name', 'class']
     for subject in subjects:
-        headers.append(subject.name)  # Each subject as column
+        headers.append(subject.name)
     
     writer.writerow(headers)
     
-    # Write data rows - one row per student
+    # Get students in this class
+    students = Student.objects.filter(current_grade=class_obj).order_by('first_name')
+    
     for student in students:
         row = [
             student.id,
             student.registration_id,
             f"{student.first_name} {student.last_name}",
+            class_obj.grade_name,  # Add class name
         ]
         
-        # Add empty cells for each subject
         for subject in subjects:
             row.append('')  # Empty score
         
         writer.writerow(row)
     
-    # Add max score info
-    writer.writerow([''])  # Empty row
-    writer.writerow(['MAX_SCORE:'] + ['100'] * len(subjects))
+    # Add instructions
+    writer.writerow([''])
+    writer.writerow(['INSTRUCTIONS:'])
+    writer.writerow(['1. Fill scores in subject columns (0-100)'])
+    writer.writerow(['2. Do not modify student_id, registration_id, or class columns'])
+    writer.writerow(['3. Save as UTF-8 CSV before uploading'])
     
-    # Create HTTP response
+    # Create response
     response = HttpResponse(output.getvalue(), content_type='text/csv')
-    filename = f"{class_obj.grade_name}_marks_{current_term.year}_{current_exam.exam_type}.csv"
+    current_term = get_current_term()
+    current_exam = get_current_exam(current_term)
+    
+    filename = f"{class_obj.grade_name}_marks_template_{current_term.term_name}_{current_exam.exam_type}.csv"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
     return response
+
+
 #Creating a user account for the teacher  
 @login_required
 @role_required(allowed_roles=['ADMIN', 'FINANCE'])
@@ -957,7 +1041,7 @@ def create_user_account(request):
             user.save()
             messages.success(
                 request, "User account created! You can now register teacher details.")
-            return redirect("teacher_details")   # adjust URL name
+            return redirect("teachers:teachers_listings")   # adjust URL name
     else:
         form = UserCreateForm()
     return render(request, "features/teachers-create_user.html", {"user_form": form})

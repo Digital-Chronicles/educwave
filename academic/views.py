@@ -35,7 +35,7 @@ from academic.models import ExamSession, TermExamSession, Subject, Grade,  Stude
 
 
 
-@role_required(allowed_roles=['ADMIN', 'ACADEMIC'])
+@role_required(allowed_roles=['ADMIN', 'ACADEMIC', 'TEACHER'])
 def academics(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         # Process AJAX request

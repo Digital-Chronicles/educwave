@@ -3,7 +3,7 @@
   <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
     <h3 class="text-lg font-bold mb-4">Create Teacher Account</h3>
 
-    <form method="post" action="{% url 'create_user_account' %}">
+    <form method="post" action="{% url 'teachers:create_user_account' %}">
       {% csrf_token %}
       {{ user_form.as_p }}
       <div class="mt-4 flex justify-end space-x-2">
